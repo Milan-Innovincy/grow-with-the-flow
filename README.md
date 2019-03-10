@@ -18,4 +18,4 @@ It is proposed to calculate the available soil moisture and crop production on a
 
 The models will be integrated into FEWSforreal-timeforecastofcrop production. the output from FEWS will feed a developed app. Thefarmersapp will be made available to a selection of farmers in the pilot area (15-20).
 
-![Partners](partners.jpg)
+![Partners](partners.png)
