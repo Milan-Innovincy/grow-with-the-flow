@@ -17,7 +17,7 @@ Therefore, a joint project proposal was made by Achmea (Agro), Deltares, the wat
 It is proposed to calculate the available soil moisture and crop production on a parcel basis with the coupled MODFLOW-MetaSWAP-WOFOST model during the 2018 growing season. 
 
 The models were integrated into FEWS for real-time forecast of crop production. the output from FEWS feeds the developed app. 
-Thefarmers app was made available to a selection of farmers in the pilot area (15-20).
+Thefarmers app was made available to a selection of farmers in the pilot area.
 
 ## Partners/involved organisations
 
