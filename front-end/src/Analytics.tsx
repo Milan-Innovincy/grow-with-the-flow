@@ -288,20 +288,20 @@ export default ({ navigate, farmerData, date, selectedPlotId, selectedPixel, spr
           <CurrentDataItem
             label="Regenval in mm"
             value={currentRainfall}
-            color="#64b5f6"
-            icon={<RainfallIcon fill="#64b5f6" className={css`width: 20px; height: 20px;`}/>}
+            color="#80A1D4"
+            icon={<RainfallIcon fill="#80A1D4" className={css`width: 20px; height: 20px;`}/>}
           />
           <CurrentDataItem
             label="Evapotranspiratie in mm"
             value={currentEvapotranspiration}
-            color="#7cb342"
-            icon={<CarDefrostRear fill="#7cb342" className={css`width: 18px !important; height: 18px !important; transform: rotate(180deg);`} />}
+            color="#6A7152"
+            icon={<CarDefrostRear fill="#6A7152" className={css`width: 18px !important; height: 18px !important; transform: rotate(180deg);`} />}
           />
           <CurrentDataItem
             label="Vochttekort in mm"
             value={currentDeficit}
-            color="#ff5722"
-            icon={<Vanish fill="#ff5722" width={20} className={css`width: 18px !important; height: 18px !important;`}/>}
+            color="#F6511D"
+            icon={<Vanish fill="#F6511D" width={20} className={css`width: 18px !important; height: 18px !important;`}/>}
           />
           <CurrentDataItem
             label="Te beregenen in mm"
