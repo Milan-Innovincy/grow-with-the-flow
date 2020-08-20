@@ -4,12 +4,11 @@ import { css } from 'emotion'
 import { BrowserRouter, Switch, Route, Redirect } from 'react-router-dom'
 
 import TopBar from './TopBar'
-import NavBar from './NavBar'
 import MapAndAnalytics from './MapAndAnalytics';
 
 const theme = createMuiTheme({
   palette: {
-    primary: { main: '#5AC8C5', contrastText: '#fff' }
+    primary: { main: '#2F3D50', contrastText: '#fff' }
   },
   typography: { useNextVariants: true }
 })
@@ -36,7 +35,6 @@ export default () =>
             <Redirect to="/map"/>
           </Switch>
         </div>
-        <NavBar/>
       </div>
     </MuiThemeProvider>
   </BrowserRouter>

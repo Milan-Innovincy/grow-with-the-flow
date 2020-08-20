@@ -2,15 +2,20 @@ import React from 'react'
 import { AppBar, Toolbar, Typography, Avatar, Menu, MenuItem } from '@material-ui/core'
 import { Account } from 'mdi-material-ui'
 import { css } from 'emotion'
+import logo from './images/logo.png'
 
 export default () =>
   <AppBar position="static">
     <Toolbar>
-      <Typography
-        color="inherit"
-        variant="h6"
-        className={css`flex: 1;`}
-      >Interpolis. Glashelder</Typography>
+      <div
+          className={css`flex: 1`}
+        >
+        <img
+            src={logo}
+            width='250px'
+            alt='Grow with the Flow'
+        />
+      </div>
       <a
         className={css`
           display: flex;

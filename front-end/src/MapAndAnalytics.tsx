@@ -46,7 +46,8 @@ export default ({ match, history }: Props) => {
         
       ]
 
-      const prefix = process.env.NODE_ENV === 'development' ? '/data' : 'https://storage.googleapis.com/grow-with-the-flow.appspot.com'
+      //const prefix = process.env.NODE_ENV === 'development' ? '/data' : 'https://storage.googleapis.com/grow-with-the-flow.appspot.com'
+      const prefix = 'https://storage.googleapis.com/grow-with-the-flow.appspot.com'
 
       const { defaultDate } = (await axios.get(`${prefix}/defaults.json`)).data
       const dateToken = defaultDate.replace(/-/g, '')

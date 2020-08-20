@@ -225,8 +225,8 @@ export default ({ navigate, farmerData, date, selectedPlotId, selectedPixel, spr
           right: 24px;
           top: -24px;
           background-color: #fff !important;
-          color: #5AC8C5 !important;
-          box-shadow: 0px 3px 5px -1px #5AC8C5, 0px -1px 10px 0px #5AC8C5, 0px 1px 18px 0px #5AC8C5 !important;
+          color: #2F3D50 !important;
+          box-shadow: 0px 3px 5px -1px #2F3D50, 0px -1px 10px 0px #2F3D50, 0px 1px 18px 0px #2F3D50 !important;
         `}
       >
         <Close/>
