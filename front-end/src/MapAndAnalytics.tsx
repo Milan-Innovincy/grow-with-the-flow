@@ -8,7 +8,6 @@ import { fromPairs } from 'lodash'
 import MapView from './MapView'
 import Analytics from './Analytics';
 import OverallSummary from './OverallSummary';
-import KeycloakWrapper from "./KeycloakWrapper";
 
 type Props = RouteComponentProps<{
   date?: string
@@ -119,7 +118,6 @@ export default ({ match, history }: Props) => {
   const navigate = (path: string) => history.push(path)
 
   return(
-      <KeycloakWrapper>
     <div
       className={css`
         height: 100%;
@@ -169,6 +167,5 @@ export default ({ match, history }: Props) => {
         }
       </Paper>
     </div>
-      </KeycloakWrapper>
   )
 }
