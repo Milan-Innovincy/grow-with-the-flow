@@ -30,12 +30,12 @@
     "@babel/runtime": "^7.11.0",
     "@material-ui/core": "3.9.2",
     "@turf/turf": "5.1.6",
-    "axios": "0.18.0",
+    "axios": "0.18.1",
     "chroma-js": "2.0.2",
     "emotion": "10.0.7",
     "immer": "2.0.0",
     "leaflet": "1.4.0",
-    "lodash": "4.17.11",
+    "lodash": "4.17.19",
     "luxon": "1.11.2",
     "mdi-material-ui": "5.9.0",
     "pngjs": "3.3.3",
@@ -45,7 +45,8 @@
     "react-leaflet-geojson-patterns": "1.1.0",
     "react-router-dom": "4.3.1",
     "recharts": "1.4.2",
-    "typeface-roboto": "0.0.54"
+    "typeface-roboto": "0.0.54",
+    "keycloak-js": "4.0.0-beta.2"
   },
   "browserslist": [
     ">0.2%",

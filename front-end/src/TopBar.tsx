@@ -1,8 +1,9 @@
 import React from 'react'
-import { AppBar, Toolbar, Typography, Avatar, Menu, MenuItem } from '@material-ui/core'
+import { AppBar, Toolbar, Typography, Avatar } from '@material-ui/core'
 import { Account } from 'mdi-material-ui'
 import { css } from 'emotion'
 import logo from './images/logo.png'
+import { AuthenticationContext } from "./AuthenticationContext";
 
 export default () =>
   <AppBar position="static">
@@ -26,7 +27,11 @@ export default () =>
           color="inherit"
           variant="h6"
           className={css`margin-right: 10px !important;`}
-        >Johan van Gerwen</Typography>
+        >
+          <AuthenticationContext.Consumer>
+            {({keycloak}) => <>{keycloak.tokenParsed && keycloak.tokenParsed.name}</>}
+        </AuthenticationContext.Consumer>
+        </Typography>
         <Avatar className={css`background-color: #ba68c8 !important;`}>
           <Account/>
         </Avatar>
