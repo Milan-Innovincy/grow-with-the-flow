@@ -1,4 +1,5 @@
 .idea/
 back-end/project/
 back-end/target/
-front-end/node_modules/
+front-end/node_modxules/
+front-end/build/

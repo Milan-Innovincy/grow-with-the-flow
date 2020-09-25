@@ -2,4 +2,4 @@
 
 yarn build
 
-firebase deploy --project grow-with-the-flow
+firebase deploy --project gwtf-farmer-app
