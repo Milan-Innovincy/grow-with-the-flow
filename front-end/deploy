@@ -2,4 +2,6 @@
 
 yarn build
 
+cp public/keycloak.prod.json build/keycloak.json
+
 firebase deploy --project gwtf-farmer-app

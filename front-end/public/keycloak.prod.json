@@ -1,0 +1,8 @@
+{
+  "realm": "GWTF",
+  "auth-server-url": "http://auth.irrigation.live/auth/",
+  "ssl-required": "external",
+  "resource": "farmers-app",
+  "public-client": true,
+  "confidential-port": 0
+}
