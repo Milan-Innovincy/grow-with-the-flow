@@ -27,7 +27,7 @@ export default ({ farmerData, date, navigate, sprinklingCache }: Props) => {
           flex: 1;
           display: flex;
           flex-direction: column;
-          color: #46958F;
+          color: #2F3D50;
         `}
       >
         <small

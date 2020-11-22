@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, {useState, useEffect, useContext} from 'react'
 import { RouteComponentProps, Redirect } from 'react-router-dom'
 import axios from 'axios'
 import { css } from 'emotion'
@@ -8,6 +8,7 @@ import { fromPairs } from 'lodash'
 import MapView from './MapView'
 import Analytics from './Analytics';
 import OverallSummary from './OverallSummary';
+import { ApplicationContext } from "./ApplicationContext";
 
 type Props = RouteComponentProps<{
   date?: string
@@ -19,6 +20,7 @@ export default ({ match, history }: Props) => {
 
   const [ farmerData, setFarmerData ] = useState(null as any)
   const [ sprinklingCache, setSprinklingCache ] = useState({})
+  const contextValue = useContext(ApplicationContext);
 
   useEffect(() => {
     (async () => {
@@ -57,25 +59,40 @@ export default ({ match, history }: Props) => {
         ['soilMap', 'gwtf-soil-map.json'],
         ['pixelsData', `gwtf-pixels-${dateToken}.json`],
         ['plotsAnalytics', `gwtf-plot-analytics-${dateToken}.json`],
-        ['plotsGeoJSON', `gwtf-plots-${dateToken}.json`]
+        /*['plotsGeoJSON', `gwtf-plots-${dateToken}.json`]*/
       ].map(async ([key, path]: any) => ([key, (await axios.get(`${prefix}/${path}`)).data]))))
 
-      d.pixelsData.landUse = d.landUse
-      d.pixelsData.soilMap = d.soilMap
 
-      const { pixelsData, plotsAnalytics, plotsGeoJSON } = d
-      plotsGeoJSON.features = plotsGeoJSON.features.filter((f: any) => f.properties.plotId)
-
-      const farmerData = {
-        defaultDate,
-        pixelsData,
-        plotsGeoJSON,
-        plotsAnalytics
+      let plotsGeoJSON;
+      if (contextValue.keycloak && contextValue.keycloak.token) {
+        plotsGeoJSON = (await axios.get(`http://api.irrigation.live/plots`, {headers: {
+            "Authorization": "Bearer " + contextValue.keycloak.token
+          }})).data;
       }
 
-      setFarmerData(farmerData)
+      let plotsAnalytics;
+      if (contextValue.keycloak && contextValue.keycloak.token) {
+        plotsAnalytics = (await axios.get(`http://api.irrigation.live/plot-analytics?on=2020-11-10&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater`, {headers: {
+            "Authorization": "Bearer " + contextValue.keycloak.token
+          }})).data;
+
+        d.pixelsData.landUse = d.landUse
+        d.pixelsData.soilMap = d.soilMap
+
+        const { pixelsData  } = d
+        plotsGeoJSON.features = plotsGeoJSON.features.filter((f: any) => f.properties.plotId)
+
+        const farmerData = {
+          defaultDate,
+          pixelsData,
+          plotsGeoJSON,
+          plotsAnalytics
+        }
+
+        setFarmerData(farmerData)
+      }
     })()
-  }, [])
+  }, [contextValue.authenticated])
 
   if(!farmerData) {
     return(

@@ -106,6 +106,7 @@ const CurrentDataItem = ({ label, value, color, icon }: { label: string, value: 
     className={css`
       display: flex;
       align-items: center;
+      margin-right: 20px;
     `}
   >
     <div
@@ -244,7 +245,7 @@ export default ({ navigate, farmerData, date, selectedPlotId, selectedPixel, spr
             flex: 1;
             display: flex;
             flex-direction: column;
-            color: #46958F;
+            color: #2F3D50;
           `}
         >
           <small
@@ -255,13 +256,37 @@ export default ({ navigate, farmerData, date, selectedPlotId, selectedPixel, spr
           >{label}</small>
           <DateView date={date}/>
         </div>
+        <CurrentDataItem
+            label="Regenval in mm"
+            value={currentRainfall}
+            color="#80A1D4"
+            icon={<RainfallIcon fill="#80A1D4" className={css`width: 20px; height: 20px;`}/>}
+        />
+        <CurrentDataItem
+            label="Evapotranspiratie in mm"
+            value={currentEvapotranspiration}
+            color="#6A7152"
+            icon={<CarDefrostRear fill="#6A7152" className={css`width: 18px !important; height: 18px !important; transform: rotate(180deg);`} />}
+        />
+        <CurrentDataItem
+            label="Vochttekort in mm"
+            value={currentDeficit}
+            color="#F6511D"
+            icon={<Vanish fill="#F6511D" width={20} className={css`width: 18px !important; height: 18px !important;`}/>}
+        />
+        <CurrentDataItem
+            label="Te beregenen in mm"
+            value={currentSprinkling}
+            color="#1565c0"
+            icon={<IrrigationIcon fill="#1565c0" className={css`width: 20px; height: 20px;`}/>}
+        />
         <SelectedSumData
           circleContent={getCropTypeIcon(cropType)}
           label="Gewas"
           text={cropType}
         />
         <SelectedSumData
-          circleContent={area}
+          circleContent={Math.round(area)}
           label="Hectare"
           text={soilType}
         />
@@ -275,7 +300,7 @@ export default ({ navigate, farmerData, date, selectedPlotId, selectedPixel, spr
       <div
         className={css`
           background-color: #FCFCFC;
-          border-top: 1px solid #46958F;
+          padding-top: 10px;
         `}
       >
         <div
@@ -285,30 +310,6 @@ export default ({ navigate, farmerData, date, selectedPlotId, selectedPixel, spr
             padding: 10px 20px;
           `}
         >
-          <CurrentDataItem
-            label="Regenval in mm"
-            value={currentRainfall}
-            color="#80A1D4"
-            icon={<RainfallIcon fill="#80A1D4" className={css`width: 20px; height: 20px;`}/>}
-          />
-          <CurrentDataItem
-            label="Evapotranspiratie in mm"
-            value={currentEvapotranspiration}
-            color="#6A7152"
-            icon={<CarDefrostRear fill="#6A7152" className={css`width: 18px !important; height: 18px !important; transform: rotate(180deg);`} />}
-          />
-          <CurrentDataItem
-            label="Vochttekort in mm"
-            value={currentDeficit}
-            color="#F6511D"
-            icon={<Vanish fill="#F6511D" width={20} className={css`width: 18px !important; height: 18px !important;`}/>}
-          />
-          <CurrentDataItem
-            label="Te beregenen in mm"
-            value={currentSprinkling}
-            color="#1565c0"
-            icon={<IrrigationIcon fill="#1565c0" className={css`width: 20px; height: 20px;`}/>}
-          />
         </div>
         <div
           className={css`
