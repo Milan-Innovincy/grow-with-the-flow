@@ -173,15 +173,21 @@ export default ({ navigate, farmerData, date, selectedPlotId, selectedPixel, spr
     cropType = feature.properties.cropTypes
     soilType = feature.properties.soilType
     area = feature.properties.plotSizeHa
-    data = plotsAnalytics[feature.properties.plotId].map((i: any, index: number) => ({
-      date: DateTime.fromISO(i.date).toFormat('dd/MM/yyyy'),
-      rainfall: i.measuredPrecipitation,
-      sprinkling: sprinklingCache[`${selectedPlotId}-${index}`] || 0,
-      moisture: i.availableSoilWater,
-      desiredMoisture: i.desiredSoilWater,
-      evapotranspiration: i.evapotranspiration,
-      deficit: i.deficit
-    }))
+    if (!!plotsAnalytics[feature.properties.plotId]) {
+      data = plotsAnalytics[feature.properties.plotId].map((i: any, index: number) => ({
+        date: DateTime.fromISO(i.date).toFormat('dd/MM/yyyy'),
+        rainfall: i.measuredPrecipitation,
+        sprinkling: sprinklingCache[`${selectedPlotId}-${index}`] || 0,
+        moisture: i.availableSoilWater,
+        desiredMoisture: i.desiredSoilWater,
+        evapotranspiration: i.evapotranspiration,
+        deficit: i.deficit
+      }))
+    } else {
+      alert("No data available for this plot.");
+      navigate(`/map/${DateTime.fromJSDate(date).toISODate()}`);
+      return <></>;
+    }
   }
   if(selectedPixel) {
     const [x, y] = selectedPixel
