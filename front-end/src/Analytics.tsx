@@ -170,6 +170,10 @@ export default ({ navigate, farmerData, date, selectedPlotId, selectedPixel, spr
   if(selectedPlotId) {
     label = `Plot ${selectedPlotId}`
     const feature = farmerData.plotsGeoJSON.features.find((f: any) => f.properties!.plotId === selectedPlotId)
+    if(!feature) {
+      navigate(`/map/${DateTime.fromJSDate(date).toISODate()}`);
+      return <></>;
+    }
     cropType = feature.properties.cropTypes
     soilType = feature.properties.soilType
     area = feature.properties.plotSizeHa

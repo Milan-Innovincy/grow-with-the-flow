@@ -69,6 +69,9 @@ export default ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: P
   const getCenter = () => {
     if(selectedPlotId) {
       const feature = farmerData.plotsGeoJSON.features.find((f: any) => f.properties.plotId === selectedPlotId)
+      if(!feature) {
+        return null;
+      }
       const c = center(feature).geometry!.coordinates
       return {
         lat: c[1],
