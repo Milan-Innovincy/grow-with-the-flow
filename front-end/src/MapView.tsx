@@ -9,6 +9,7 @@ import { Grid, GridOff } from 'mdi-material-ui'
 import { sortBy } from 'lodash'
 import { PNG } from 'pngjs'
 import chroma from 'chroma-js'
+import CoordinateCalculator from "./CoordinateCalculator";
 const { GeoJSONFillable, Patterns } = require('react-leaflet-geojson-patterns')
 
 const prefix = process.env.REACT_APP_DATE_BASE
@@ -80,15 +81,23 @@ export default ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: P
         lng: pixelLngStart + selectedPixel[1] * pixelLngStep
       }
     }
-    return null
+
+    if (initialLoad) {
+      const result = CoordinateCalculator.calculateBounds(farmerData.plotsGeoJSON);
+      setInitialLoad(false);
+      return {
+        lat: result.lat.avg,
+        lng: result.lng.avg
+      }
+    }
+
+    return null;
   }
 
   const [ pixelSelection, setPixelSelection ] = useState(false)
   const [ zoom, setZoom ] = useState(14)
-  const [ mapCenter, setMapCenter ] = useState(getCenter() || {
-    lat: (lat1 + lat2) / 2,
-    lng: (lng1 + lng2) / 2
-  })
+  const [ mapCenter, setMapCenter ] = useState(getCenter())
+  const [ initialLoad, setInitialLoad ] = useState(true);
 
   useEffect(() => {
     const mapCenter = getCenter()

@@ -5,19 +5,22 @@ import { BrowserRouter, Switch, Route, Redirect } from 'react-router-dom'
 
 import TopBar from './TopBar'
 import MapAndAnalytics from './MapAndAnalytics';
-import { AuthenticationContext } from './AuthenticationContext';
+import { ApplicationContext } from './ApplicationContext';
 import Keycloak from "keycloak-js";
 
 const theme = createMuiTheme({
   palette: {
-    primary: { main: '#2F3D50', contrastText: '#fff' }
+    primary: { main: '#2F3D50', contrastText: '#fff' },
+    secondary: { main: '#fff', contrastText: '#000' },
+
   },
   typography: { useNextVariants: true }
 })
 
 interface IState {
     authenticated: boolean,
-    keycloak: Keycloak.KeycloakInstance
+    keycloak: Keycloak.KeycloakInstance,
+    showModal: boolean,
 }
 
 class App extends Component<{}, IState> {
@@ -26,21 +29,24 @@ class App extends Component<{}, IState> {
         this.state = {
             authenticated: false,
             keycloak: Keycloak('/keycloak.json'),
+            showModal: false,
         };
     }
 
     componentDidMount() {
         const keycloak = this.state.keycloak;
         keycloak.init({onLoad: 'login-required'})
-            .success((authenticated: boolean) => {
+            .then((authenticated: boolean) => {
             this.setState({ keycloak: keycloak, authenticated: authenticated })
         });
     }
 
   render() {
-    return (<AuthenticationContext.Provider value={{
+    return (<ApplicationContext.Provider value={{
         authenticated: this.state.authenticated,
-        keycloak: this.state.keycloak
+        keycloak: this.state.keycloak,
+        showModal: this.state.showModal,
+        toggleShowModal: () => {this.setState({showModal: !this.state.showModal})}
     }}>
         <BrowserRouter>
         <MuiThemeProvider theme={theme}>
@@ -66,7 +72,7 @@ class App extends Component<{}, IState> {
         </div>
         </MuiThemeProvider>
         </BrowserRouter>
-        </AuthenticationContext.Provider>)
+        </ApplicationContext.Provider>)
   }
 }
 

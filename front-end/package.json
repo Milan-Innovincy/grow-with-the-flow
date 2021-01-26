@@ -46,7 +46,7 @@
     "react-router-dom": "4.3.1",
     "recharts": "1.4.2",
     "typeface-roboto": "0.0.54",
-    "keycloak-js": "4.0.0-beta.2"
+    "keycloak-js": "11.0.3"
   },
   "browserslist": [
     ">0.2%",
