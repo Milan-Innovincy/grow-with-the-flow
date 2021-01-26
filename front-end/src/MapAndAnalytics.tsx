@@ -4,6 +4,7 @@ import axios from 'axios'
 import { css } from 'emotion'
 import { Paper, CircularProgress } from '@material-ui/core'
 import { fromPairs } from 'lodash'
+import { DateTime, Duration } from 'luxon'
 
 import MapView from './MapView'
 import Analytics from './Analytics';
@@ -51,6 +52,11 @@ export default ({ match, history }: Props) => {
       //const prefix = process.env.NODE_ENV === 'development' ? '/data' : 'https://storage.googleapis.com/grow-with-the-flow.appspot.com'
       const prefix = 'https://storage.googleapis.com/grow-with-the-flow.appspot.com'
 
+      // TODO: Refactor so that defaultDate is no longer used. Endpoints have to be migrated first by Yaniv.
+      const currentDate = DateTime.fromJSDate(new Date())
+                                  .minus(Duration.fromObject({ days: 2 }))
+                                  .toFormat('yyyy-MM-dd')
+      
       const { defaultDate } = (await axios.get(`${prefix}/defaults.json`)).data
       const dateToken = defaultDate.replace(/-/g, '')
 
@@ -58,10 +64,9 @@ export default ({ match, history }: Props) => {
         ['landUse', 'gwtf-land-use.json'],
         ['soilMap', 'gwtf-soil-map.json'],
         ['pixelsData', `gwtf-pixels-${dateToken}.json`],
-        ['plotsAnalytics', `gwtf-plot-analytics-${dateToken}.json`],
-        /*['plotsGeoJSON', `gwtf-plots-${dateToken}.json`]*/
+        ['plotsAnalytics', `gwtf-plot-analytics-${dateToken}.json`]
       ].map(async ([key, path]: any) => ([key, (await axios.get(`${prefix}/${path}`)).data]))))
-
+      
 
       let plotsGeoJSON;
       if (contextValue.keycloak && contextValue.keycloak.token) {
@@ -72,7 +77,7 @@ export default ({ match, history }: Props) => {
 
       let plotsAnalytics;
       if (contextValue.keycloak && contextValue.keycloak.token) {
-        plotsAnalytics = (await axios.get(`http://api.irrigation.live/plot-analytics?on=2020-11-10&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater`, {headers: {
+        plotsAnalytics = (await axios.get(`http://api.irrigation.live/plot-analytics?on=${currentDate}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater`, {headers: {
             "Authorization": "Bearer " + contextValue.keycloak.token
           }})).data;
 
@@ -81,9 +86,11 @@ export default ({ match, history }: Props) => {
 
         const { pixelsData  } = d
         plotsGeoJSON.features = plotsGeoJSON.features.filter((f: any) => f.properties.plotId)
-
+        
+        // TODO: Remove default date once endpoints are upgraded 
         const farmerData = {
           defaultDate,
+          currentDate,
           pixelsData,
           plotsGeoJSON,
           plotsAnalytics
@@ -115,6 +122,10 @@ export default ({ match, history }: Props) => {
   if(!date || date !== defaultDate) {
     return <Redirect to={`/map/${defaultDate}`}/>
   }
+  // const { currentDate } = farmerData
+  // if(!date || date !== currentDate) {
+  //   return <Redirect to={`/map/${currentDate}`}/>
+  // }
 
   let selectedPlotId: string | undefined = undefined
   let selectedPixel: Array<number> | undefined = undefined
