@@ -39,12 +39,12 @@ export default ({ farmerData, date, navigate, sprinklingCache }: Props) => {
         <DateView date={date}/>
       </div>
       <div>
-        <PlotListDialog
+        {/* <PlotListDialog
           farmerData={farmerData}
           date={DateTime.fromJSDate(date).toISODate()}
           navigate={navigate}
           sprinklingCache={sprinklingCache}
-        />
+        /> */}
       </div>
     </div>
   )

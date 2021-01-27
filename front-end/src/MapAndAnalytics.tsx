@@ -6,10 +6,11 @@ import { Paper, CircularProgress } from '@material-ui/core'
 import { fromPairs } from 'lodash'
 import { DateTime, Duration } from 'luxon'
 
+import { BASE_URL, DEFAULT_DATE } from './constants'
 import MapView from './MapView'
-import Analytics from './Analytics';
-import OverallSummary from './OverallSummary';
-import { ApplicationContext } from "./ApplicationContext";
+import Analytics from './Analytics'
+import OverallSummary from './OverallSummary'
+import { ApplicationContext } from "./ApplicationContext"
 
 type Props = RouteComponentProps<{
   date?: string
@@ -21,75 +22,54 @@ export default ({ match, history }: Props) => {
 
   const [ farmerData, setFarmerData ] = useState(null as any)
   const [ sprinklingCache, setSprinklingCache ] = useState({})
-  const contextValue = useContext(ApplicationContext);
+  const contextValue = useContext(ApplicationContext)
+
+  const currentDate = DateTime.fromJSDate(new Date())
+                                  .minus(Duration.fromObject({ days: 2 }))
+                                  .toFormat('yyyy-MM-dd')
 
   useEffect(() => {
     (async () => {
-
-      const orderedLandUses = [
-        'gras',
-        'mais',
-        'aardappelen',
-        'bieten',
-        'granen',
-        'overige landbouwgew',
-        'boomteelt',
-        'glastuinbouw',
-        'boomgaard',
-        'bollen',
-        'loofbos',
-        'naaldbos',
-        'natte natuur',
-        'droge natuur',
-        'kale grond',
-        'zoet water',
-        'zout water',
-        'stedelijk bebouwd',
-        'donker naaldbos'
-        
-      ]
-
-      //const prefix = process.env.NODE_ENV === 'development' ? '/data' : 'https://storage.googleapis.com/grow-with-the-flow.appspot.com'
-      const prefix = 'https://storage.googleapis.com/grow-with-the-flow.appspot.com'
-
       // TODO: Refactor so that defaultDate is no longer used. Endpoints have to be migrated first by Yaniv.
-      const currentDate = DateTime.fromJSDate(new Date())
-                                  .minus(Duration.fromObject({ days: 2 }))
-                                  .toFormat('yyyy-MM-dd')
-      
-      const { defaultDate } = (await axios.get(`${prefix}/defaults.json`)).data
+      const prefix = 'https://storage.googleapis.com/grow-with-the-flow.appspot.com'
+      const defaultDate = DEFAULT_DATE
       const dateToken = defaultDate.replace(/-/g, '')
+      const isAuthenticated = contextValue.keycloak && contextValue.keycloak.token
 
-      const d: any = fromPairs(await Promise.all([
-        ['landUse', 'gwtf-land-use.json'],
-        ['soilMap', 'gwtf-soil-map.json'],
-        ['pixelsData', `gwtf-pixels-${dateToken}.json`],
-        ['plotsAnalytics', `gwtf-plot-analytics-${dateToken}.json`]
-      ].map(async ([key, path]: any) => ([key, (await axios.get(`${prefix}/${path}`)).data]))))
-      
+      // TODO: Clean this stuff up ASAP
+      const { data: landUse } = await axios.get(`${prefix}/gwtf-land-use.json`)
+      const { data: soilMap } = await axios.get(`${prefix}/gwtf-soil-map.json`)
+      const { data: pixelsData } = await axios.get(`${prefix}/gwtf-pixels-${dateToken}.json`)
 
-      let plotsGeoJSON;
-      if (contextValue.keycloak && contextValue.keycloak.token) {
-        plotsGeoJSON = (await axios.get(`http://api.irrigation.live/plots`, {headers: {
-            "Authorization": "Bearer " + contextValue.keycloak.token
-          }})).data;
-      }
+      if (isAuthenticated) {
+        // TODO: Move this into the global context once old API calls are not longer a bottleneck
+        const axiosInstance = axios.create({
+          baseURL: BASE_URL
+        })
+        const { keycloak: { token: authToken } } = contextValue
+        axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${authToken}`
 
-      let plotsAnalytics;
-      if (contextValue.keycloak && contextValue.keycloak.token) {
-        plotsAnalytics = (await axios.get(`http://api.irrigation.live/plot-analytics?on=${currentDate}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater`, {headers: {
-            "Authorization": "Bearer " + contextValue.keycloak.token
-          }})).data;
+        const plotsGeoJSON = await axiosInstance.get(`/plots`).then(({ data }) => {
+          return data
+        }).catch(error => {
+          // TODO: Properly handle error
+          return {}
+        })
+        const plotsAnalytics = await axiosInstance.get(`/plot-analytics?on=${currentDate}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater`).then(({ data }) => {          
+          return data
+        }).catch(error => {
+          // TODO: Properly handle error
+          return {}
+        })
 
-        d.pixelsData.landUse = d.landUse
-        d.pixelsData.soilMap = d.soilMap
+        pixelsData.landUse = landUse
+        pixelsData.soilMap = soilMap
 
-        const { pixelsData  } = d
-        plotsGeoJSON.features = plotsGeoJSON.features.filter((f: any) => f.properties.plotId)
+        // TODO: Processing features data should NOT happen while entire app is still loading. Find responsible component and move logic there.
+        plotsGeoJSON.features = plotsGeoJSON.features.filter((feature: any) => feature.properties.plotId)
         
         // TODO: Remove default date once endpoints are upgraded 
         const farmerData = {
-          defaultDate,
           currentDate,
           pixelsData,
           plotsGeoJSON,
@@ -100,6 +80,11 @@ export default ({ match, history }: Props) => {
       }
     })()
   }, [contextValue.authenticated])
+
+  const { date, selectionType, selectionId } = match.params
+  if (!date) {
+    return <Redirect to={`/map/${currentDate}`}/>
+  }
 
   if(!farmerData) {
     return(
@@ -115,17 +100,6 @@ export default ({ match, history }: Props) => {
       </div>
     )
   }
-
-  const { date, selectionType, selectionId } = match.params
-  
-  const { defaultDate } = farmerData
-  if(!date || date !== defaultDate) {
-    return <Redirect to={`/map/${defaultDate}`}/>
-  }
-  // const { currentDate } = farmerData
-  // if(!date || date !== currentDate) {
-  //   return <Redirect to={`/map/${currentDate}`}/>
-  // }
 
   let selectedPlotId: string | undefined = undefined
   let selectedPixel: Array<number> | undefined = undefined
@@ -145,7 +119,7 @@ export default ({ match, history }: Props) => {
 
   const navigate = (path: string) => history.push(path)
 
-  return(
+  return (
     <div
       className={css`
         height: 100%;
@@ -184,9 +158,7 @@ export default ({ match, history }: Props) => {
             selectedPlotId={selectedPlotId}
             sprinklingCache={sprinklingCache}
             setSprinklingCache={setSprinklingCache}
-          />
-          :
-          <OverallSummary
+          /> : <OverallSummary
             date={new Date(date)}
             farmerData={farmerData}
             navigate={navigate}
