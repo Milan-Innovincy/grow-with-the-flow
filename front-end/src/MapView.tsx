@@ -24,8 +24,8 @@ type Props = {
 
 let leafletElement = undefined
 
-let createPixelMap = (plotsAnalytics: any, date: string) => {
-  const deficitGrid = plotsAnalytics.find((a: any) => a.time === date).deficit
+let createPixelMap = (pixelsData: any, date: string) => {
+  const deficitGrid = pixelsData.analytics.find((a: any) => a.time === date).deficit
   const height = deficitGrid.length
   const width = deficitGrid[0].length
 
@@ -55,10 +55,6 @@ let createPixelMap = (plotsAnalytics: any, date: string) => {
 }
 
 export default ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: Props) => {
-  console.log(farmerData.pixelsData)
-  console.log(farmerData.plotsAnalytics)
-  
-  // TODO: dimensions and boundingbox are missing from new API call
   const [ pixelsInLng, pixelsInLat ] = farmerData.pixelsData.dimensions
   const [ lng1, lat1, lng2, lat2 ] = farmerData.pixelsData.boundingBox
 
@@ -106,8 +102,7 @@ export default ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: P
     setMapCenter(mapCenter as any)
   }, [ selectedPlotId, selectedPixel ])
 
-  // const [ deficitDataUrl ] = useState(createPixelMap(farmerData.pixelsData, date))
-  const [ deficitDataUrl ] = useState(createPixelMap(farmerData.plotsAnalytics, date))
+  const [ deficitDataUrl ] = useState(createPixelMap(farmerData.pixelsData, date))
 
   const pixelLats = [ ...range(pixelLatStart, pixelLatEnd, pixelLatStep), pixelLatEnd ]
   const pixelLngs = [ ...range(pixelLngStart, pixelLngEnd, pixelLngStep), pixelLngEnd ]

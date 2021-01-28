@@ -6,7 +6,7 @@ import { Paper, CircularProgress } from '@material-ui/core'
 import { fromPairs } from 'lodash'
 import { DateTime, Duration } from 'luxon'
 
-import { BASE_URL, DEFAULT_DATE } from './constants'
+import { BASE_URL } from './constants'
 import MapView from './MapView'
 import Analytics from './Analytics'
 import OverallSummary from './OverallSummary'
@@ -24,25 +24,23 @@ export default ({ match, history }: Props) => {
   const [ sprinklingCache, setSprinklingCache ] = useState({})
   const contextValue = useContext(ApplicationContext)
 
+  const { date, selectionType, selectionId } = match.params
   const currentDate = DateTime.fromJSDate(new Date())
-                                  .minus(Duration.fromObject({ days: 2 }))
-                                  .toFormat('yyyy-MM-dd')
+                                .minus(Duration.fromObject({ days: 2 }))
+                                .toFormat('yyyy-MM-dd')
 
   useEffect(() => {
     (async () => {
-      // TODO: Refactor so that defaultDate is no longer used. Endpoints have to be migrated first by Yaniv.
-      const prefix = 'https://storage.googleapis.com/grow-with-the-flow.appspot.com'
-      const defaultDate = DEFAULT_DATE
-      const dateToken = defaultDate.replace(/-/g, '')
       const isAuthenticated = contextValue.keycloak && contextValue.keycloak.token
-
-      // TODO: Clean this stuff up ASAP
-      const { data: landUse } = await axios.get(`${prefix}/gwtf-land-use.json`)
-      const { data: soilMap } = await axios.get(`${prefix}/gwtf-soil-map.json`)
-      const { data: pixelsData } = await axios.get(`${prefix}/gwtf-pixels-${dateToken}.json`)
-
+      
       if (isAuthenticated) {
-        // TODO: Move this into the global context once old API calls are not longer a bottleneck
+        const prefix = 'https://storage.googleapis.com/grow-with-the-flow.appspot.com'
+        const dateToken = date ? date.replace(/-/g, '') : currentDate.replace(/-/g, '')
+        const { data: landUse } = await axios.get(`${prefix}/gwtf-land-use.json`)
+        const { data: soilMap } = await axios.get(`${prefix}/gwtf-soil-map.json`)
+        const { data: pixelsData } = await axios.get(`${prefix}/gwtf-pixels-${dateToken}.json`)
+
+        // TODO: Move this into the global context once old API calls are no longer a thing
         const axiosInstance = axios.create({
           baseURL: BASE_URL
         })
@@ -55,7 +53,7 @@ export default ({ match, history }: Props) => {
           // TODO: Properly handle error
           return {}
         })
-        const plotsAnalytics = await axiosInstance.get(`/plot-analytics?on=${currentDate}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater`).then(({ data }) => {          
+        const plotsAnalytics = await axiosInstance.get(`/plot-analytics?on=${date}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater`).then(({ data }) => {          
           return data
         }).catch(error => {
           // TODO: Properly handle error
@@ -65,12 +63,10 @@ export default ({ match, history }: Props) => {
         pixelsData.landUse = landUse
         pixelsData.soilMap = soilMap
 
-        // TODO: Processing features data should NOT happen while entire app is still loading. Find responsible component and move logic there.
+        // TODO: Processing features data should not happen while entire app is still blocked. Find responsible component and move logic there to handle gracefully.
         plotsGeoJSON.features = plotsGeoJSON.features.filter((feature: any) => feature.properties.plotId)
         
-        // TODO: Remove default date once endpoints are upgraded 
         const farmerData = {
-          currentDate,
           pixelsData,
           plotsGeoJSON,
           plotsAnalytics
@@ -81,9 +77,8 @@ export default ({ match, history }: Props) => {
     })()
   }, [contextValue.authenticated])
 
-  const { date, selectionType, selectionId } = match.params
   if (!date) {
-    return <Redirect to={`/map/${currentDate}`}/>
+    return <Redirect to={`/map/${currentDate}`} />
   }
 
   if(!farmerData) {
