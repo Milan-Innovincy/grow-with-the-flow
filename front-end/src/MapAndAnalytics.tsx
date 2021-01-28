@@ -3,10 +3,8 @@ import { RouteComponentProps, Redirect } from 'react-router-dom'
 import axios from 'axios'
 import { css } from 'emotion'
 import { Paper, CircularProgress } from '@material-ui/core'
-import { fromPairs } from 'lodash'
 import { DateTime, Duration } from 'luxon'
 
-import { BASE_URL } from './constants'
 import MapView from './MapView'
 import Analytics from './Analytics'
 import OverallSummary from './OverallSummary'
@@ -25,7 +23,7 @@ export default ({ match, history }: Props) => {
   const contextValue = useContext(ApplicationContext)
 
   const { date, selectionType, selectionId } = match.params
-  const currentDate = DateTime.fromJSDate(new Date())
+  const latestAvailableDate = DateTime.fromJSDate(new Date())
                                 .minus(Duration.fromObject({ days: 2 }))
                                 .toFormat('yyyy-MM-dd')
 
@@ -35,29 +33,29 @@ export default ({ match, history }: Props) => {
       
       if (isAuthenticated) {
         const prefix = 'https://storage.googleapis.com/grow-with-the-flow.appspot.com'
-        const dateToken = date ? date.replace(/-/g, '') : currentDate.replace(/-/g, '')
+        const dateToken = date ? date.replace(/-/g, '') : latestAvailableDate.replace(/-/g, '')
         const { data: landUse } = await axios.get(`${prefix}/gwtf-land-use.json`)
         const { data: soilMap } = await axios.get(`${prefix}/gwtf-soil-map.json`)
         const { data: pixelsData } = await axios.get(`${prefix}/gwtf-pixels-${dateToken}.json`)
 
         // TODO: Move this into the global context once old API calls are no longer a thing
         const axiosInstance = axios.create({
-          baseURL: BASE_URL
+          baseURL: process.env.REACT_APP_BASE_URL
         })
         const { keycloak: { token: authToken } } = contextValue
         axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${authToken}`
 
         const plotsGeoJSON = await axiosInstance.get(`/plots`).then(({ data }) => {
           return data
-        }).catch(error => {
+        }).catch((error: Error) => {
           // TODO: Properly handle error
-          return {}
+          throw new Error(error.message)
         })
         const plotsAnalytics = await axiosInstance.get(`/plot-analytics?on=${date}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater`).then(({ data }) => {          
           return data
-        }).catch(error => {
+        }).catch((error: Error) => {
           // TODO: Properly handle error
-          return {}
+          throw new Error(error.message)
         })
 
         pixelsData.landUse = landUse
@@ -78,7 +76,7 @@ export default ({ match, history }: Props) => {
   }, [contextValue.authenticated])
 
   if (!date) {
-    return <Redirect to={`/map/${currentDate}`} />
+    return <Redirect to={`/map/${latestAvailableDate}`} />
   }
 
   if(!farmerData) {
