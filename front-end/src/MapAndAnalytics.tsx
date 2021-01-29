@@ -4,6 +4,7 @@ import axios from 'axios'
 import { css } from '@emotion/css'
 import { Paper, CircularProgress } from '@material-ui/core'
 import { DateTime, Duration } from 'luxon'
+import EventEmitter from './EventEmitter'
 
 import MapView from './MapView'
 import Analytics from './Analytics'
@@ -31,6 +32,18 @@ const MapAndAnalytics = ({ match, history }: Props) => {
       const isAuthenticated = contextValue.keycloak && contextValue.keycloak.token
       
       if (isAuthenticated) {
+        EventEmitter.on('sprinkling-update', (payload: any) => {
+          // TODO: Date is not correct for some reason. Fix monday.
+          const { date, selectedPlotId, value } = payload
+          const formattedDate = DateTime.fromJSDate(new Date(date)).toFormat('yyyy-MM-dd')
+
+          axiosInstance.put(`/plot-feedback?plotId=${selectedPlotId}&date=${formattedDate}&irrigationMM=${value}`).then(({ data }) => {
+            EventEmitter.emit('sprinkling-updated-success')
+          }).catch((error: Error) => {
+            EventEmitter.emit('sprinkling-updated-failure')
+            console.error(error)
+          })
+        })
         const prefix = 'https://storage.googleapis.com/grow-with-the-flow.appspot.com'
         const dateToken = date ? date.replace(/-/g, '') : latestAvailableDate.replace(/-/g, '')
         const { data: landUse } = await axios.get(`${prefix}/gwtf-land-use.json`)
@@ -50,18 +63,25 @@ const MapAndAnalytics = ({ match, history }: Props) => {
           // TODO: Properly handle error
           throw new Error(error.message)
         })
-        const plotsAnalytics = await axiosInstance.get(`/plot-analytics?on=${date}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater`).then(({ data }) => {          
+        const plotsAnalytics = await axiosInstance.get(`/plot-analytics?on=${date}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater`).then(({ data }) => {
           return data
         }).catch((error: Error) => {
           // TODO: Properly handle error
           throw new Error(error.message)
         })
 
+        const datesInTimeRange = plotsAnalytics[Object.keys(plotsAnalytics)[0]].map((a: any) => a.date)
+        const sortedDates = datesInTimeRange.sort((dateA: string, dateB: string) => {
+          return Date.parse(dateA) > Date.parse(dateB)
+        })
+        const dateFrom = sortedDates[0]
+        const dateTo = sortedDates[sortedDates.length - 1]
+        
         pixelsData.landUse = landUse
         pixelsData.soilMap = soilMap
 
         // TODO: Processing features data should not happen while entire app is still blocked. Find responsible component and move logic there to handle gracefully.
-        plotsGeoJSON.features = plotsGeoJSON.features.filter((feature: any) => feature.properties.plotId)
+        plotsGeoJSON.features = plotsGeoJSON.features.filter((feature: any) => feature.properties.plotId)        
         
         const farmerData = {
           pixelsData,

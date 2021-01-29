@@ -188,7 +188,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
       return <></>;
     }
   }
-  if(selectedPixel) {
+  if (selectedPixel) {
     const [x, y] = selectedPixel
     label = `Pixel ${padStart(x.toString(), 3, '0')}${padStart(y.toString(), 3, '0')}`
     cropType = pixelsData.landUse[x][y]
@@ -449,7 +449,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
           </ComposedChart>
         </ResponsiveContainer>
       </div>
-      <UpdateSprinklingDialog ref={d => updateSprinklingDialog = d!}/>
+      <UpdateSprinklingDialog selectedPlotId={selectedPlotId} date={date} ref={d => updateSprinklingDialog = d!} />
     </Paper>
   )
 }

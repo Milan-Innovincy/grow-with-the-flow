@@ -34,6 +34,7 @@
     "@turf/turf": "5.1.6",
     "axios": "^0.21.1",
     "chroma-js": "2.0.2",
+    "eventemitter3": "^4.0.7",
     "immer": "2.0.0",
     "keycloak-js": "11.0.3",
     "leaflet": "1.4.0",
