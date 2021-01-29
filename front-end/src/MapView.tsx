@@ -12,8 +12,6 @@ import chroma from 'chroma-js'
 import CoordinateCalculator from "./CoordinateCalculator";
 const { GeoJSONFillable, Patterns } = require('react-leaflet-geojson-patterns')
 
-const prefix = process.env.REACT_APP_DATE_BASE
-
 type Props = {
   navigate: (path: string) => void
   farmerData: any
@@ -21,8 +19,6 @@ type Props = {
   selectedPlotId?: string
   selectedPixel?: Array<number>
 }
-
-let leafletElement = undefined
 
 let createPixelMap = (pixelsData: any, date: string) => {
   const deficitGrid = pixelsData.analytics.find((a: any) => a.time === date).deficit
@@ -54,7 +50,7 @@ let createPixelMap = (pixelsData: any, date: string) => {
   return `data:image/png;base64,${base64}`
 }
 
-export default ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: Props) => {
+const MapView = ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: Props) => {
   const [ pixelSelection, setPixelSelection ] = useState(false)
   const [ zoom, setZoom ] = useState(14)
   const [ initialLoad, setInitialLoad ] = useState(true)
@@ -132,6 +128,8 @@ export default ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: P
       />
   }
 
+  let leafletElement = undefined
+
   return (
     <>
       <Map
@@ -155,9 +153,9 @@ export default ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: P
         `}
         ref={(map: any) => leafletElement = map && map!.leafletElement}
         onclick={(e: any) => {
-          if(pixelSelection) {
+          if (pixelSelection) {
             const { lat, lng } = e.latlng
-            if(lat >= pixelLatStart && lat <= pixelLatEnd && lng >= pixelLngStart && lng <= pixelLngEnd) {
+            if (lat >= pixelLatStart && lat <= pixelLatEnd && lng >= pixelLngStart && lng <= pixelLngEnd) {
               const pixelLat = Math.floor((lat - pixelLatStart) / pixelLatStep)
               const pixelLng = Math.floor((lng - pixelLngStart) / pixelLngStep)
               navigate(`/map/${date}/pixel/${pixelLat}-${pixelLng}`)
@@ -220,3 +218,5 @@ export default ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: P
     </>
   )
 }
+
+export default MapView

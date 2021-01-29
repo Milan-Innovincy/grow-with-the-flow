@@ -1,4 +1,4 @@
-import React, { Component, ReactNode, useState } from 'react'
+import React from 'react'
 import { Button, Dialog, DialogActions, DialogContent, Table, TableHead, TableRow, TableCell, TableBody } from '@material-ui/core'
 import { css } from '@emotion/css'
 import {ApplicationContext} from "./ApplicationContext";
@@ -10,7 +10,7 @@ type Props = {
   sprinklingCache: any
 }
 
-export default ({ farmerData, date, navigate, sprinklingCache }: Props) => {
+const PlotListDialog = ({ farmerData, date, navigate, sprinklingCache }: Props) => {
   return(
     <ApplicationContext.Consumer>
       {({showModal, toggleShowModal}) =>
@@ -76,3 +76,5 @@ export default ({ farmerData, date, navigate, sprinklingCache }: Props) => {
     </ApplicationContext.Consumer>
   )
 }
+
+export default PlotListDialog

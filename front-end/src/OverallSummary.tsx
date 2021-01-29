@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { css } from '@emotion/css'
 import { DateTime } from 'luxon'
 
@@ -12,7 +12,7 @@ type Props = {
   sprinklingCache: any
 }
 
-export default ({ farmerData, date, navigate, sprinklingCache }: Props) => {
+const OverallSummary = ({ farmerData, date, navigate, sprinklingCache }: Props) => {
   
   return(
     <div
@@ -49,3 +49,5 @@ export default ({ farmerData, date, navigate, sprinklingCache }: Props) => {
     </div>
   )
 }
+
+export default OverallSummary

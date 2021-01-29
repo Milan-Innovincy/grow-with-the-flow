@@ -26,8 +26,8 @@ export default class CoordinateCalculator {
             }
         };
 
-        plots.features.map((y: any) => {
-            y.geometry.coordinates[0].map(([lng, lat]: [number, number]) => {
+        plots.features.forEach((y: any) => {
+            y.geometry.coordinates[0].forEach(([lng, lat]: [number, number]) => {
                 if (!result.lng.min || (result.lng.min && result.lng.min > lng)) {
                     result.lng.min = lng;
                 }
@@ -41,7 +41,7 @@ export default class CoordinateCalculator {
                     result.lat.max = lat;
                 }
             })
-        });
+        })
 
         if (!result.lng.min || !result.lng.max || !result.lat.min || !result.lat.max) {
             return result;

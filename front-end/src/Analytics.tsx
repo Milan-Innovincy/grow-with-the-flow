@@ -152,13 +152,12 @@ type Props = {
   setSprinklingCache: (sprinklingCache: any) => void
 }
 
-export default ({ navigate, farmerData, date, selectedPlotId, selectedPixel, sprinklingCache, setSprinklingCache }: Props) => {
+const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, sprinklingCache, setSprinklingCache }: Props) => {
 
   useEffect(() => {
     window.dispatchEvent(new Event('resize'))
   }, [ selectedPlotId, selectedPixel ])
 
-  const plots: GeoJSON.FeatureCollection = farmerData.plotsGeoJSON
   const { pixelsData, plotsAnalytics } = farmerData
 
   let label: string = ''
@@ -454,3 +453,5 @@ export default ({ navigate, farmerData, date, selectedPlotId, selectedPixel, spr
     </Paper>
   )
 }
+
+export default Analytics

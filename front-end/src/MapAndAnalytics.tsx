@@ -16,8 +16,7 @@ type Props = RouteComponentProps<{
   selectionId?: string
 }>
 
-export default ({ match, history }: Props) => {
-
+const MapAndAnalytics = ({ match, history }: Props) => {
   const [ farmerData, setFarmerData ] = useState(null as any)
   const [ sprinklingCache, setSprinklingCache ] = useState({})
   const contextValue = useContext(ApplicationContext)
@@ -162,3 +161,5 @@ export default ({ match, history }: Props) => {
     </div>
   )
 }
+
+export default MapAndAnalytics

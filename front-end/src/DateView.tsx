@@ -3,7 +3,7 @@ import { css } from '@emotion/css'
 import { DateTime } from 'luxon'
 import { CalendarBlank } from 'mdi-material-ui';
 
-export default ({ date }: { date: Date }) => {
+const DateView =  ({ date }: { date: Date }) => {
   const luxonDate = DateTime.fromJSDate(date)
   const day = luxonDate.toFormat('dd')
   const month = luxonDate.toFormat('MMMM')
@@ -44,3 +44,5 @@ export default ({ date }: { date: Date }) => {
     </div>
   )
 }
+
+export default DateView

@@ -20,7 +20,7 @@ export default function TopBar() {
         <div className={css`flex: 1`}>
           <img src={logo} width='250px' alt='Grow with the Flow' />
         </div>
-        <a className={css`display: flex; align-items: center;`}>
+        <div className={css`display: flex; align-items: center;`}>
           <ApplicationContext.Consumer>
             {({ keycloak, toggleShowModal }) =>
               <>{ keycloak &&
@@ -56,7 +56,7 @@ export default function TopBar() {
           <Avatar className={css`background-color: #ba68c8 !important;`}>
             <Account/>
           </Avatar>
-        </a>
+        </div>
       </Toolbar>
     </AppBar>
   )
