@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useContext} from 'react'
 import { RouteComponentProps, Redirect } from 'react-router-dom'
 import axios from 'axios'
-import { css } from 'emotion'
+import { css } from '@emotion/css'
 import { Paper, CircularProgress } from '@material-ui/core'
 import { DateTime, Duration } from 'luxon'
 

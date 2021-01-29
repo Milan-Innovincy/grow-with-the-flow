@@ -3,7 +3,7 @@ import 'leaflet/dist/leaflet.css'
 import { Map, Polygon, TileLayer, ImageOverlay, GeoJSON } from 'react-leaflet'
 import { range } from 'lodash'
 import { featureCollection, lineString, center } from '@turf/turf'
-import { css } from 'emotion';
+import { css } from '@emotion/css'
 import { Fab } from '@material-ui/core';
 import { Grid, GridOff } from 'mdi-material-ui'
 import { sortBy } from 'lodash'
@@ -55,6 +55,10 @@ let createPixelMap = (pixelsData: any, date: string) => {
 }
 
 export default ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: Props) => {
+  const [ pixelSelection, setPixelSelection ] = useState(false)
+  const [ zoom, setZoom ] = useState(14)
+  const [ initialLoad, setInitialLoad ] = useState(true)
+
   const [ pixelsInLng, pixelsInLat ] = farmerData.pixelsData.dimensions
   const [ lng1, lat1, lng2, lat2 ] = farmerData.pixelsData.boundingBox
 
@@ -92,10 +96,7 @@ export default ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: P
     return null;
   }
 
-  const [ pixelSelection, setPixelSelection ] = useState(false)
-  const [ zoom, setZoom ] = useState(14)
   const [ mapCenter, setMapCenter ] = useState(getCenter())
-  const [ initialLoad, setInitialLoad ] = useState(true);
 
   useEffect(() => {
     const mapCenter = getCenter()

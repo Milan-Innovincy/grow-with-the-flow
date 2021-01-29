@@ -1,7 +1,7 @@
 import React from 'react'
 import {AppBar, Toolbar, Avatar, Button, Menu, MenuItem} from '@material-ui/core'
 import { Account } from 'mdi-material-ui'
-import { css } from 'emotion'
+import { css } from '@emotion/css'
 import logo from './images/logo.png'
 import { ApplicationContext } from "./ApplicationContext";
 

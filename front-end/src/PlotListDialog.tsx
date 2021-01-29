@@ -1,6 +1,6 @@
 import React, { Component, ReactNode, useState } from 'react'
 import { Button, Dialog, DialogActions, DialogContent, Table, TableHead, TableRow, TableCell, TableBody } from '@material-ui/core'
-import { css } from 'emotion'
+import { css } from '@emotion/css'
 import {ApplicationContext} from "./ApplicationContext";
 
 type Props = {

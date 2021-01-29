@@ -1,5 +1,5 @@
 import React from 'react'
-import { css } from 'emotion'
+import { css } from '@emotion/css'
 import { DateTime } from 'luxon'
 import { CalendarBlank } from 'mdi-material-ui';
 
