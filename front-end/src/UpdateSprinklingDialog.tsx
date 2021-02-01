@@ -1,16 +1,17 @@
 import React, { Component } from 'react'
 import { Button, Dialog, DialogActions, DialogContent, TextField, CircularProgress } from '@material-ui/core'
 import { css } from '@emotion/css'
+import { DateTime } from 'luxon'
 import EventEmitter from './EventEmitter'
 
 type State = {
   open: boolean,
   loading: boolean,
-  value: number
+  value: number,
+  date: string
 }
 
 type Props = {
-  date: Date
   selectedPlotId: string
 }
 
@@ -19,17 +20,20 @@ export default class UpdateSprinklingDialog extends Component<Props, State> {
     open: false,
     loading: false,
     value: 0,
+    date: ''
   }
 
   resolve?: (value?: number | PromiseLike<number> | undefined) => void = undefined
 
-  open = (value: number) => {
+  open = (value: number, data: any) => {
     return new Promise<void>((resolve, reject) => {
       try {
+        const { date }: { date: string } = data
         this.setState({
           open: true,
+          date: DateTime.fromFormat(date, 'dd/MM/yyyy').toFormat('yyyy-MM-dd'),
           value
-        })
+        })        
         resolve()
       } catch (error) {
         reject(error)
@@ -40,8 +44,8 @@ export default class UpdateSprinklingDialog extends Component<Props, State> {
   handleSprinklingSubmitted = (value: number) => {
     const payload = {
       value,
+      date: this.state.date,
       selectedPlotId: this.props.selectedPlotId,
-      date: this.props.date
     }
     EventEmitter.emit('sprinkling-update', payload)
     this.setState({ loading: true })
@@ -51,7 +55,8 @@ export default class UpdateSprinklingDialog extends Component<Props, State> {
     this.setState({
       loading: false,
       open: false,
-      value: 0
+      value: 0,
+      date: ''
     })
     EventEmitter.emit('show-snackbar', {
       snackbarMessage: 'Waarde is opgeslagen.'

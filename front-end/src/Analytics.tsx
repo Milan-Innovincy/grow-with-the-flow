@@ -182,6 +182,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
         evapotranspiration: i.evapotranspiration,
         deficit: i.deficit
       }))
+      
     } else {
       alert("No data available for this plot.");
       navigate(`/map/${DateTime.fromJSDate(date).toISODate()}`);
@@ -300,7 +301,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
           date={DateTime.fromJSDate(date).toISODate()}
           navigate={navigate}
           sprinklingCache={sprinklingCache}
-        />
+        />  
       </div>
       <div
         className={css`
@@ -407,7 +408,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
               label={({ value, x, y, width, index }: LabelProps & { index: number }) =>
                 <g
                   onClick={async () => {
-                    const newValue = await updateSprinklingDialog.open(value as number)
+                    const newValue = await updateSprinklingDialog.open(value as number, data[index])
                     const updatedCache = produce(sprinklingCache, sprinklingCache => {
                       sprinklingCache[`${selectedPlotId || selectedPixel!.join(',')}-${index}`] = newValue
                     })
@@ -449,7 +450,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
           </ComposedChart>
         </ResponsiveContainer>
       </div>
-      <UpdateSprinklingDialog selectedPlotId={selectedPlotId} date={date} ref={d => updateSprinklingDialog = d!} />
+      <UpdateSprinklingDialog selectedPlotId={selectedPlotId} ref={d => updateSprinklingDialog = d!} />
     </Paper>
   )
 }
