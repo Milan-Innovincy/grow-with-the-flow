@@ -7,6 +7,7 @@ import TopBar from './TopBar'
 import MapAndAnalytics from './MapAndAnalytics'
 import { ApplicationContext } from './ApplicationContext'
 import Snackbar from './Snackbar'
+import EventEmitter from './EventEmitter'
 import Keycloak from "keycloak-js"
 
 const theme = createMuiTheme({
@@ -43,6 +44,10 @@ class App extends Component<{}, IState> {
     const keycloak = this.state.keycloak
 
     keycloak.init({ onLoad: 'login-required' }).then((authenticated: boolean) => {
+      
+      if (authenticated === true) {
+        EventEmitter.emit('authenticated', keycloak.token)
+      }
       this.setState({
         keycloak: keycloak,
         authenticated: authenticated

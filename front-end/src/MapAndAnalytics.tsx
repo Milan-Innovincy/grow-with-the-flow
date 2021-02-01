@@ -11,6 +11,8 @@ import Analytics from './Analytics'
 import OverallSummary from './OverallSummary'
 import { ApplicationContext } from "./ApplicationContext"
 
+import axiosInstance from "./lib/axios"
+
 type Props = RouteComponentProps<{
   date?: string
   selectionType?: 'plot' | 'pixel'
@@ -49,13 +51,6 @@ const MapAndAnalytics = ({ match, history }: Props) => {
         const { data: landUse } = await axios.get(`${prefix}/gwtf-land-use.json`)
         const { data: soilMap } = await axios.get(`${prefix}/gwtf-soil-map.json`)
         const { data: pixelsData } = await axios.get(`${prefix}/gwtf-pixels-${dateToken}.json`)
-
-        // TODO: Move this into the global context once old API calls are no longer a thing
-        const axiosInstance = axios.create({
-          baseURL: process.env.REACT_APP_BASE_URL
-        })
-        const { keycloak: { token: authToken } } = contextValue
-        axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${authToken}`
 
         const plotsGeoJSON = await axiosInstance.get(`/plots`).then(({ data }) => {
           return data
