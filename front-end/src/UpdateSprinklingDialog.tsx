@@ -1,14 +1,12 @@
 import React, { Component } from 'react'
-import { Button, Dialog, DialogActions, DialogContent, TextField, CircularProgress, Snackbar } from '@material-ui/core'
+import { Button, Dialog, DialogActions, DialogContent, TextField, CircularProgress } from '@material-ui/core'
 import { css } from '@emotion/css'
 import EventEmitter from './EventEmitter'
 
 type State = {
   open: boolean,
   loading: boolean,
-  value: number,
-  snackbarMessage: string,
-  showSnackbar: boolean
+  value: number
 }
 
 type Props = {
@@ -20,9 +18,7 @@ export default class UpdateSprinklingDialog extends Component<Props, State> {
   state: State = {
     open: false,
     loading: false,
-    showSnackbar: false,
     value: 0,
-    snackbarMessage: ''
   }
 
   resolve?: (value?: number | PromiseLike<number> | undefined) => void = undefined
@@ -41,13 +37,6 @@ export default class UpdateSprinklingDialog extends Component<Props, State> {
     })
   }
 
-  handleSnackbarClosed = () => {
-    this.setState({
-      showSnackbar: false,
-      snackbarMessage: ''
-    })
-  }
-
   handleSprinklingSubmitted = (value: number) => {
     const payload = {
       value,
@@ -58,23 +47,34 @@ export default class UpdateSprinklingDialog extends Component<Props, State> {
     this.setState({ loading: true })
   }
 
-  componentDidMount() {
-    EventEmitter.on('sprinkling-updated-success', () => {
-      this.setState({
-        loading: false,
-        open: false,
-        value: 0,
-        showSnackbar: true,
-        snackbarMessage: 'Beregening is opgeslagen.'
-      })
+  handleSprinklingUpdatedSuccess = () => {
+    this.setState({
+      loading: false,
+      open: false,
+      value: 0
     })
-    EventEmitter.on('sprinkling-updated-failure', () => {
-      this.setState({ loading: true, open: false })
+    EventEmitter.emit('show-snackbar', {
+      snackbarMessage: 'Waarde is opgeslagen.'
     })
   }
 
+  handleSprinklingUpdatesFailure = () => {
+    this.setState({
+      loading: true,
+      open: false
+    })
+    EventEmitter.emit('show-snackbar', {
+      snackbarMessage: 'De waarde kon niet worden opgeslagen.'
+    })
+  }
+
+  componentDidMount() {
+    EventEmitter.on('sprinkling-updated-success', this.handleSprinklingUpdatedSuccess)
+    EventEmitter.on('sprinkling-updated-failure', this.handleSprinklingUpdatesFailure)
+  }
+
   render() {
-    const { open, loading, value, showSnackbar, snackbarMessage } = this.state
+    const { open, loading, value } = this.state
     return(
       <Dialog
         open={open}
@@ -126,14 +126,6 @@ export default class UpdateSprinklingDialog extends Component<Props, State> {
             disabled={loading}
           >Annuleren</Button>
         </DialogActions>
-        
-        {/* TODO: This snackbar should go into global scope */}
-        <Snackbar
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-          open={showSnackbar}
-          onClose={this.handleSnackbarClosed}
-          message={snackbarMessage}
-        />
       </Dialog>
     )
   }

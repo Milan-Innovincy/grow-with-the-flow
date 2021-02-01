@@ -4,8 +4,9 @@ import { css } from '@emotion/css'
 import { BrowserRouter, Switch, Route, Redirect } from 'react-router-dom'
 
 import TopBar from './TopBar'
-import MapAndAnalytics from './MapAndAnalytics';
-import { ApplicationContext } from './ApplicationContext';
+import MapAndAnalytics from './MapAndAnalytics'
+import { ApplicationContext } from './ApplicationContext'
+import Snackbar from './Snackbar'
 import Keycloak from "keycloak-js"
 
 const theme = createMuiTheme({
@@ -18,8 +19,7 @@ const theme = createMuiTheme({
       main: '#fff',
       contrastText: '#000'
     }
-  },
-  typography: { useNextVariants: true }
+  }
 })
 
 interface IState {
@@ -84,6 +84,7 @@ class App extends Component<{}, IState> {
                   <Redirect to="/map"/>
                 </Switch>
               </div>
+              <Snackbar />
             </div>
           </MuiThemeProvider>
         </BrowserRouter>
