@@ -41,7 +41,7 @@ export default class Snackbar extends React.Component<{}, State> {
     
     return(
       <MaterialSnackbar
-        autoHideDuration={4000}
+        autoHideDuration={3000}
         anchorOrigin={anchorOrigin}
         open={showSnackbar}
         onClose={this.handleOnClose}

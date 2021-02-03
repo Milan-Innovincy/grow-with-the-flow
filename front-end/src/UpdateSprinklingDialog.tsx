@@ -12,7 +12,8 @@ type State = {
 }
 
 type Props = {
-  selectedPlotId: string
+  selectedPlotId: string,
+  farmerData: any
 }
 
 export default class UpdateSprinklingDialog extends Component<Props, State> {
@@ -25,19 +26,31 @@ export default class UpdateSprinklingDialog extends Component<Props, State> {
 
   resolve?: (value?: number | PromiseLike<number> | undefined) => void = undefined
 
+  // open = (value: number, data: any) => {
+  //   return new Promise<void>((resolve, reject) => {
+  //     try {
+  //       const { date }: { date: string } = data
+  //       this.setState({
+  //         open: true,
+  //         date: DateTime.fromFormat(date, 'dd/MM/yyyy').toFormat('yyyy-MM-dd'),
+  //         value: value
+  //       })
+  //       resolve()
+  //     } catch (error) {
+  //       reject(error)
+  //     }
+  //   })
+  // }
+
   open = (value: number, data: any) => {
-    return new Promise<void>((resolve, reject) => {
-      try {
-        const { date }: { date: string } = data
-        this.setState({
-          open: true,
-          date: DateTime.fromFormat(date, 'dd/MM/yyyy').toFormat('yyyy-MM-dd'),
-          value
-        })        
-        resolve()
-      } catch (error) {
-        reject(error)
-      }
+    const { date }: { date: string } = data
+    this.setState({
+      open: true,
+      date: DateTime.fromFormat(date, 'dd/MM/yyyy').toFormat('yyyy-MM-dd'),
+      value: value
+    })
+    return new Promise<number>((resolve, reject) => {
+      this.resolve = resolve
     })
   }
 
@@ -46,6 +59,7 @@ export default class UpdateSprinklingDialog extends Component<Props, State> {
       value,
       date: this.state.date,
       selectedPlotId: this.props.selectedPlotId,
+      farmerData: this.props.farmerData
     }
     EventEmitter.emit('sprinkling-update', payload)
     this.setState({ loading: true })
@@ -93,7 +107,8 @@ export default class UpdateSprinklingDialog extends Component<Props, State> {
             label="Beregening in mm"
             value={value}
             inputProps={{
-              min: 0
+              min: 0,
+              max: 1500
             }}
             onChange={e => this.setState({ value: parseInt(e.target.value, 10)})}
           />
@@ -107,6 +122,7 @@ export default class UpdateSprinklingDialog extends Component<Props, State> {
             color="primary"
             onClick={() => {
               this.handleSprinklingSubmitted(value)
+              this.resolve!(value)
             }}
             disabled={loading}
             className={css`

@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect } from 'react'
+import React, { ReactNode, useEffect, useState } from 'react'
 import { css } from '@emotion/css'
 import { ResponsiveContainer, ComposedChart, Area, Bar, XAxis, YAxis, CartesianGrid, LabelProps, RectangleProps, Line } from 'recharts'
 import { Paper, Fab } from '@material-ui/core'
@@ -6,6 +6,7 @@ import { Close, Vanish, CarDefrostRear } from 'mdi-material-ui'
 import { DateTime } from 'luxon'
 import produce from 'immer'
 import { padStart } from 'lodash'
+import EventEmitter from './EventEmitter'
 
 import UpdateSprinklingDialog from './UpdateSprinklingDialog'
 import DateView from './DateView'
@@ -153,12 +154,18 @@ type Props = {
 }
 
 const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, sprinklingCache, setSprinklingCache }: Props) => {
+  const [, setState] = useState(null as any)
 
   useEffect(() => {
     window.dispatchEvent(new Event('resize'))
   }, [ selectedPlotId, selectedPixel ])
 
-  const { pixelsData, plotsAnalytics } = farmerData
+  const handlePlotfeedbackUpdated = () => {
+    setState({})
+  }
+  EventEmitter.on('plotfeedback-updated', handlePlotfeedbackUpdated)
+  
+  const { pixelsData, plotsAnalytics, plotFeedback } = farmerData
 
   let label: string = ''
   let cropType: string = ''
@@ -166,29 +173,36 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
   let area: number = 0
   let data: Array<any> | undefined = undefined
 
-  if(selectedPlotId) {
+  if (selectedPlotId) {
     label = `Plot ${selectedPlotId}`
+    const [sprinklingData] = plotFeedback.filter((feedback: any) => feedback.plotId === selectedPlotId)
     const feature = farmerData.plotsGeoJSON.features.find((f: any) => f.properties!.plotId === selectedPlotId)
+
     cropType = feature.properties.cropTypes
     soilType = feature.properties.soilType
     area = feature.properties.plotSizeHa
     if (!!plotsAnalytics[feature.properties.plotId]) {
-      data = plotsAnalytics[feature.properties.plotId].map((i: any, index: number) => ({
-        date: DateTime.fromISO(i.date).toFormat('dd/MM/yyyy'),
-        rainfall: i.measuredPrecipitation,
-        sprinkling: sprinklingCache[`${selectedPlotId}-${index}`] || 0,
-        moisture: i.availableSoilWater,
-        desiredMoisture: i.desiredSoilWater,
-        evapotranspiration: i.evapotranspiration,
-        deficit: i.deficit
-      }))
-      
+      data = plotsAnalytics[feature.properties.plotId].map((i: any) => {
+        const quantityForDate = sprinklingData ? sprinklingData.quantities.find((q: any) => q.date === i.date) : null
+        const sprinkling = quantityForDate ? quantityForDate.quantityMM : 0
+        
+        return { 
+          date: DateTime.fromISO(i.date).toFormat('dd/MM/yyyy'),
+          rainfall: i.measuredPrecipitation,
+          sprinkling,
+          moisture: i.availableSoilWater,
+          desiredMoisture: i.desiredSoilWater,
+          evapotranspiration: i.evapotranspiration,
+          deficit: i.deficit
+        }
+      })
     } else {
       alert("No data available for this plot.");
       navigate(`/map/${DateTime.fromJSDate(date).toISODate()}`);
       return <></>;
     }
   }
+
   if (selectedPixel) {
     const [x, y] = selectedPixel
     label = `Pixel ${padStart(x.toString(), 3, '0')}${padStart(y.toString(), 3, '0')}`
@@ -450,7 +464,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
           </ComposedChart>
         </ResponsiveContainer>
       </div>
-      <UpdateSprinklingDialog selectedPlotId={selectedPlotId} ref={d => updateSprinklingDialog = d!} />
+      <UpdateSprinklingDialog selectedPlotId={selectedPlotId} farmerData={farmerData} ref={d => updateSprinklingDialog = d!} />
     </Paper>
   )
 }

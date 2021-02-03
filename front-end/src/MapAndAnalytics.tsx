@@ -34,18 +34,6 @@ const MapAndAnalytics = ({ match, history }: Props) => {
       const isAuthenticated = contextValue.keycloak && contextValue.keycloak.token
       
       if (isAuthenticated) {
-        EventEmitter.on('sprinkling-update', (payload: any) => {
-          // TODO: Date is not correct for some reason. Fix monday.
-          const { date, selectedPlotId, value } = payload
-          const formattedDate = DateTime.fromJSDate(new Date(date)).toFormat('yyyy-MM-dd')
-
-          axiosInstance.put(`/plot-feedback?plotId=${selectedPlotId}&date=${formattedDate}&irrigationMM=${value}`).then(({ data }) => {
-            EventEmitter.emit('sprinkling-updated-success')
-          }).catch((error: Error) => {
-            EventEmitter.emit('sprinkling-updated-failure')
-            console.error(error)
-          })
-        })
         const prefix = 'https://storage.googleapis.com/grow-with-the-flow.appspot.com'
         const dateToken = date ? date.replace(/-/g, '') : latestAvailableDate.replace(/-/g, '')
         const { data: landUse } = await axios.get(`${prefix}/gwtf-land-use.json`)
@@ -65,13 +53,6 @@ const MapAndAnalytics = ({ match, history }: Props) => {
           throw new Error(error.message)
         })
 
-        const datesInTimeRange = plotsAnalytics[Object.keys(plotsAnalytics)[0]].map((a: any) => a.date)
-        const sortedDates = datesInTimeRange.sort((dateA: string, dateB: string) => {
-          return Date.parse(dateA) > Date.parse(dateB)
-        })
-        const dateFrom = sortedDates[0]
-        const dateTo = sortedDates[sortedDates.length - 1]
-        
         pixelsData.landUse = landUse
         pixelsData.soilMap = soilMap
 
@@ -81,13 +62,58 @@ const MapAndAnalytics = ({ match, history }: Props) => {
         const farmerData = {
           pixelsData,
           plotsGeoJSON,
-          plotsAnalytics
+          plotsAnalytics,
+          plotFeedback: []
         }
 
+        EventEmitter.on('sprinkling-update', handleSprinklingUpdate)
+        EventEmitter.on('sprinkling-updated-success', handleSprinklingUpdatedSuccess)
+
         setFarmerData(farmerData)
+        console.log(farmerData.plotFeedback)
+        getPlotFeedback(farmerData)
+        
+        setTimeout(() => {
+          console.log(farmerData.plotFeedback)
+        }, 1500)
       }
     })()
   }, [contextValue.authenticated])
+
+  const handleSprinklingUpdate = (payload: any) => {
+    const { date, selectedPlotId, value, farmerData } = payload
+    const formattedDate = DateTime.fromJSDate(new Date(date)).toFormat('yyyy-MM-dd')
+
+    axiosInstance.put(`/plot-feedback?plotId=${selectedPlotId}&date=${formattedDate}&irrigationMM=${value}`).then(({ data }) => {
+      EventEmitter.emit('sprinkling-updated-success', farmerData)
+    }).catch((error: Error) => {
+      EventEmitter.emit('sprinkling-updated-failure')
+      console.error(error)
+    })
+  }
+
+  const handleSprinklingUpdatedSuccess = (payload: any) => {
+    // setFarmerData(payload)
+    // getPlotFeedback(payload)
+  }
+
+  const getPlotFeedback = async (farmerData: any) => {
+    const { plotsAnalytics } = farmerData
+    const datesInTimeRange = plotsAnalytics[Object.keys(plotsAnalytics)[0]].map((a: any) => a.date)
+    const sortedDates = datesInTimeRange.sort((dateA: string, dateB: string) => {
+      return Date.parse(dateA) > Date.parse(dateB)
+    })
+    const dateFrom = sortedDates[0]
+    const dateTo = sortedDates[sortedDates.length - 1]
+    await axiosInstance.get(`/plot-feedback?from=${dateFrom}&to=${dateTo}`).then(({ data }) => {
+      farmerData.plotFeedback = data
+      setFarmerData(farmerData)
+      EventEmitter.emit('plotfeedback-updated')
+    }).catch((error: Error) => {
+      // TODO: Properly handle error
+      throw new Error(error.message)
+    })
+  }
 
   if (!date) {
     return <Redirect to={`/map/${latestAvailableDate}`} />
