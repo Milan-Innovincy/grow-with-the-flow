@@ -7,6 +7,7 @@ import TopBar from './TopBar'
 import MapAndAnalytics from './MapAndAnalytics'
 import { ApplicationContext } from './ApplicationContext'
 import Snackbar from './Snackbar'
+import Cookiebar from './components/Cookiebar/Cookiebar'
 import EventEmitter from './EventEmitter'
 import Keycloak from "keycloak-js"
 
@@ -80,8 +81,10 @@ class App extends Component<{}, IState> {
                   overflow: hidden;
                   display: flex;
                   flex-direction: column;
+                  z-index: -1;
                 `}
             >
+              <Cookiebar />
               <TopBar />
               <div className={css`flex: 1; overflow: hidden;`}>
                 <Switch>

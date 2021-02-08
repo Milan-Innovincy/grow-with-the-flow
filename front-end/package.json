@@ -41,6 +41,7 @@
     "lodash": "4.17.19",
     "luxon": "^1.25.0",
     "mdi-material-ui": "5.9.0",
+    "node-sass": "4",
     "pngjs": "3.3.3",
     "react": "^17.0.1",
     "react-dom": "16.8.1",
