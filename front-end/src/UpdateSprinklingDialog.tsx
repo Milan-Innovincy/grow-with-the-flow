@@ -121,8 +121,8 @@ export default class UpdateSprinklingDialog extends Component<Props, State> {
           <Button
             color="primary"
             onClick={() => {
-              this.handleSprinklingSubmitted(value)
               this.resolve!(value)
+              this.handleSprinklingSubmitted(value)
             }}
             disabled={loading}
             className={css`

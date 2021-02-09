@@ -9,10 +9,9 @@ type Props = {
   farmerData: any
   date: Date
   navigate: (path: string) => void
-  sprinklingCache: any
 }
 
-const OverallSummary = ({ farmerData, date, navigate, sprinklingCache }: Props) => {
+const OverallSummary = ({ farmerData, date, navigate }: Props) => {
   
   return(
     <div
@@ -43,7 +42,6 @@ const OverallSummary = ({ farmerData, date, navigate, sprinklingCache }: Props) 
           farmerData={farmerData}
           date={DateTime.fromJSDate(date).toISODate()}
           navigate={navigate}
-          sprinklingCache={sprinklingCache}
         />
       </div>
     </div>

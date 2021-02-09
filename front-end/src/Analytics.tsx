@@ -154,24 +154,18 @@ type Props = {
 }
 
 const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, sprinklingCache, setSprinklingCache }: Props) => {
-  const [, setState] = useState(null as any)
+  const [data, setData] = useState(undefined)
 
   useEffect(() => {
     window.dispatchEvent(new Event('resize'))
   }, [ selectedPlotId, selectedPixel ])
 
-  const handlePlotfeedbackUpdated = () => {
-    setState({})
-  }
-  EventEmitter.on('plotfeedback-updated', handlePlotfeedbackUpdated)
-  
   const { pixelsData, plotsAnalytics, plotFeedback } = farmerData
 
   let label: string = ''
   let cropType: string = ''
   let soilType: string = ''
   let area: number = 0
-  let data: Array<any> | undefined = undefined
 
   if (selectedPlotId) {
     label = `Plot ${selectedPlotId}`
@@ -182,7 +176,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
     soilType = feature.properties.soilType
     area = feature.properties.plotSizeHa
     if (!!plotsAnalytics[feature.properties.plotId]) {
-      data = plotsAnalytics[feature.properties.plotId].map((i: any) => {
+      setData(plotsAnalytics[feature.properties.plotId].map((i: any) => {
         const quantityForDate = sprinklingData ? sprinklingData.quantities.find((q: any) => q.date === i.date) : null
         const sprinkling = quantityForDate ? quantityForDate.quantityMM : 0
         
@@ -195,7 +189,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
           evapotranspiration: i.evapotranspiration,
           deficit: i.deficit
         }
-      })
+      }))
     } else {
       alert("No data available for this plot.");
       navigate(`/map/${DateTime.fromJSDate(date).toISODate()}`);
@@ -209,7 +203,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
     cropType = pixelsData.landUse[x][y]
     soilType = pixelsData.soilMap[x][y]
     area = 1
-    data = pixelsData.analytics.map((i: any, index: number) => ({
+    setData(pixelsData.analytics.map((i: any, index: number) => ({
       date: DateTime.fromISO(i.time).toFormat('dd/MM/yyyy'),
       rainfall: i.measuredPrecipitation[x][y],
       sprinkling: sprinklingCache[`${selectedPixel.join(',')}-${index}`] || 0,
@@ -217,7 +211,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
       desiredMoisture: i.desiredSoilWater[x][y],
       evapotranspiration: i.evapotranspiration[x][y],
       deficit: i.deficit[x][y]
-    }))
+    })))
   }
 
   const current = data!.find(i => i.date === DateTime.fromJSDate(date).toFormat('dd/MM/yyyy'))
@@ -314,7 +308,6 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
           farmerData={farmerData}
           date={DateTime.fromJSDate(date).toISODate()}
           navigate={navigate}
-          sprinklingCache={sprinklingCache}
         />  
       </div>
       <div
@@ -423,10 +416,22 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
                 <g
                   onClick={async () => {
                     const newValue = await updateSprinklingDialog.open(value as number, data[index])
-                    const updatedCache = produce(sprinklingCache, sprinklingCache => {
-                      sprinklingCache[`${selectedPlotId || selectedPixel!.join(',')}-${index}`] = newValue
-                    })
-                    setSprinklingCache(updatedCache)
+                    console.log(newValue);
+                    
+                    setData(data[index] = newValue)
+                    const currentItem = data[index]
+                    console.log(currentItem);
+                    currentItem.sprinkling = newValue
+                    console.log(currentItem);
+                    // setState({})
+                    // value = newValue
+                    
+                    // const updatedCache = produce(sprinklingCache, sprinklingCache => {
+                    //   sprinklingCache[`${selectedPlotId || selectedPixel!.join(',')}-${index}`] = newValue
+                    // })
+                    // console.log(sprinklingCache);
+                    
+                    // setSprinklingCache(updatedCache)
                   }}
                 >
                   <circle
