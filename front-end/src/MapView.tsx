@@ -55,9 +55,7 @@ let createPixelMap = (pixelsData: any, date: string) => {
 }
 
 export default ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: Props) => {
-
   const [ pixelsInLng, pixelsInLat ] = farmerData.pixelsData.dimensions
-
   const [ lng1, lat1, lng2, lat2 ] = farmerData.pixelsData.boundingBox
 
   const [ pixelLatStart, pixelLatEnd ] = sortBy([ lat1, lat2 ])
@@ -133,7 +131,7 @@ export default ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: P
       />
   }
 
-  return(
+  return (
     <>
       <Map
         center={mapCenter as any}
