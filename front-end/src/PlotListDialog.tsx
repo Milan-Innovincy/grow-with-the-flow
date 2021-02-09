@@ -1,12 +1,13 @@
 import React from 'react'
 import { Button, Dialog, DialogActions, DialogContent, Table, TableHead, TableRow, TableCell, TableBody } from '@material-ui/core'
 import { css } from '@emotion/css'
-import {ApplicationContext} from "./ApplicationContext";
+import {ApplicationContext} from "./ApplicationContext"
+
+import EventEmitter from './lib/EventEmitter'
 
 type Props = {
   farmerData: any
   date: string
-  navigate: (path: string) => void
 }
 
 const PlotListDialog = ({ farmerData, date, navigate }: Props) => {
@@ -48,8 +49,9 @@ const PlotListDialog = ({ farmerData, date, navigate }: Props) => {
                         <TableRow
                             key={feature.properties!.plotId}
                             onClick={() => {
-                              navigate(`/map/${date}/plot/${feature.properties!.plotId}`)
-                              toggleShowModal();
+                              const path = `/map/${date}/plot/${feature.properties!.plotId}`
+                              EventEmitter.emit('navigate', path)
+                              toggleShowModal()
                             }}
                             className={css`cursor: pointer;`}
                         >

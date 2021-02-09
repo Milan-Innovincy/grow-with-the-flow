@@ -4,10 +4,10 @@ import axios from 'axios'
 import { css } from '@emotion/css'
 import { Paper, CircularProgress } from '@material-ui/core'
 import { DateTime, Duration } from 'luxon'
-import EventEmitter from './EventEmitter'
+import EventEmitter from './lib/EventEmitter'
 
 import MapView from './MapView'
-import Analytics from './Analytics'
+import Analytics from './components/Analytics/Analytics'
 import OverallSummary from './OverallSummary'
 import { ApplicationContext } from "./ApplicationContext"
 
@@ -97,6 +97,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
     // getPlotFeedback(payload)
   }
 
+
   const getPlotFeedback = async (farmerData: any) => {
     const { plotsAnalytics } = farmerData
     const datesInTimeRange = plotsAnalytics[Object.keys(plotsAnalytics)[0]].map((a: any) => a.date)
@@ -149,8 +150,11 @@ const MapAndAnalytics = ({ match, history }: Props) => {
         return <Redirect to={`/map/${date}`}/>
     }
   }
-
-  const navigate = (path: string) => history.push(path)
+  
+  const handleNavigate = (path: string) => {
+    history.push(path)
+  }
+  EventEmitter.on('navigate', handleNavigate)
 
   return (
     <div
@@ -167,7 +171,6 @@ const MapAndAnalytics = ({ match, history }: Props) => {
         `}
       >
         <MapView
-          navigate={navigate}
           farmerData={farmerData}
           date={date}
           selectedPlotId={selectedPlotId}
@@ -184,18 +187,14 @@ const MapAndAnalytics = ({ match, history }: Props) => {
       >
         {(selectedPlotId || selectedPixel) ?
           <Analytics
-            date={new Date(date)}
-            farmerData={farmerData}
-            navigate={navigate}
-            selectedPixel={selectedPixel}
-            selectedPlotId={selectedPlotId}
-            sprinklingCache={sprinklingCache}
-            setSprinklingCache={setSprinklingCache}
+            date={date}
+            // farmerData={farmerData}
+            // navigate={navigate}
+            // selectedPixel={selectedPixel}
+            // selectedPlotId={selectedPlotId}
           /> : <OverallSummary
             date={new Date(date)}
             farmerData={farmerData}
-            navigate={navigate}
-            sprinklingCache={sprinklingCache}
           />
         }
       </Paper>

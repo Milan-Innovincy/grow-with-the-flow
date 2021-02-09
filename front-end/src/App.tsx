@@ -8,7 +8,7 @@ import MapAndAnalytics from './MapAndAnalytics'
 import { ApplicationContext } from './ApplicationContext'
 import Snackbar from './Snackbar'
 import Cookiebar from './components/Cookiebar/Cookiebar'
-import EventEmitter from './EventEmitter'
+import EventEmitter from './lib/EventEmitter'
 import Keycloak from "keycloak-js"
 
 const theme = createMuiTheme({

@@ -8,10 +8,9 @@ import PlotListDialog from './PlotListDialog'
 type Props = {
   farmerData: any
   date: Date
-  navigate: (path: string) => void
 }
 
-const OverallSummary = ({ farmerData, date, navigate }: Props) => {
+const OverallSummary = ({ farmerData, date }: Props) => {
   
   return(
     <div
@@ -41,7 +40,6 @@ const OverallSummary = ({ farmerData, date, navigate }: Props) => {
         <PlotListDialog
           farmerData={farmerData}
           date={DateTime.fromJSDate(date).toISODate()}
-          navigate={navigate}
         />
       </div>
     </div>
