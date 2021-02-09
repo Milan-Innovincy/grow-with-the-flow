@@ -2,7 +2,7 @@ import React from 'react'
 import { css } from '@emotion/css'
 import { DateTime } from 'luxon'
 
-import DateView from './DateView'
+import DateView from './components/DateView'
 import PlotListDialog from './PlotListDialog'
 
 type Props = {

@@ -1,19 +1,30 @@
 import React from 'react'
+// import { css } from '@emotion/css'
 
 import CloseButton from './CloseButton'
+import CurrentDetails from './CurrentDetails'
+
 
 type Props = {
   date: string,
+  farmerData: any
 }
-  
+
 export default class Header extends React.Component<Props, {}> {
   render() {
-    const { date } = this.props
+    const { date, farmerData } = this.props
 
     return (
-      <CloseButton
-        date={date}
-      />
+      <div>
+        <CloseButton
+          date={date}
+        />
+
+        <CurrentDetails
+          date={date}
+          farmerData={farmerData}
+        />
+      </div>
     )
   }
 }

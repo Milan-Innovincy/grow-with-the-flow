@@ -130,7 +130,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
           justify-content: center;
         `}
       >
-        <CircularProgress/>
+        <CircularProgress />
       </div>
     )
   }
@@ -185,18 +185,18 @@ const MapAndAnalytics = ({ match, history }: Props) => {
         `}
         square
       >
+        <Analytics
+          date={date}
+          farmerData={farmerData}
+          selectedPixel={selectedPixel}
+          selectedPlotId={selectedPlotId}
+        />
+        {/* : <OverallSummary
         {(selectedPlotId || selectedPixel) ?
-          <Analytics
-            date={date}
-            // farmerData={farmerData}
-            // navigate={navigate}
-            // selectedPixel={selectedPixel}
-            // selectedPlotId={selectedPlotId}
-          /> : <OverallSummary
             date={new Date(date)}
             farmerData={farmerData}
           />
-        }
+        } */}
       </Paper>
     </div>
   )

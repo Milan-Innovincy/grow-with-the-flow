@@ -9,7 +9,7 @@ import { padStart } from 'lodash'
 import EventEmitter from './lib/EventEmitter'
 
 import UpdateSprinklingDialog from './UpdateSprinklingDialog'
-import DateView from './DateView'
+import DateView from './components/DateView'
 import { ReactComponent as AlfalfaIcon } from './icons/alfalfa.svg'
 import { ReactComponent as CornIcon } from './icons/corn.svg'
 import { ReactComponent as GenericIcon } from './icons/generic.svg'

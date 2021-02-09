@@ -7,14 +7,16 @@ import { Paper } from '@material-ui/core'
 import Header from './Header'
 
 type Props = {
-//   farmerData: any
   date: string,
-//   navigate: (path: string) => void
+  farmerData: any,
+  selectedPlotId?: string
+  selectedPixel?: Array<number>
 }
 
 export default class Analytics extends React.Component<Props, {}> {
   render() {
-    const { date } = this.props
+    const { date, farmerData, selectedPlotId } = this.props
+    console.log(selectedPlotId)
 
     return(
       <Paper
@@ -27,6 +29,7 @@ export default class Analytics extends React.Component<Props, {}> {
       >
         <Header
           date={date}
+          farmerData={farmerData}
         />
       </Paper>
     )

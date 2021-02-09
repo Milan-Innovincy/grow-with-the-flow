@@ -3,8 +3,8 @@ import { css } from '@emotion/css'
 import { DateTime } from 'luxon'
 import { CalendarBlank } from 'mdi-material-ui';
 
-const DateView =  ({ date }: { date: Date }) => {
-  const luxonDate = DateTime.fromJSDate(date)
+const DateView =  ({ date }: { date: Date | string }) => {
+  const luxonDate = DateTime.fromJSDate(new Date(date))
   const day = luxonDate.toFormat('dd')
   const month = luxonDate.toFormat('MMMM')
   return(
