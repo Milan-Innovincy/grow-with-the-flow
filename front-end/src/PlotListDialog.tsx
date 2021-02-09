@@ -7,10 +7,9 @@ type Props = {
   farmerData: any
   date: string
   navigate: (path: string) => void
-  sprinklingCache: any
 }
 
-const PlotListDialog = ({ farmerData, date, navigate, sprinklingCache }: Props) => {
+const PlotListDialog = ({ farmerData, date, navigate }: Props) => {
   return(
     <ApplicationContext.Consumer>
       {({showModal, toggleShowModal}) =>
@@ -34,12 +33,13 @@ const PlotListDialog = ({ farmerData, date, navigate, sprinklingCache }: Props) 
                 </TableHead>
                 <TableBody>
                   {farmerData.plotsGeoJSON.features.map((feature: any) => {
+                    const [sprinklingData] = farmerData.plotFeedback.filter((feedback: any) => feedback.plotId === feature.properties.plotId)
+                    const quantityForDate = sprinklingData ? sprinklingData.quantities.find((q: any) => q.date === date) : null
+                    const sprinkling = quantityForDate ? quantityForDate.quantityMM : 0
                     let analytics = undefined
-                    let sprinkling = 0
                     if (feature.properties.plotId && farmerData.plotsAnalytics[feature.properties.plotId]) {
                       const analyticsIndex = farmerData.plotsAnalytics[feature.properties.plotId].findIndex((a: any) => a.date === date)
                       analytics = farmerData.plotsAnalytics[feature.properties.plotId][analyticsIndex]
-                      sprinkling = sprinklingCache[`${feature.properties.plotId}-${analyticsIndex}`] || 0
                     }
                     if (!analytics) {
                       analytics = {}
