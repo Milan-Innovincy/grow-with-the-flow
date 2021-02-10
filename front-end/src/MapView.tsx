@@ -10,10 +10,10 @@ import { sortBy } from 'lodash'
 import { PNG } from 'pngjs'
 import chroma from 'chroma-js'
 import CoordinateCalculator from "./CoordinateCalculator";
-import EventEmitter from './lib/EventEmitter'
 const { GeoJSONFillable, Patterns } = require('react-leaflet-geojson-patterns')
 
 type Props = {
+  navigate: (path: string) => void
   farmerData: any
   date: string
   selectedPlotId?: string
@@ -50,7 +50,7 @@ let createPixelMap = (pixelsData: any, date: string) => {
   return `data:image/png;base64,${base64}`
 }
 
-const MapView = ({ date, farmerData, selectedPlotId, selectedPixel }: Props) => {
+const MapView = ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: Props) => {
   const [ pixelSelection, setPixelSelection ] = useState(false)
   const [ zoom, setZoom ] = useState(14)
   const [ initialLoad, setInitialLoad ] = useState(true)
@@ -158,8 +158,7 @@ const MapView = ({ date, farmerData, selectedPlotId, selectedPixel }: Props) => 
             if (lat >= pixelLatStart && lat <= pixelLatEnd && lng >= pixelLngStart && lng <= pixelLngEnd) {
               const pixelLat = Math.floor((lat - pixelLatStart) / pixelLatStep)
               const pixelLng = Math.floor((lng - pixelLngStart) / pixelLngStep)
-              const path = `/map/${date}/pixel/${pixelLat}-${pixelLng}`
-              EventEmitter.emit('navigate', path)
+              navigate(`/map/${date}/pixel/${pixelLat}-${pixelLng}`)
             }
           }
         }}
@@ -200,7 +199,7 @@ const MapView = ({ date, farmerData, selectedPlotId, selectedPixel }: Props) => 
               ...selectionStyle
             }
           }}
-          onClick={(e: any) => EventEmitter.emit('navigate', `/map/${date}/plot/${e.layer.feature.properties.plotId}`)}
+          onClick={(e: any) => navigate(`/map/${date}/plot/${e.layer.feature.properties.plotId}`)}
         />
       </Map>
       <Fab

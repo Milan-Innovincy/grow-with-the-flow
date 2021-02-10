@@ -6,10 +6,10 @@ import { Close, Vanish, CarDefrostRear } from 'mdi-material-ui'
 import { DateTime } from 'luxon'
 import produce from 'immer'
 import { padStart } from 'lodash'
-import EventEmitter from './lib/EventEmitter'
+import EventEmitter from './EventEmitter'
 
 import UpdateSprinklingDialog from './UpdateSprinklingDialog'
-import DateView from './components/DateView'
+import DateView from './DateView'
 import { ReactComponent as AlfalfaIcon } from './icons/alfalfa.svg'
 import { ReactComponent as CornIcon } from './icons/corn.svg'
 import { ReactComponent as GenericIcon } from './icons/generic.svg'
@@ -149,14 +149,22 @@ type Props = {
   date: Date
   selectedPlotId?: string
   selectedPixel?: Array<number>
+  sprinklingCache: any
+  setSprinklingCache: (sprinklingCache: any) => void
 }
 
-const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel }: Props) => {
+const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, sprinklingCache, setSprinklingCache }: Props) => {
+  const [, setState] = useState(null as any)
 
   useEffect(() => {
     window.dispatchEvent(new Event('resize'))
   }, [ selectedPlotId, selectedPixel ])
 
+  const handlePlotfeedbackUpdated = () => {
+    setState({})
+  }
+  EventEmitter.on('plotfeedback-updated', handlePlotfeedbackUpdated)
+  
   const { pixelsData, plotsAnalytics, plotFeedback } = farmerData
 
   let label: string = ''
@@ -166,8 +174,6 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel }
   let data: Array<any> | undefined = undefined
 
   if (selectedPlotId) {
-    console.log(selectedPlotId);
-    
     label = `Plot ${selectedPlotId}`
     const [sprinklingData] = plotFeedback.filter((feedback: any) => feedback.plotId === selectedPlotId)
     const feature = farmerData.plotsGeoJSON.features.find((f: any) => f.properties!.plotId === selectedPlotId)
@@ -206,7 +212,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel }
     data = pixelsData.analytics.map((i: any, index: number) => ({
       date: DateTime.fromISO(i.time).toFormat('dd/MM/yyyy'),
       rainfall: i.measuredPrecipitation[x][y],
-      // sprinkling: sprinklingCache[`${selectedPixel.join(',')}-${index}`] || 0,
+      sprinkling: sprinklingCache[`${selectedPixel.join(',')}-${index}`] || 0,
       moisture: i.availableSoilWater[x][y],
       desiredMoisture: i.desiredSoilWater[x][y],
       evapotranspiration: i.evapotranspiration[x][y],
@@ -308,6 +314,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel }
           farmerData={farmerData}
           date={DateTime.fromJSDate(date).toISODate()}
           navigate={navigate}
+          sprinklingCache={sprinklingCache}
         />  
       </div>
       <div
@@ -415,23 +422,11 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel }
               label={({ value, x, y, width, index }: LabelProps & { index: number }) =>
                 <g
                   onClick={async () => {
-                    // const newValue = await updateSprinklingDialog.open(value as number, data[index])
-                    // console.log(newValue);
-                    
-                    // setData(data[index] = newValue)
-                    // const currentItem = data[index]
-                    // console.log(currentItem);
-                    // currentItem.sprinkling = newValue
-                    // console.log(currentItem);
-                    // setState({})
-                    // value = newValue
-                    
-                    // const updatedCache = produce(sprinklingCache, sprinklingCache => {
-                    //   sprinklingCache[`${selectedPlotId || selectedPixel!.join(',')}-${index}`] = newValue
-                    // })
-                    // console.log(sprinklingCache);
-                    
-                    // setSprinklingCache(updatedCache)
+                    const newValue = await updateSprinklingDialog.open(value as number, data[index])
+                    const updatedCache = produce(sprinklingCache, sprinklingCache => {
+                      sprinklingCache[`${selectedPlotId || selectedPixel!.join(',')}-${index}`] = newValue
+                    })
+                    setSprinklingCache(updatedCache)
                   }}
                 >
                   <circle

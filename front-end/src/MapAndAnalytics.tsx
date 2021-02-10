@@ -4,11 +4,10 @@ import axios from 'axios'
 import { css } from '@emotion/css'
 import { Paper, CircularProgress } from '@material-ui/core'
 import { DateTime, Duration } from 'luxon'
-import EventEmitter from './lib/EventEmitter'
+import EventEmitter from './EventEmitter'
 
 import MapView from './MapView'
 import Analytics from './Analytics'
-// import Analytics from './components/Analytics/Analytics'
 import OverallSummary from './OverallSummary'
 import { ApplicationContext } from "./ApplicationContext"
 
@@ -22,6 +21,7 @@ type Props = RouteComponentProps<{
 
 const MapAndAnalytics = ({ match, history }: Props) => {
   const [ farmerData, setFarmerData ] = useState(null as any)
+  const [ sprinklingCache, setSprinklingCache ] = useState({})
   const contextValue = useContext(ApplicationContext)
 
   const { date, selectionType, selectionId } = match.params
@@ -67,10 +67,15 @@ const MapAndAnalytics = ({ match, history }: Props) => {
         }
 
         EventEmitter.on('sprinkling-update', handleSprinklingUpdate)
+        EventEmitter.on('sprinkling-updated-success', handleSprinklingUpdatedSuccess)
 
         setFarmerData(farmerData)
         console.log(farmerData.plotFeedback)
         getPlotFeedback(farmerData)
+        
+        setTimeout(() => {
+          console.log(farmerData.plotFeedback)
+        }, 1500)
       }
     })()
   }, [contextValue.authenticated])
@@ -85,6 +90,11 @@ const MapAndAnalytics = ({ match, history }: Props) => {
       EventEmitter.emit('sprinkling-updated-failure')
       console.error(error)
     })
+  }
+
+  const handleSprinklingUpdatedSuccess = (payload: any) => {
+    // setFarmerData(payload)
+    // getPlotFeedback(payload)
   }
 
   const getPlotFeedback = async (farmerData: any) => {
@@ -119,7 +129,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
           justify-content: center;
         `}
       >
-        <CircularProgress />
+        <CircularProgress/>
       </div>
     )
   }
@@ -139,11 +149,8 @@ const MapAndAnalytics = ({ match, history }: Props) => {
         return <Redirect to={`/map/${date}`}/>
     }
   }
-  
-  const handleNavigate = (path: string) => {
-    history.push(path)
-  }
-  EventEmitter.on('navigate', handleNavigate)
+
+  const navigate = (path: string) => history.push(path)
 
   return (
     <div
@@ -160,6 +167,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
         `}
       >
         <MapView
+          navigate={navigate}
           farmerData={farmerData}
           date={date}
           selectedPlotId={selectedPlotId}
@@ -175,14 +183,19 @@ const MapAndAnalytics = ({ match, history }: Props) => {
         square
       >
         {(selectedPlotId || selectedPixel) ?
-        <Analytics
-          date={new Date(date)}
-          farmerData={farmerData}
-          selectedPixel={selectedPixel}
-          selectedPlotId={selectedPlotId}
-        /> : <OverallSummary
+          <Analytics
             date={new Date(date)}
             farmerData={farmerData}
+            navigate={navigate}
+            selectedPixel={selectedPixel}
+            selectedPlotId={selectedPlotId}
+            sprinklingCache={sprinklingCache}
+            setSprinklingCache={setSprinklingCache}
+          /> : <OverallSummary
+            date={new Date(date)}
+            farmerData={farmerData}
+            navigate={navigate}
+            sprinklingCache={sprinklingCache}
           />
         }
       </Paper>

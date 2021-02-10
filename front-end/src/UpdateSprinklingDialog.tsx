@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { Button, Dialog, DialogActions, DialogContent, TextField, CircularProgress } from '@material-ui/core'
 import { css } from '@emotion/css'
 import { DateTime } from 'luxon'
-import EventEmitter from './lib/EventEmitter'
+import EventEmitter from './EventEmitter'
 
 type State = {
   open: boolean,
@@ -121,8 +121,8 @@ export default class UpdateSprinklingDialog extends Component<Props, State> {
           <Button
             color="primary"
             onClick={() => {
-              this.resolve!(value)
               this.handleSprinklingSubmitted(value)
+              this.resolve!(value)
             }}
             disabled={loading}
             className={css`

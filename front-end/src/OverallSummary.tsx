@@ -2,15 +2,17 @@ import React from 'react'
 import { css } from '@emotion/css'
 import { DateTime } from 'luxon'
 
-import DateView from './components/DateView'
+import DateView from './DateView'
 import PlotListDialog from './PlotListDialog'
 
 type Props = {
   farmerData: any
   date: Date
+  navigate: (path: string) => void
+  sprinklingCache: any
 }
 
-const OverallSummary = ({ farmerData, date }: Props) => {
+const OverallSummary = ({ farmerData, date, navigate, sprinklingCache }: Props) => {
   
   return(
     <div
@@ -40,6 +42,8 @@ const OverallSummary = ({ farmerData, date }: Props) => {
         <PlotListDialog
           farmerData={farmerData}
           date={DateTime.fromJSDate(date).toISODate()}
+          navigate={navigate}
+          sprinklingCache={sprinklingCache}
         />
       </div>
     </div>

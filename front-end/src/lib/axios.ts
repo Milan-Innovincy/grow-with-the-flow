@@ -1,5 +1,5 @@
 import axios from 'axios'
-import EventEmitter from './EventEmitter'
+import EventEmitter from '../EventEmitter'
 
 const axiosInstance = axios.create({
   baseURL: process.env.REACT_APP_BASE_URL

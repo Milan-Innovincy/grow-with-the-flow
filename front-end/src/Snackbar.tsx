@@ -1,6 +1,6 @@
 import React from 'react'
 import { Snackbar as MaterialSnackbar } from '@material-ui/core'
-import EventEmitter from './lib/EventEmitter'
+import EventEmitter from './EventEmitter'
 
 type State = {
   snackbarMessage: string,

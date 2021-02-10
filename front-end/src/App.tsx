@@ -8,7 +8,7 @@ import MapAndAnalytics from './MapAndAnalytics'
 import { ApplicationContext } from './ApplicationContext'
 import Snackbar from './Snackbar'
 import Cookiebar from './components/Cookiebar/Cookiebar'
-import EventEmitter from './lib/EventEmitter'
+import EventEmitter from './EventEmitter'
 import Keycloak from "keycloak-js"
 
 const theme = createMuiTheme({
@@ -88,7 +88,7 @@ class App extends Component<{}, IState> {
               <TopBar />
               <div className={css`flex: 1; overflow: hidden;`}>
                 <Switch>
-                  <Route path="/map/:date?/:selectionType?/:selectionId?" component={MapAndAnalytics} />
+                  <Route path="/map/:date?/:selectionType?/:selectionId?" component={MapAndAnalytics}/>
                   <Redirect to="/map"/>
                 </Switch>
               </div>

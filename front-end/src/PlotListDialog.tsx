@@ -1,16 +1,16 @@
 import React from 'react'
 import { Button, Dialog, DialogActions, DialogContent, Table, TableHead, TableRow, TableCell, TableBody } from '@material-ui/core'
 import { css } from '@emotion/css'
-import {ApplicationContext} from "./ApplicationContext"
-
-import EventEmitter from './lib/EventEmitter'
+import {ApplicationContext} from "./ApplicationContext";
 
 type Props = {
   farmerData: any
   date: string
+  navigate: (path: string) => void
+  sprinklingCache: any
 }
 
-const PlotListDialog = ({ farmerData, date, navigate }: Props) => {
+const PlotListDialog = ({ farmerData, date, navigate, sprinklingCache }: Props) => {
   return(
     <ApplicationContext.Consumer>
       {({showModal, toggleShowModal}) =>
@@ -34,13 +34,12 @@ const PlotListDialog = ({ farmerData, date, navigate }: Props) => {
                 </TableHead>
                 <TableBody>
                   {farmerData.plotsGeoJSON.features.map((feature: any) => {
-                    const [sprinklingData] = farmerData.plotFeedback.filter((feedback: any) => feedback.plotId === feature.properties.plotId)
-                    const quantityForDate = sprinklingData ? sprinklingData.quantities.find((q: any) => q.date === date) : null
-                    const sprinkling = quantityForDate ? quantityForDate.quantityMM : 0
                     let analytics = undefined
+                    let sprinkling = 0
                     if (feature.properties.plotId && farmerData.plotsAnalytics[feature.properties.plotId]) {
                       const analyticsIndex = farmerData.plotsAnalytics[feature.properties.plotId].findIndex((a: any) => a.date === date)
                       analytics = farmerData.plotsAnalytics[feature.properties.plotId][analyticsIndex]
+                      sprinkling = sprinklingCache[`${feature.properties.plotId}-${analyticsIndex}`] || 0
                     }
                     if (!analytics) {
                       analytics = {}
@@ -49,9 +48,8 @@ const PlotListDialog = ({ farmerData, date, navigate }: Props) => {
                         <TableRow
                             key={feature.properties!.plotId}
                             onClick={() => {
-                              const path = `/map/${date}/plot/${feature.properties!.plotId}`
-                              EventEmitter.emit('navigate', path)
-                              toggleShowModal()
+                              navigate(`/map/${date}/plot/${feature.properties!.plotId}`)
+                              toggleShowModal();
                             }}
                             className={css`cursor: pointer;`}
                         >
