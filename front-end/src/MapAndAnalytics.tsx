@@ -7,7 +7,8 @@ import { DateTime, Duration } from 'luxon'
 import EventEmitter from './lib/EventEmitter'
 
 import MapView from './MapView'
-import Analytics from './components/Analytics/Analytics'
+import Analytics from './Analytics'
+// import Analytics from './components/Analytics/Analytics'
 import OverallSummary from './OverallSummary'
 import { ApplicationContext } from "./ApplicationContext"
 
@@ -21,7 +22,6 @@ type Props = RouteComponentProps<{
 
 const MapAndAnalytics = ({ match, history }: Props) => {
   const [ farmerData, setFarmerData ] = useState(null as any)
-  const [ sprinklingCache, setSprinklingCache ] = useState({})
   const contextValue = useContext(ApplicationContext)
 
   const { date, selectionType, selectionId } = match.params
@@ -67,15 +67,10 @@ const MapAndAnalytics = ({ match, history }: Props) => {
         }
 
         EventEmitter.on('sprinkling-update', handleSprinklingUpdate)
-        EventEmitter.on('sprinkling-updated-success', handleSprinklingUpdatedSuccess)
 
         setFarmerData(farmerData)
         console.log(farmerData.plotFeedback)
         getPlotFeedback(farmerData)
-        
-        setTimeout(() => {
-          console.log(farmerData.plotFeedback)
-        }, 1500)
       }
     })()
   }, [contextValue.authenticated])
@@ -91,12 +86,6 @@ const MapAndAnalytics = ({ match, history }: Props) => {
       console.error(error)
     })
   }
-
-  const handleSprinklingUpdatedSuccess = (payload: any) => {
-    // setFarmerData(payload)
-    // getPlotFeedback(payload)
-  }
-
 
   const getPlotFeedback = async (farmerData: any) => {
     const { plotsAnalytics } = farmerData
@@ -185,18 +174,17 @@ const MapAndAnalytics = ({ match, history }: Props) => {
         `}
         square
       >
+        {(selectedPlotId || selectedPixel) ?
         <Analytics
-          date={date}
+          date={new Date(date)}
           farmerData={farmerData}
           selectedPixel={selectedPixel}
           selectedPlotId={selectedPlotId}
-        />
-        {/* : <OverallSummary
-        {(selectedPlotId || selectedPixel) ?
+        /> : <OverallSummary
             date={new Date(date)}
             farmerData={farmerData}
           />
-        } */}
+        }
       </Paper>
     </div>
   )

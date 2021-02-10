@@ -8,15 +8,17 @@ import Header from './Header'
 
 type Props = {
   date: string,
-  farmerData: any,
-  selectedPlotId?: string
-  selectedPixel?: Array<number>
+  // farmerData: any,
+  // selectedPlotId?: string
+  // selectedPixel?: Array<number>
 }
 
 export default class Analytics extends React.Component<Props, {}> {
   render() {
-    const { date, farmerData, selectedPlotId } = this.props
-    console.log(selectedPlotId)
+    const { date } = this.props
+    // const { date, farmerData, selectedPlotId, selectedPixel } = this.props
+    // console.log(selectedPlotId)
+    console.log('render analytics')
 
     return(
       <Paper
@@ -27,10 +29,12 @@ export default class Analytics extends React.Component<Props, {}> {
         `}
         square
       >
-        <Header
+        {/* <Header
           date={date}
           farmerData={farmerData}
-        />
+          selectedPlotId={selectedPlotId}
+          selectedPixel={selectedPixel}
+        /> */}
       </Paper>
     )
   }

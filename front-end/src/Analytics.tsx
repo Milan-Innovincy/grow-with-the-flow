@@ -149,12 +149,9 @@ type Props = {
   date: Date
   selectedPlotId?: string
   selectedPixel?: Array<number>
-  sprinklingCache: any
-  setSprinklingCache: (sprinklingCache: any) => void
 }
 
-const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, sprinklingCache, setSprinklingCache }: Props) => {
-  const [data, setData] = useState(undefined)
+const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel }: Props) => {
 
   useEffect(() => {
     window.dispatchEvent(new Event('resize'))
@@ -166,8 +163,11 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
   let cropType: string = ''
   let soilType: string = ''
   let area: number = 0
+  let data: Array<any> | undefined = undefined
 
   if (selectedPlotId) {
+    console.log(selectedPlotId);
+    
     label = `Plot ${selectedPlotId}`
     const [sprinklingData] = plotFeedback.filter((feedback: any) => feedback.plotId === selectedPlotId)
     const feature = farmerData.plotsGeoJSON.features.find((f: any) => f.properties!.plotId === selectedPlotId)
@@ -176,7 +176,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
     soilType = feature.properties.soilType
     area = feature.properties.plotSizeHa
     if (!!plotsAnalytics[feature.properties.plotId]) {
-      setData(plotsAnalytics[feature.properties.plotId].map((i: any) => {
+      data = plotsAnalytics[feature.properties.plotId].map((i: any) => {
         const quantityForDate = sprinklingData ? sprinklingData.quantities.find((q: any) => q.date === i.date) : null
         const sprinkling = quantityForDate ? quantityForDate.quantityMM : 0
         
@@ -189,7 +189,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
           evapotranspiration: i.evapotranspiration,
           deficit: i.deficit
         }
-      }))
+      })
     } else {
       alert("No data available for this plot.");
       navigate(`/map/${DateTime.fromJSDate(date).toISODate()}`);
@@ -203,15 +203,15 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
     cropType = pixelsData.landUse[x][y]
     soilType = pixelsData.soilMap[x][y]
     area = 1
-    setData(pixelsData.analytics.map((i: any, index: number) => ({
+    data = pixelsData.analytics.map((i: any, index: number) => ({
       date: DateTime.fromISO(i.time).toFormat('dd/MM/yyyy'),
       rainfall: i.measuredPrecipitation[x][y],
-      sprinkling: sprinklingCache[`${selectedPixel.join(',')}-${index}`] || 0,
+      // sprinkling: sprinklingCache[`${selectedPixel.join(',')}-${index}`] || 0,
       moisture: i.availableSoilWater[x][y],
       desiredMoisture: i.desiredSoilWater[x][y],
       evapotranspiration: i.evapotranspiration[x][y],
       deficit: i.deficit[x][y]
-    })))
+    }))
   }
 
   const current = data!.find(i => i.date === DateTime.fromJSDate(date).toFormat('dd/MM/yyyy'))
@@ -415,14 +415,14 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
               label={({ value, x, y, width, index }: LabelProps & { index: number }) =>
                 <g
                   onClick={async () => {
-                    const newValue = await updateSprinklingDialog.open(value as number, data[index])
-                    console.log(newValue);
+                    // const newValue = await updateSprinklingDialog.open(value as number, data[index])
+                    // console.log(newValue);
                     
-                    setData(data[index] = newValue)
-                    const currentItem = data[index]
-                    console.log(currentItem);
-                    currentItem.sprinkling = newValue
-                    console.log(currentItem);
+                    // setData(data[index] = newValue)
+                    // const currentItem = data[index]
+                    // console.log(currentItem);
+                    // currentItem.sprinkling = newValue
+                    // console.log(currentItem);
                     // setState({})
                     // value = newValue
                     

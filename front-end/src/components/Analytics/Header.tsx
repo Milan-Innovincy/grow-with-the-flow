@@ -4,20 +4,37 @@ import React from 'react'
 import CloseButton from './CloseButton'
 import CurrentDetails from './CurrentDetails'
 
+function Close(props: any) {
+  const { date, selectedPlotId, selectedPixel } = props
+  
+  if (selectedPlotId || selectedPixel) {
+    return (
+      <CloseButton
+        date={date}
+      />
+    )
+  } else {
+    return null
+  }
+}
 
 type Props = {
   date: string,
-  farmerData: any
+  farmerData: any,
+  selectedPlotId?: string
+  selectedPixel?: Array<number>
 }
 
 export default class Header extends React.Component<Props, {}> {
   render() {
-    const { date, farmerData } = this.props
+    const { date, farmerData, selectedPlotId, selectedPixel } = this.props
 
     return (
       <div>
-        <CloseButton
+        <Close
           date={date}
+          selectedPlotId={selectedPlotId}
+          selectedPixel={selectedPixel}
         />
 
         <CurrentDetails

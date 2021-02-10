@@ -9,7 +9,8 @@ type Props = {
 }
 
 type state = {
-  currentData: any
+  currentData: any,
+  label: string
 }
 
 export default class CurrentDetails extends React.Component<Props, state> {
@@ -22,6 +23,13 @@ export default class CurrentDetails extends React.Component<Props, state> {
 
   componentDidUpdate() {
     console.log('componentDidUpdate');
+  }
+
+
+  labelToRender() {
+    const { label } = this.state
+    // return label ? label : 'Alle pixels'
+    return 'Alle pixels'
   }
 
   
@@ -46,12 +54,12 @@ export default class CurrentDetails extends React.Component<Props, state> {
               color: #2F3D50;
             `}
           >
-            {/* <small
+            <small
               className={css`
                 font-weight: lighter;
                 margin-left: 50px;
               `}
-            >{label}</small> */}
+            >{this.labelToRender}</small>
             <DateView date={date} />
           </div>
           {/* <CurrentDataItem
