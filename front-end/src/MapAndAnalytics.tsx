@@ -4,7 +4,7 @@ import axios from 'axios'
 import { css } from '@emotion/css'
 import { Paper, CircularProgress } from '@material-ui/core'
 import { DateTime, Duration } from 'luxon'
-import EventEmitter from './EventEmitter'
+import EventEmitter from './lib/EventEmitter'
 
 import MapView from './MapView'
 import Analytics from './Analytics'
@@ -70,12 +70,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
         EventEmitter.on('sprinkling-updated-success', handleSprinklingUpdatedSuccess)
 
         setFarmerData(farmerData)
-        console.log(farmerData.plotFeedback)
         getPlotFeedback(farmerData)
-        
-        setTimeout(() => {
-          console.log(farmerData.plotFeedback)
-        }, 1500)
       }
     })()
   }, [contextValue.authenticated])

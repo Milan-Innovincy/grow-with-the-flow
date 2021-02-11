@@ -6,7 +6,7 @@ import { Close, Vanish, CarDefrostRear } from 'mdi-material-ui'
 import { DateTime } from 'luxon'
 import produce from 'immer'
 import { padStart } from 'lodash'
-import EventEmitter from './EventEmitter'
+import EventEmitter from './lib/EventEmitter'
 
 import UpdateSprinklingDialog from './UpdateSprinklingDialog'
 import DateView from './DateView'

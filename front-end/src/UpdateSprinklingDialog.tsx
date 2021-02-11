@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { Button, Dialog, DialogActions, DialogContent, TextField, CircularProgress } from '@material-ui/core'
 import { css } from '@emotion/css'
 import { DateTime } from 'luxon'
-import EventEmitter from './EventEmitter'
+import EventEmitter from './lib/EventEmitter'
 
 type State = {
   open: boolean,

@@ -8,7 +8,8 @@ import MapAndAnalytics from './MapAndAnalytics'
 import { ApplicationContext } from './ApplicationContext'
 import Snackbar from './Snackbar'
 import Cookiebar from './components/Cookiebar/Cookiebar'
-import EventEmitter from './EventEmitter'
+import TextPopup from './components/TextPopup'
+import EventEmitter from './lib/EventEmitter'
 import Keycloak from "keycloak-js"
 
 const theme = createMuiTheme({
@@ -92,6 +93,7 @@ class App extends Component<{}, IState> {
                   <Redirect to="/map"/>
                 </Switch>
               </div>
+              <TextPopup />
               <Snackbar />
             </div>
           </MuiThemeProvider>
