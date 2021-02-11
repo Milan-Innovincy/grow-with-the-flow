@@ -67,7 +67,6 @@ const MapAndAnalytics = ({ match, history }: Props) => {
         }
 
         EventEmitter.on('sprinkling-update', handleSprinklingUpdate)
-        EventEmitter.on('sprinkling-updated-success', handleSprinklingUpdatedSuccess)
 
         setFarmerData(farmerData)
         getPlotFeedback(farmerData)
@@ -85,11 +84,6 @@ const MapAndAnalytics = ({ match, history }: Props) => {
       EventEmitter.emit('sprinkling-updated-failure')
       console.error(error)
     })
-  }
-
-  const handleSprinklingUpdatedSuccess = (payload: any) => {
-    // setFarmerData(payload)
-    // getPlotFeedback(payload)
   }
 
   const getPlotFeedback = async (farmerData: any) => {
