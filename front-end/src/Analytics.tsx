@@ -157,7 +157,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
   const [, setState] = useState(null as any)
 
   useEffect(() => {
-    window.dispatchEvent(new Event('resize'))
+    window.dispatchEvent(new Event('resize'))    
   }, [ selectedPlotId, selectedPixel ])
 
   const handlePlotfeedbackUpdated = () => {
@@ -225,6 +225,21 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
   const currentSprinkling = current ? current.sprinkling : 0
   const currentEvapotranspiration = current ? current.evapotranspiration : 0
   const currentDeficit = current ? current.deficit : 0
+
+  const nodes = document.querySelectorAll('.recharts-layer.recharts-cartesian-axis-tick')
+  nodes.forEach(node => {
+    const textNode = node.querySelector('tspan')
+    const rawDate = textNode ? textNode.innerHTML : null
+
+    if (rawDate && rawDate.indexOf('/') !== -1) {
+      const formattedDate = new Date(DateTime.fromFormat(rawDate, 'dd/MM/yyyy').toFormat('yyyy-MM-dd'))
+
+      if (date.toDateString() === formattedDate.toDateString()) {
+        textNode.style.fontWeight = '900'
+        textNode.style.fontSize = '12px'
+      }
+    }
+  })
 
   return(
     <Paper
@@ -356,7 +371,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
                 <rect x="0" y="0" width="100" height="100" rx="5" ry="5"/>
               </clipPath>
             </defs>
-            <CartesianGrid/>
+            <CartesianGrid />
             <XAxis
               dataKey="date"
               xAxisId={0}
@@ -418,7 +433,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
               yAxisId="left"
               fill="#1565c0"
               opacity={0.8}
-              barSize={40}
+              barSize={40}  
               label={({ value, x, y, width, index }: LabelProps & { index: number }) =>
                 <g
                   onClick={async () => {
