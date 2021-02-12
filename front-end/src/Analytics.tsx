@@ -235,7 +235,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
       const formattedDate = new Date(DateTime.fromFormat(rawDate, 'dd/MM/yyyy').toFormat('yyyy-MM-dd'))
       const predictionDate = new Date(DateTime.fromJSDate(new Date()).minus(Duration.fromObject({ days: 1 })).toFormat('yyyy-MM-dd'))
 
-      if (date.toDateString() === formattedDate.toDateString()) {
+      if (new Date().toDateString() === formattedDate.toDateString()) {
         textNode.style.fontWeight = '900'
         textNode.style.fontSize = '12px'
       }
