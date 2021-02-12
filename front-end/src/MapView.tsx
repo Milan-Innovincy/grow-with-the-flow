@@ -4,13 +4,63 @@ import { Map, Polygon, TileLayer, ImageOverlay, GeoJSON } from 'react-leaflet'
 import { range } from 'lodash'
 import { featureCollection, lineString, center } from '@turf/turf'
 import { css } from '@emotion/css'
-import { Fab } from '@material-ui/core';
+import { Fab, Select, MenuItem, FormControl, Box } from '@material-ui/core'
 import { Grid, GridOff } from 'mdi-material-ui'
 import { sortBy } from 'lodash'
 import { PNG } from 'pngjs'
 import chroma from 'chroma-js'
 import CoordinateCalculator from "./CoordinateCalculator";
 const { GeoJSONFillable, Patterns } = require('react-leaflet-geojson-patterns')
+
+const parameters: {
+  slug: string,
+  label: string,
+  colors: {
+    min: string,
+    max: string
+  }
+}[] = [
+  {
+    slug: 'measuredPrecipitation',
+    label: 'Measured preciitation',
+    colors: {
+      min: '#e3f2fd',
+      max: '#2196f3'
+    }
+  },
+  {
+    slug: 'deficit',
+    label: 'Deficit',
+    colors: {
+      min: '#e3f2fd',
+      max: '#2196f3'
+    }
+  },
+  {
+    slug: 'availableSoilWater',
+    label: 'Available soilwater',
+    colors: {
+      min: '#e3f2fd',
+      max: '#2196f3'
+    }
+  },
+  {
+    slug: 'desiredSoilWater',
+    label: 'Desired soilwater',
+    colors: {
+      min: '#e3f2fd',
+      max: '#2196f3'
+    }
+  },
+  {
+    slug: 'evapotranspiration',
+    label: 'Evapotranspiration',
+    colors: {
+      min: '#e3f2fd',
+      max: '#2196f3'
+    }
+  }
+]
 
 type Props = {
   navigate: (path: string) => void
@@ -20,7 +70,7 @@ type Props = {
   selectedPixel?: Array<number>
 }
 
-let createPixelMap = (pixelsData: any, date: string) => {
+let createPixelMap = (pixelsData: any, date: string, parameter: string) => {
   const deficitGrid = pixelsData.analytics.find((a: any) => a.time === date).deficit
   const height = deficitGrid.length
   const width = deficitGrid[0].length
@@ -51,6 +101,7 @@ let createPixelMap = (pixelsData: any, date: string) => {
 }
 
 const MapView = ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: Props) => {
+  const [ selectedParameter, setSelectedParameter ] = useState('deficit')
   const [ pixelSelection, setPixelSelection ] = useState(false)
   const [ zoom, setZoom ] = useState(14)
   const [ initialLoad, setInitialLoad ] = useState(true)
@@ -63,6 +114,10 @@ const MapView = ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: 
 
   const pixelLatStep = (pixelLatEnd - pixelLatStart) / pixelsInLat
   const pixelLngStep = (pixelLngEnd - pixelLngStart) / pixelsInLng
+
+  const handleSelectedParameterChange = (event: any) => {
+    setSelectedParameter(event.target.value)
+  }
 
   const getCenter = () => {
     if(selectedPlotId) {
@@ -129,6 +184,19 @@ const MapView = ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: 
   }
 
   let leafletElement = undefined
+
+  const ParameterSelectItems = () => {
+    const menuItems: any = []
+
+    for (let i = 0; i < parameters.length; i++) {
+      const parameter = parameters[i]
+      console.log(parameter)
+      
+      menuItems.push(<MenuItem key={parameter.slug} value={parameter.slug}>{parameter.label}</MenuItem>)
+    }
+
+    return menuItems
+  }
 
   return (
     <>
@@ -202,19 +270,34 @@ const MapView = ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: 
           onClick={(e: any) => navigate(`/map/${date}/plot/${e.layer.feature.properties.plotId}`)}
         />
       </Map>
-      <Fab
-        onClick={() => setPixelSelection(!pixelSelection)}
-        size="medium"
+      <Box
         className={css`
           position: absolute !important;
           z-index: 1000;
           top: 10px;
-          right: 10px;
+          right: 100px;
           background-color: #fff !important;
         `}
       >
-        {pixelSelection ? <GridOff/> : <Grid/>}
-      </Fab>
+        <FormControl>
+          <Select
+            value={selectedParameter}
+            onChange={handleSelectedParameterChange}
+          >
+            {
+              parameters.map(( parameter: any ) => 
+                <MenuItem key={parameter.slug} value={parameter.slug}>{parameter.label}</MenuItem>
+              )
+            }
+          </Select>
+        </FormControl>
+        <Fab
+          onClick={() => setPixelSelection(!pixelSelection)}
+          size="medium"
+        >
+          {pixelSelection ? <GridOff/> : <Grid/>}
+        </Fab>
+      </Box>
     </>
   )
 }
