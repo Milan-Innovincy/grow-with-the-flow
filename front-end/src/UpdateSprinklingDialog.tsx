@@ -26,22 +26,6 @@ export default class UpdateSprinklingDialog extends Component<Props, State> {
 
   resolve?: (value?: number | PromiseLike<number> | undefined) => void = undefined
 
-  // open = (value: number, data: any) => {
-  //   return new Promise<void>((resolve, reject) => {
-  //     try {
-  //       const { date }: { date: string } = data
-  //       this.setState({
-  //         open: true,
-  //         date: DateTime.fromFormat(date, 'dd/MM/yyyy').toFormat('yyyy-MM-dd'),
-  //         value: value
-  //       })
-  //       resolve()
-  //     } catch (error) {
-  //       reject(error)
-  //     }
-  //   })
-  // }
-
   open = (value: number, data: any) => {
     const { date }: { date: string } = data
     this.setState({
