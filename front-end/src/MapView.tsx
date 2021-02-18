@@ -285,7 +285,7 @@ const MapView = ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: 
             height: 48px;
             margin-right: 15px;
             padding: 0px 15px;
-            background-color: #ffffff;
+            background-color: #d5d5d5;
             border-radius: 4px;
           `}
         >
@@ -294,6 +294,7 @@ const MapView = ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: 
             `}
             value={selectedParameter}
             onChange={handleSelectedParameterChange}
+            autoWidth={true}
           >
             {
               Object.keys(parameters).map(( parameterName: string ) => 
