@@ -226,25 +226,27 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
   const currentEvapotranspiration = current ? current.evapotranspiration : 0
   const currentDeficit = current ? current.deficit : 0
 
-  const nodes = document.querySelectorAll('.recharts-layer.recharts-cartesian-axis-tick')
-  nodes.forEach(node => {
-    const textNode = node.querySelector('tspan')
-    const rawDate = textNode ? textNode.innerHTML : null
-
-    if (rawDate && rawDate.indexOf('/') !== -1) {
-      const formattedDate = new Date(DateTime.fromFormat(rawDate, 'dd/MM/yyyy').toFormat('yyyy-MM-dd'))
-      const predictionDate = new Date(DateTime.fromJSDate(new Date()).minus(Duration.fromObject({ days: 1 })).toFormat('yyyy-MM-dd'))
-
-      if (new Date().toDateString() === formattedDate.toDateString()) {
-        textNode.style.fontWeight = '900'
-        textNode.style.fontSize = '12px'
+  setTimeout(() => {
+    const nodes = document.querySelectorAll('.recharts-layer.recharts-cartesian-axis-tick')
+    nodes.forEach(node => {
+      const textNode = node.querySelector('tspan')
+      const rawDate = textNode ? textNode.innerHTML : null
+  
+      if (rawDate && rawDate.indexOf('/') !== -1) {
+        const formattedDate = new Date(DateTime.fromFormat(rawDate, 'dd/MM/yyyy').toFormat('yyyy-MM-dd'))
+        const predictionDate = new Date(DateTime.fromJSDate(new Date()).minus(Duration.fromObject({ days: 1 })).toFormat('yyyy-MM-dd'))
+  
+        if (new Date().toDateString() === formattedDate.toDateString()) {
+          textNode.style.fontWeight = '900'
+          textNode.style.fontSize = '12px'
+        }
+  
+        if (formattedDate >= predictionDate) {
+          textNode.style.fontStyle = 'italic'
+        }
       }
-
-      if (formattedDate >= predictionDate) {
-        textNode.style.fontStyle = 'italic'
-      }
-    }
-  })
+    })
+  }, 750)
 
   return(
     <Paper

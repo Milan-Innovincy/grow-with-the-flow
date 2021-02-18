@@ -42,7 +42,7 @@ export default class CookieStatement extends React.Component<{}, {}> {
         <h3>More Information</h3> 
         <p>Hopefully that has clarified things for you and as was previously mentioned if there is something that you aren't sure whether you need or not it's usually safer to leave cookies enabled in case it does interact with one of the features you use on our site.</p>
         <p>However if you are still looking for more information, you can contact us per e-mail:</p>
-        <p>Email: <a href="mailto::info@growwiththeflow.nl">info@growwiththeflow.nl</a></p>
+        <p>Email: <a href="mailto::growwiththeflow@deltares.nl">growwiththeflow@deltares.nl</a></p>
       </div>
     )
   }

@@ -34,8 +34,9 @@ export default function TopBar() {
             aria-haspopup="true"
             variant="contained"
             onClick={handleReportClick}
+            disableRipple={true}
             className={css`margin-right: 10px !important;`}
-          >Report</Button>
+          >Contact</Button>
           <ApplicationContext.Consumer>
             {({ keycloak, toggleShowModal }) =>
               <>{ keycloak &&

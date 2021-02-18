@@ -4,13 +4,56 @@ import { Map, Polygon, TileLayer, ImageOverlay, GeoJSON } from 'react-leaflet'
 import { range } from 'lodash'
 import { featureCollection, lineString, center } from '@turf/turf'
 import { css } from '@emotion/css'
-import { Fab } from '@material-ui/core';
+import { Fab, Select, MenuItem, FormControl, Box } from '@material-ui/core'
 import { Grid, GridOff } from 'mdi-material-ui'
 import { sortBy } from 'lodash'
 import { PNG } from 'pngjs'
 import chroma from 'chroma-js'
 import CoordinateCalculator from "./CoordinateCalculator";
 const { GeoJSONFillable, Patterns } = require('react-leaflet-geojson-patterns')
+
+const parameters: object = {
+  measuredPrecipitation: {
+    slug: 'measuredPrecipitation',
+    label: 'Neerslag',
+    colors: {
+      min: '#e3f2fd',
+      max: '#2196f3'
+    }
+  },
+  deficit: {
+    slug: 'deficit',
+    label: 'Vochttekort',
+    colors: {
+      min: '#fde3e3',
+      max: '#f32121'
+    }
+  },
+  availableSoilWater: {
+    slug: 'availableSoilWater',
+    label: 'Beschikbaar vochtgehalte',
+    colors: {
+      min: '#fde3fd',
+      max: '#f321c9'
+    }
+  },
+  desiredSoilWater: {
+    slug: 'desiredSoilWater',
+    label: 'Benodigde beregening',
+    colors: {
+      min: '#e3fdfa',
+      max: '#21f3d9'
+    }
+  },
+  evapotranspiration: {
+    slug: 'evapotranspiration',
+    label: 'Evapotranspiration',
+    colors: {
+      min: '#fdf4e3',
+      max: '#f39f21'
+    }
+  }
+}
 
 type Props = {
   navigate: (path: string) => void
@@ -20,12 +63,12 @@ type Props = {
   selectedPixel?: Array<number>
 }
 
-let createPixelMap = (pixelsData: any, date: string) => {
-  const deficitGrid = pixelsData.analytics.find((a: any) => a.time === date).deficit
+let createPixelMap = (pixelsData: any, date: string, parameter: string) => {
+  const deficitGrid = pixelsData.analytics.find((a: any) => a.time === date)[parameter]
   const height = deficitGrid.length
   const width = deficitGrid[0].length
 
-  const f = chroma.scale(['#e3f2fd', '#2196f3']).domain([0, 500])
+  const f = chroma.scale([parameters[parameter].colors.min, parameters[parameter].colors.max]).domain([0, 500])
   const png = new PNG({
     width,
     height
@@ -50,10 +93,22 @@ let createPixelMap = (pixelsData: any, date: string) => {
   return `data:image/png;base64,${base64}`
 }
 
+const getLegendColors = (parameter: string) => {
+  const f = chroma.scale([parameters[parameter].colors.min, parameters[parameter].colors.max]).domain([0, 500])
+
+  return [f(0).rgba(), f(250).rgba(), f(500).rgba()]
+}
+
 const MapView = ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: Props) => {
+  const [ selectedParameter, setSelectedParameter ] = useState('deficit')
+  const [ legendColors, setlegendColors ] = useState(getLegendColors(selectedParameter))
   const [ pixelSelection, setPixelSelection ] = useState(false)
   const [ zoom, setZoom ] = useState(14)
   const [ initialLoad, setInitialLoad ] = useState(true)
+  const [ base64, setBase64 ] = useState(createPixelMap(farmerData.pixelsData, date, selectedParameter))
+
+  console.log(legendColors);
+  
 
   const [ pixelsInLng, pixelsInLat ] = farmerData.pixelsData.dimensions
   const [ lng1, lat1, lng2, lat2 ] = farmerData.pixelsData.boundingBox
@@ -63,6 +118,10 @@ const MapView = ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: 
 
   const pixelLatStep = (pixelLatEnd - pixelLatStart) / pixelsInLat
   const pixelLngStep = (pixelLngEnd - pixelLngStart) / pixelsInLng
+
+  const handleSelectedParameterChange = (event: any) => {
+    setSelectedParameter(event.target.value)
+  }
 
   const getCenter = () => {
     if(selectedPlotId) {
@@ -99,7 +158,10 @@ const MapView = ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: 
     setMapCenter(mapCenter as any)
   }, [ selectedPlotId, selectedPixel ])
 
-  const [ deficitDataUrl ] = useState(createPixelMap(farmerData.pixelsData, date))
+  useEffect(() => {
+    setBase64(createPixelMap(farmerData.pixelsData, date, selectedParameter))
+    setlegendColors(getLegendColors(selectedParameter))
+  }, [ selectedParameter ])
 
   const pixelLats = [ ...range(pixelLatStart, pixelLatEnd, pixelLatStep), pixelLatEnd ]
   const pixelLngs = [ ...range(pixelLngStart, pixelLngEnd, pixelLngStep), pixelLngEnd ]
@@ -130,6 +192,10 @@ const MapView = ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: 
 
   let leafletElement = undefined
 
+  const legendStyle = {
+    background: legendColors[0]
+  }
+
   return (
     <>
       <Map
@@ -143,6 +209,7 @@ const MapView = ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: 
           }
           .leaflet-control-zoom {
             border-radius: 17px;
+            left: 14px;
           }
           .leaflet-control-zoom-in {
             border-radius: 17px 17px 0 0 !important;
@@ -155,7 +222,7 @@ const MapView = ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: 
         onclick={(e: any) => {
           if (pixelSelection) {
             const { lat, lng } = e.latlng
-            if (lat >= pixelLatStart && lat <= pixelLatEnd && lng >= pixelLngStart && lng <= pixelLngEnd) {
+            if (lat >= pixelLatStart && lat <= pixelLatEnd && lng >= pixelLngStart && lng <= pixelLngEnd && selectedParameter === 'deficit') {
               const pixelLat = Math.floor((lat - pixelLatStart) / pixelLatStep)
               const pixelLng = Math.floor((lng - pixelLngStart) / pixelLngStep)
               navigate(`/map/${date}/pixel/${pixelLat}-${pixelLng}`)
@@ -168,7 +235,7 @@ const MapView = ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: 
           attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
         />
         <ImageOverlay
-          url={deficitDataUrl}
+          url={base64}
           bounds={[ [ lat1, lng1 ], [ lat2, lng2 ] ]}
           opacity={pixelSelection ? 0.5 : 0}
         />
@@ -202,19 +269,60 @@ const MapView = ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: 
           onClick={(e: any) => navigate(`/map/${date}/plot/${e.layer.feature.properties.plotId}`)}
         />
       </Map>
-      <Fab
-        onClick={() => setPixelSelection(!pixelSelection)}
-        size="medium"
+      <div
         className={css`
+          display: flex;
           position: absolute !important;
           z-index: 1000;
           top: 10px;
-          right: 10px;
-          background-color: #fff !important;
+          right: 24px;
         `}
       >
-        {pixelSelection ? <GridOff/> : <Grid/>}
-      </Fab>
+        <div
+          className={css`
+            display: flex;
+            align-items: center;
+            height: 48px;
+            margin-right: 15px;
+            padding: 0px 15px;
+            background-color: #d5d5d5;
+            border-radius: 4px;
+          `}
+        >
+          <Select
+            className={css`
+            `}
+            value={selectedParameter}
+            onChange={handleSelectedParameterChange}
+            autoWidth={true}
+          >
+            {
+              Object.keys(parameters).map(( parameterName: string ) => 
+                <MenuItem key={parameterName} value={parameterName}>{parameters[parameterName].label}</MenuItem>
+              )
+            }
+          </Select>
+        </div>
+        <Fab
+          onClick={() => setPixelSelection(!pixelSelection)}
+          size="medium"
+          disableFocusRipple={true}
+        >
+          {pixelSelection ? <GridOff/> : <Grid/>}
+        </Fab>
+      </div>
+      
+      {/* <Box
+        className={css`
+          display: flex;
+          position: absolute !important;
+          z-index: 1000;
+          bottom: 10px;
+          right: 24px;
+        `}
+      >
+        <h1 style={legendStyle}>Legend</h1>
+      </Box> */}
     </>
   )
 }
