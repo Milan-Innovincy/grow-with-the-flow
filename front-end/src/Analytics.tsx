@@ -1,7 +1,10 @@
 import React, { ReactNode, useEffect, useState } from 'react'
 import { css } from '@emotion/css'
+import 'date-fns'
 import { ResponsiveContainer, ComposedChart, Area, Bar, XAxis, YAxis, CartesianGrid, LabelProps, RectangleProps, Line } from 'recharts'
 import { Paper, Fab } from '@material-ui/core'
+import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/pickers'
+import DateFnsUtils from '@date-io/date-fns'
 import { Close, Vanish, CarDefrostRear } from 'mdi-material-ui'
 import { DateTime, Duration } from 'luxon'
 import produce from 'immer'
@@ -248,6 +251,27 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
     })
   }, 750)
 
+  const handleDateViewClick = () => {
+    document.querySelector('.MuiFormControl-root.MuiTextField-root.MuiFormControl-marginNormal button').click()
+  }
+
+  const handleDateChange = (newDate: any) => {
+    if (newDate > date) {
+      EventEmitter.emit('show-snackbar', {
+        snackbarMessage: 'Kies a.u.b. een datum in het verleden.'
+      })
+      return
+    }
+
+    if (selectedPlotId) {
+      window.location = `${window.location.origin}/map/${DateTime.fromJSDate(newDate).toISODate()}/plot/${selectedPlotId}`
+    }
+
+    if (selectedPixel) {
+      window.location = `${window.location.origin}/map/${DateTime.fromJSDate(newDate).toISODate()}/pixel/${selectedPixel}`
+    }
+  }
+
   return(
     <Paper
       elevation={5}
@@ -296,7 +320,29 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
               margin-left: 50px;
             `}
           >{label}</small>
-          <DateView date={date}/>
+          <div
+            onClick={handleDateViewClick}
+            className={css`
+              cursor: pointer;
+            `}>
+            <DateView date={date} />
+          </div>
+          <MuiPickersUtilsProvider utils={DateFnsUtils}>
+            <KeyboardDatePicker
+              className={css`
+                display: none !important;
+              `}
+              margin="normal"
+              id="date-picker-dialog"
+              label="Date picker dialog"
+              format="yyyy-MM-dd"
+              value={date}
+              onChange={handleDateChange}
+              KeyboardButtonProps={{
+                'aria-label': 'change date',
+              }}
+            />
+          </MuiPickersUtilsProvider>
         </div>
         <CurrentDataItem
             label="Regenval in mm"
