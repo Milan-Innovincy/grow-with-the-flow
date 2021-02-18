@@ -1,17 +1,25 @@
 import React from 'react'
-import {AppBar, Toolbar, Avatar, Button, Menu, MenuItem} from '@material-ui/core'
+import { AppBar, Button, Toolbar, Avatar, Menu, MenuItem} from '@material-ui/core'
 import { Account } from 'mdi-material-ui'
 import { css } from '@emotion/css'
 import logo from './images/logo.png'
-import { ApplicationContext } from "./ApplicationContext";
+import { ApplicationContext } from "./ApplicationContext"
+import EventEmitter from './lib/EventEmitter'
+import ReportText from './components/ReportText'
 
 export default function TopBar() {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement> (null)
+  
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   }
+  
   const handleClose = () => {
     setAnchorEl(null)
+  }
+
+  const handleReportClick = () => {
+    EventEmitter.emit('open-text-popup', <ReportText />)
   }
 
   return (
@@ -21,6 +29,13 @@ export default function TopBar() {
           <img src={logo} width='250px' alt='Grow with the Flow' />
         </div>
         <div className={css`display: flex; align-items: center;`}>
+          <Button
+            aria-controls="user=menu"
+            aria-haspopup="true"
+            variant="contained"
+            onClick={handleReportClick}
+            className={css`margin-right: 10px !important;`}
+          >Report</Button>
           <ApplicationContext.Consumer>
             {({ keycloak, toggleShowModal }) =>
               <>{ keycloak &&
@@ -54,7 +69,7 @@ export default function TopBar() {
           }
           </ApplicationContext.Consumer>
           <Avatar className={css`background-color: #ba68c8 !important;`}>
-            <Account/>
+            <Account />
           </Avatar>
         </div>
       </Toolbar>
