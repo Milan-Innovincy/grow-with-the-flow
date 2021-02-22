@@ -309,7 +309,7 @@ const MapView = ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: 
         </Fab>
       </div>
       
-      <Box
+      {pixelSelection ? <Box
         className={css`
           display: flex;
           align-items: center;
@@ -336,7 +336,7 @@ const MapView = ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: 
           width: 30px;
           height: 20px;`}></div>
         <small className={css`padding-left: 5px; color: rgba(0, 0, 0, 0.87);`}>Max.</small>
-      </Box>
+      </Box> : null}
     </>
   )
 }
