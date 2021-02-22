@@ -107,9 +107,6 @@ const MapView = ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: 
   const [ initialLoad, setInitialLoad ] = useState(true)
   const [ base64, setBase64 ] = useState(createPixelMap(farmerData.pixelsData, date, selectedParameter))
 
-  console.log(legendColors);
-  
-
   const [ pixelsInLng, pixelsInLat ] = farmerData.pixelsData.dimensions
   const [ lng1, lat1, lng2, lat2 ] = farmerData.pixelsData.boundingBox
 
@@ -312,17 +309,34 @@ const MapView = ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: 
         </Fab>
       </div>
       
-      {/* <Box
+      <Box
         className={css`
           display: flex;
+          align-items: center;
           position: absolute !important;
+          padding: 4px 6px;
           z-index: 1000;
-          bottom: 10px;
+          background-color: #fff;
+          bottom: 24px;
           right: 24px;
+          border-radius: 4px;
         `}
       >
-        <h1 style={legendStyle}>Legend</h1>
-      </Box> */}
+        <small className={css`padding-right: 5px; color: rgba(0, 0, 0, 0.87);`}>Min.</small>
+        <div className={css`
+          background-color: rgba(${legendColors[0][0]}, ${legendColors[0][1]}, ${legendColors[0][2]}, ${legendColors[0][3]});
+          width: 30px;
+          height: 20px;`}></div>
+        <div className={css`
+          background-color: rgba(${legendColors[1][0]}, ${legendColors[1][1]}, ${legendColors[1][2]}, ${legendColors[1][3]});
+          width: 30px;
+          height: 20px;`}></div>
+        <div className={css`
+          background-color: rgba(${legendColors[2][0]}, ${legendColors[2][1]}, ${legendColors[2][2]}, ${legendColors[2][3]});
+          width: 30px;
+          height: 20px;`}></div>
+        <small className={css`padding-left: 5px; color: rgba(0, 0, 0, 0.87);`}>Max.</small>
+      </Box>
     </>
   )
 }
