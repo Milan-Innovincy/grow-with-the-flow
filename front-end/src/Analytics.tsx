@@ -2,7 +2,7 @@ import React, { ReactNode, useEffect, useState } from 'react'
 import { css } from '@emotion/css'
 import 'date-fns'
 import { ResponsiveContainer, ComposedChart, Area, Bar, XAxis, YAxis, CartesianGrid, LabelProps, RectangleProps, Line } from 'recharts'
-import { Paper, Fab } from '@material-ui/core'
+import { Paper, Fab, InputLabel, MenuItem, FormControl, Select } from '@material-ui/core'
 import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/pickers'
 import DateFnsUtils from '@date-io/date-fns'
 import { Close, Vanish, CarDefrostRear } from 'mdi-material-ui'
@@ -37,6 +37,52 @@ const getCropTypeIcon = (cropType: string) => {
       return <GenericIcon width={28} fill="#00acc1"/>
   }
 }
+
+const cornCropStatusOptions = [
+  {
+    label: 'Opkomst',
+    value: 0
+  },
+  {
+    label: 'Vijfde blad',
+    value: 0.4
+  },
+  {
+    label: 'Derde bladkop',
+    value: 0.65
+  },
+  {
+    label: 'Pluimvorming',
+    value: 0.9
+  },
+  {
+    label: 'Bloei',
+    value: 1
+  },
+  {
+    label: 'Volledige afrijping',
+    value: 2
+  }
+]
+
+const potatoCropStatusOptions = [
+  {
+    label: 'Opkomst',
+    value: 0
+  },
+  {
+    label: 'Gewasbedek-king volledig',
+    value: 1.2
+  },
+  {
+    label: 'Aanzet knol-ontwikkeling',
+    value: 1.0
+  },
+  {
+    label: 'Afsterven',
+    value: 2.0
+  }
+]
 
 let updateSprinklingDialog: UpdateSprinklingDialog
 
@@ -158,9 +204,11 @@ type Props = {
 
 const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, sprinklingCache, setSprinklingCache }: Props) => {
   const [, setState] = useState(null as any)
+  const [cropStatus, setCropStatus] = useState(null as any)
 
   useEffect(() => {
-    window.dispatchEvent(new Event('resize'))    
+    window.dispatchEvent(new Event('resize'))
+    setCropStatus("")  
   }, [ selectedPlotId, selectedPixel ])
 
   const handlePlotfeedbackUpdated = () => {
@@ -181,7 +229,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
     const [sprinklingData] = plotFeedback.filter((feedback: any) => feedback.plotId === selectedPlotId)
     const feature = farmerData.plotsGeoJSON.features.find((f: any) => f.properties!.plotId === selectedPlotId)
 
-    cropType = feature.properties.cropTypes
+    cropType = feature.properties.cropTypes    
     soilType = feature.properties.soilType
     area = feature.properties.plotSizeHa
     if (!!plotsAnalytics[feature.properties.plotId]) {
@@ -255,6 +303,10 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
     document.querySelector('.MuiFormControl-root.MuiTextField-root.MuiFormControl-marginNormal button').click()
   }
 
+  const handleCropStatusChange = (event: any) => {
+    setCropStatus(event.target.value)
+  }
+
   const handleDateChange = (newDate: any) => {
     if (newDate > date) {
       EventEmitter.emit('show-snackbar', {
@@ -302,89 +354,116 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
         className={css`
           display: flex;
           align-items: flex-start;
+          justify-content: space-between;
           height: 60px;
           padding: 30px 20px 0 20px;
         `}
       >
         <div
           className={css`
-            flex: 1;
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             color: #2F3D50;
           `}
         >
-          <small
-            className={css`
-              font-weight: lighter;
-              margin-left: 50px;
-            `}
-          >{label}</small>
-          <div
-            onClick={handleDateViewClick}
-            className={css`
-              cursor: pointer;
-            `}>
-            <DateView date={date} />
-          </div>
-          <MuiPickersUtilsProvider utils={DateFnsUtils}>
-            <KeyboardDatePicker
+          <div>
+            <small
               className={css`
-                display: none !important;
+                font-weight: lighter;
+                margin-left: 50px;
               `}
-              margin="normal"
-              id="date-picker-dialog"
-              disableFuture={true}
-              label="Date picker dialog"
-              format="yyyy-MM-dd"
-              value={date}
-              onChange={handleDateChange}
-              KeyboardButtonProps={{
-                'aria-label': 'change date',
-              }}
-            />
-          </MuiPickersUtilsProvider>
+            >{label}</small>
+            <div
+              onClick={handleDateViewClick}
+              className={css`
+                cursor: pointer;
+              `}>
+              <DateView date={date} />
+            </div>
+            <MuiPickersUtilsProvider utils={DateFnsUtils}>
+              <KeyboardDatePicker
+                className={css`
+                  display: none !important;
+                `}
+                margin="normal"
+                id="date-picker-dialog"
+                disableFuture={true}
+                label="Date picker dialog"
+                format="yyyy-MM-dd"
+                value={date}
+                onChange={handleDateChange}
+                KeyboardButtonProps={{
+                  'aria-label': 'change date',
+                }}
+              />
+            </MuiPickersUtilsProvider>
+          </div>
+
+          <FormControl variant="outlined" className={css`margin-left: 30px !important;`}>
+            <InputLabel id="crop-status-label">Crop status</InputLabel>
+            <Select
+              className={css`min-width: 150px;`}
+              labelId="crop-status-label"
+              id="demo-simple-select-outlined"
+              value={cropStatus}
+              onChange={handleCropStatusChange}
+              label="Crop status"
+              disabled={cropType !== 'Mais' && cropType !== 'Cons. en industrieaardappelen.'}
+            >
+              <MenuItem value="">
+                <em>None</em>
+              </MenuItem>
+              {
+                cropType === 'Mais' ? cornCropStatusOptions.map(( option: any ) => 
+                  <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>
+                ) : null
+              }
+            </Select>
+          </FormControl>
         </div>
-        <CurrentDataItem
-            label="Regenval in mm"
-            value={currentRainfall}
-            color="#80A1D4"
-            icon={<RainfallIcon fill="#80A1D4" className={css`width: 20px; height: 20px;`}/>}
-        />
-        <CurrentDataItem
-            label="Evapotranspiratie in mm"
-            value={currentEvapotranspiration}
-            color="#6A7152"
-            icon={<CarDefrostRear fill="#6A7152" className={css`width: 18px !important; height: 18px !important; transform: rotate(180deg);`} />}
-        />
-        <CurrentDataItem
-            label="Vochttekort in mm"
-            value={currentDeficit}
-            color="#F6511D"
-            icon={<Vanish fill="#F6511D" width={20} className={css`width: 18px !important; height: 18px !important;`}/>}
-        />
-        <CurrentDataItem
-            label="Te beregenen in mm"
-            value={currentSprinkling}
-            color="#1565c0"
-            icon={<IrrigationIcon fill="#1565c0" className={css`width: 20px; height: 20px;`}/>}
-        />
-        <SelectedSumData
-          circleContent={getCropTypeIcon(cropType)}
-          label="Gewas"
-          text={cropType}
-        />
-        <SelectedSumData
-          circleContent={Math.round(area)}
-          label="Hectare"
-          text={soilType}
-        />
-        <PlotListDialog
-          farmerData={farmerData}
-          date={DateTime.fromJSDate(date).toISODate()}
-          navigate={navigate}
-          sprinklingCache={sprinklingCache}
-        />  
+
+        <div className={css`display: flex;`}>
+          <CurrentDataItem
+              label="Regenval in mm"
+              value={currentRainfall}
+              color="#80A1D4"
+              icon={<RainfallIcon fill="#80A1D4" className={css`width: 20px; height: 20px;`}/>}
+          />
+          <CurrentDataItem
+              label="Evapotranspiratie in mm"
+              value={currentEvapotranspiration}
+              color="#6A7152"
+              icon={<CarDefrostRear fill="#6A7152" className={css`width: 18px !important; height: 18px !important; transform: rotate(180deg);`} />}
+          />
+          <CurrentDataItem
+              label="Vochttekort in mm"
+              value={currentDeficit}
+              color="#F6511D"
+              icon={<Vanish fill="#F6511D" width={20} className={css`width: 18px !important; height: 18px !important;`}/>}
+          />
+          <CurrentDataItem
+              label="Te beregenen in mm"
+              value={currentSprinkling}
+              color="#1565c0"
+              icon={<IrrigationIcon fill="#1565c0" className={css`width: 20px; height: 20px;`}/>}
+          />
+          <SelectedSumData
+            circleContent={getCropTypeIcon(cropType)}
+            label="Gewas"
+            text={cropType}
+          />
+          <SelectedSumData
+            circleContent={Math.round(area)}
+            label="Hectare"
+            text={soilType}
+          />
+          <PlotListDialog
+            farmerData={farmerData}
+            date={DateTime.fromJSDate(date).toISODate()}
+            navigate={navigate}
+            sprinklingCache={sprinklingCache}
+          />
+        </div>
       </div>
       <div
         className={css`
