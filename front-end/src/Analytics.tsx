@@ -256,13 +256,6 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
   }
 
   const handleDateChange = (newDate: any) => {
-    if (newDate > date) {
-      EventEmitter.emit('show-snackbar', {
-        snackbarMessage: 'Kies a.u.b. een datum in het verleden.'
-      })
-      return
-    }
-
     if (selectedPlotId) {
       window.location = `${window.location.origin}/map/${DateTime.fromJSDate(newDate).toISODate()}/plot/${selectedPlotId}`
     }
