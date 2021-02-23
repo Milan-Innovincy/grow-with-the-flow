@@ -219,7 +219,7 @@ const MapView = ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: 
         onclick={(e: any) => {
           if (pixelSelection) {
             const { lat, lng } = e.latlng
-            if (lat >= pixelLatStart && lat <= pixelLatEnd && lng >= pixelLngStart && lng <= pixelLngEnd && selectedParameter === 'deficit') {
+            if (lat >= pixelLatStart && lat <= pixelLatEnd && lng >= pixelLngStart && lng <= pixelLngEnd) {
               const pixelLat = Math.floor((lat - pixelLatStart) / pixelLatStep)
               const pixelLng = Math.floor((lng - pixelLngStart) / pixelLngStep)
               navigate(`/map/${date}/pixel/${pixelLat}-${pixelLng}`)

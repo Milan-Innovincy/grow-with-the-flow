@@ -334,6 +334,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
               `}
               margin="normal"
               id="date-picker-dialog"
+              disableFuture={true}
               label="Date picker dialog"
               format="yyyy-MM-dd"
               value={date}
