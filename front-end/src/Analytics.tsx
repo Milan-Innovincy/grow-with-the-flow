@@ -71,11 +71,11 @@ const potatoCropStatusOptions = [
     value: 0
   },
   {
-    label: 'Gewasbedek-king volledig',
+    label: 'Gewasbedekking volledig',
     value: 1.2
   },
   {
-    label: 'Aanzet knol-ontwikkeling',
+    label: 'Aanzet knolontwikkeling',
     value: 1.0
   },
   {
@@ -415,6 +415,11 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
               </MenuItem>
               {
                 cropType === 'Mais' ? cornCropStatusOptions.map(( option: any ) => 
+                  <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>
+                ) : null
+              }
+              {
+                cropType === 'Aardappelen' ? potatoCropStatusOptions.map(( option: any ) => 
                   <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>
                 ) : null
               }
