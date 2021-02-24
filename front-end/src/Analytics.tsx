@@ -10,6 +10,7 @@ import { DateTime, Duration } from 'luxon'
 import produce from 'immer'
 import { padStart } from 'lodash'
 import EventEmitter from './lib/EventEmitter'
+import axios from './lib/axios'
 
 import UpdateSprinklingDialog from './UpdateSprinklingDialog'
 import DateView from './DateView'
@@ -305,6 +306,20 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
 
   const handleCropStatusChange = (event: any) => {
     setCropStatus(event.target.value)
+    // TODO: PUT to backend. Should look something like this:
+    // axios.put('/crop-status', {
+    //   plotId: selectedPlotId,
+    //   date,
+    //   cropStatus: event.target.value
+    // }).then(() => {
+    //   EventEmitter.emit('show-snackbar', {
+    //     snackbarMessage: 'Crop status is aangepast.'
+    //   })
+    // }).catch(() => {
+    //   EventEmitter.emit('show-snackbar', {
+    //     snackbarMessage: 'Sorry, de crop status kon niet worden aangepast.'
+    //   })
+    // })
   }
 
   const handleDateChange = (newDate: any) => {
