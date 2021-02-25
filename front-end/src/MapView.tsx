@@ -64,9 +64,9 @@ type Props = {
 }
 
 let createPixelMap = (pixelsData: any, date: string, parameter: string) => {
-  const deficitGrid = pixelsData.analytics.find((a: any) => a.time === date)[parameter]
-  const height = deficitGrid.length
-  const width = deficitGrid[0].length
+  const grid = pixelsData.analytics.find((a: any) => a.time === date)[parameter]
+  const height = grid.length
+  const width = grid[0].length
 
   const f = chroma.scale([parameters[parameter].colors.min, parameters[parameter].colors.max]).domain([0, 500])
   const png = new PNG({
@@ -77,8 +77,9 @@ let createPixelMap = (pixelsData: any, date: string, parameter: string) => {
   for(let y = 0; y < height; y++) {
     for(let x = 0; x < width; x++) {
       const idx = (width * y + x) << 2
-      const value = deficitGrid[height-1-y][x]
-      const rgba = (typeof(value) === 'number') ? f(value).rgba() : [0,0,0,0]
+      const value = grid[height-1-y][x]
+      
+      const rgba = (typeof(value) === 'number' && value !== -999) ? f(value).rgba() : [0,0,0,0]
       png.data[idx  ] = rgba[0]
       png.data[idx+1] = rgba[1]
       png.data[idx+2] = rgba[2]
