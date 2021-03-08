@@ -54,7 +54,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
           handleError()
         })
         
-        const pixelsData = await axiosInstance.get(`/pixels?on=${date}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater`).then(({ data }) => {
+        const pixelsData = await axiosInstance.get(`/pixels?on=${date}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater,relativeTranspiration`).then(({ data }) => {
           return data
         }).catch((error: Error) => {
           console.error(error.message)
@@ -66,7 +66,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
           console.error(error.message)
           handleError()
         })
-        const plotsAnalytics = await axiosInstance.get(`/plot-analytics?on=${date}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater`).then(({ data }) => {
+        const plotsAnalytics = await axiosInstance.get(`/plot-analytics?on=${date}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater,relativeTranspiration`).then(({ data }) => {
           return data
         }).catch((error: Error) => {
           console.error(error.message)
