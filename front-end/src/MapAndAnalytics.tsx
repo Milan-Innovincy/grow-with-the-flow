@@ -38,7 +38,8 @@ const MapAndAnalytics = ({ match, history }: Props) => {
         const dateToken = date ? date.replace(/-/g, '') : latestAvailableDate.replace(/-/g, '')
         const { data: landUse } = await axios.get(`${prefix}/gwtf-land-use.json`)
         const { data: soilMap } = await axios.get(`${prefix}/gwtf-soil-map.json`)
-        const { data: pixelsData } = await axios.get(`${prefix}/gwtf-pixels-${dateToken}.json`)
+
+        const { data: pixelsData } = await axiosInstance.get(`/pixels?on=${date}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater`)
 
         const plotsGeoJSON = await axiosInstance.get(`/plots`).then(({ data }) => {
           return data
