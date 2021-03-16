@@ -37,8 +37,8 @@ const parameters: object = {
       max: '#f321c9'
     }
   },
-  desiredSoilWater: {
-    slug: 'desiredSoilWater',
+  relativeTranspiration: {
+    slug: 'relativeTranspiration',
     label: 'Benodigde beregening',
     colors: {
       min: '#e3fdfa',
