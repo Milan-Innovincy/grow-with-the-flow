@@ -9,6 +9,7 @@ import EventEmitter from './lib/EventEmitter'
 import MapView from './MapView'
 import Analytics from './Analytics'
 import OverallSummary from './OverallSummary'
+import LoadingError from './components/LoadingError'
 import { ApplicationContext } from "./ApplicationContext"
 
 import axiosInstance from "./lib/axios"
@@ -34,42 +35,62 @@ const MapAndAnalytics = ({ match, history }: Props) => {
       const isAuthenticated = contextValue.keycloak && contextValue.keycloak.token
       
       if (isAuthenticated) {
+        const handleError = () => {
+          EventEmitter.emit('open-text-popup', <LoadingError date={new Date(date)} />)
+          window.stop()
+        }
         const prefix = 'https://storage.googleapis.com/grow-with-the-flow.appspot.com'
         const dateToken = date ? date.replace(/-/g, '') : latestAvailableDate.replace(/-/g, '')
-        const { data: landUse } = await axios.get(`${prefix}/gwtf-land-use.json`)
-        const { data: soilMap } = await axios.get(`${prefix}/gwtf-soil-map.json`)
-        const { data: pixelsData } = await axios.get(`${prefix}/gwtf-pixels-${dateToken}.json`)
-
+        const landUse = await axios.get(`${prefix}/gwtf-land-use.json`).then(({ data }) => {
+          return data
+        }).catch((error: Error) => {
+          console.error(error.message)
+          handleError()
+        })
+        const soilMap = await axios.get(`${prefix}/gwtf-soil-map.json`).then(({ data }) => {
+          return data
+        }).catch((error: Error) => {
+          console.error(error.message)
+          handleError()
+        })
+        
+        const pixelsData = await axiosInstance.get(`/pixels?on=${date}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater,relativeTranspiration`).then(({ data }) => {
+          return data
+        }).catch((error: Error) => {
+          console.error(error.message)
+          handleError()
+        })
         const plotsGeoJSON = await axiosInstance.get(`/plots`).then(({ data }) => {
           return data
         }).catch((error: Error) => {
-          // TODO: Properly handle error
-          throw new Error(error.message)
+          console.error(error.message)
+          handleError()
         })
-        const plotsAnalytics = await axiosInstance.get(`/plot-analytics?on=${date}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater`).then(({ data }) => {
+        const plotsAnalytics = await axiosInstance.get(`/plot-analytics?on=${date}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater,relativeTranspiration`).then(({ data }) => {
           return data
         }).catch((error: Error) => {
-          // TODO: Properly handle error
-          throw new Error(error.message)
+          console.error(error.message)
+          handleError()
         })
 
-        pixelsData.landUse = landUse
-        pixelsData.soilMap = soilMap
-
-        // TODO: Processing features data should not happen while entire app is still blocked. Find responsible component and move logic there to handle gracefully.
-        plotsGeoJSON.features = plotsGeoJSON.features.filter((feature: any) => feature.properties.plotId)        
-        
-        const farmerData = {
-          pixelsData,
-          plotsGeoJSON,
-          plotsAnalytics,
-          plotFeedback: []
+        if (landUse && soilMap && pixelsData && plotsGeoJSON && plotsAnalytics) {
+          pixelsData.landUse = landUse
+          pixelsData.soilMap = soilMap
+  
+          plotsGeoJSON.features = plotsGeoJSON.features.filter((feature: any) => feature.properties.plotId)        
+          
+          const farmerData = {
+            pixelsData,
+            plotsGeoJSON,
+            plotsAnalytics,
+            plotFeedback: []
+          }
+  
+          EventEmitter.on('sprinkling-update', handleSprinklingUpdate)
+  
+          setFarmerData(farmerData)
+          getPlotFeedback(farmerData)
         }
-
-        EventEmitter.on('sprinkling-update', handleSprinklingUpdate)
-
-        setFarmerData(farmerData)
-        getPlotFeedback(farmerData)
       }
     })()
   }, [contextValue.authenticated])

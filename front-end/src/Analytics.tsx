@@ -243,7 +243,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
           rainfall: i.measuredPrecipitation,
           sprinkling,
           moisture: i.availableSoilWater,
-          desiredMoisture: i.desiredSoilWater,
+          desiredMoisture: i.relativeTranspiration,
           evapotranspiration: i.evapotranspiration,
           deficit: i.deficit
         }
@@ -266,7 +266,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
       rainfall: i.measuredPrecipitation[x][y],
       sprinkling: sprinklingCache[`${selectedPixel.join(',')}-${index}`] || 0,
       moisture: i.availableSoilWater[x][y],
-      desiredMoisture: i.desiredSoilWater[x][y],
+      desiredMoisture: i.relativeTranspiration[x][y],
       evapotranspiration: i.evapotranspiration[x][y],
       deficit: i.deficit[x][y]
     }))
@@ -323,13 +323,6 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
   }
 
   const handleDateChange = (newDate: any) => {
-    if (newDate > date) {
-      EventEmitter.emit('show-snackbar', {
-        snackbarMessage: 'Kies a.u.b. een datum in het verleden.'
-      })
-      return
-    }
-
     if (selectedPlotId) {
       window.location = `${window.location.origin}/map/${DateTime.fromJSDate(newDate).toISODate()}/plot/${selectedPlotId}`
     }
