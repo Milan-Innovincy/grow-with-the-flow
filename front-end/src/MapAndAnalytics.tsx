@@ -24,6 +24,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
   const [ farmerData, setFarmerData ] = useState(null as any)
   const [ sprinklingCache, setSprinklingCache ] = useState({})
   const contextValue = useContext(ApplicationContext)
+  const [isFetchingFarmerData, setIsFetchingFarmerData] = useState(false);
 
   const { date, selectionType, selectionId } = match.params
   const latestAvailableDate = DateTime.fromJSDate(new Date())
@@ -31,11 +32,13 @@ const MapAndAnalytics = ({ match, history }: Props) => {
                                 .toFormat('yyyy-MM-dd')
 
   useEffect(() => {
+    setIsFetchingFarmerData(true);
     (async () => {
       const isAuthenticated = contextValue.keycloak && contextValue.keycloak.token
       
       if (isAuthenticated) {
         const handleError = () => {
+          setIsFetchingFarmerData(false);
           EventEmitter.emit('open-text-popup', <LoadingError date={new Date(date)} />)
           window.stop()
         }
@@ -90,6 +93,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
   
           setFarmerData(farmerData)
           getPlotFeedback(farmerData)
+          setIsFetchingFarmerData(false)
         }
       }
     })()
@@ -209,6 +213,20 @@ const MapAndAnalytics = ({ match, history }: Props) => {
           />
         }
       </Paper>
+        <div>
+          {isFetchingFarmerData &&
+            <div
+              className={css`
+                padding: 24px 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              `}
+            >
+              <CircularProgress/>
+            </div>
+          }
+        </div>
     </div>
   )
 }
