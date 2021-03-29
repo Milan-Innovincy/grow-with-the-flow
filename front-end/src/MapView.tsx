@@ -58,6 +58,7 @@ const parameters: object = {
 type Props = {
   navigate: (path: string) => void
   farmerData: any
+  farmerGeoData: any
   date: string
   selectedPlotId?: string
   selectedPixel?: Array<number>
@@ -100,22 +101,53 @@ const getLegendColors = (parameter: string) => {
   return [f(0).rgba(), f(250).rgba(), f(500).rgba()]
 }
 
-const MapView = ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: Props) => {
+const MapView = ({ navigate, date, farmerData, farmerGeoData, selectedPlotId, selectedPixel }: Props) => {
   const [ selectedParameter, setSelectedParameter ] = useState('deficit')
   const [ legendColors, setlegendColors ] = useState(getLegendColors(selectedParameter))
   const [ pixelSelection, setPixelSelection ] = useState(false)
   const [ zoom, setZoom ] = useState(14)
   const [ initialLoad, setInitialLoad ] = useState(true)
-  const [ base64, setBase64 ] = useState(createPixelMap(farmerData.pixelsData, date, selectedParameter))
+  const [ base64, setBase64 ] = useState('')
 
-  const [ pixelsInLng, pixelsInLat ] = farmerData.pixelsData.dimensions
-  const [ lng1, lat1, lng2, lat2 ] = farmerData.pixelsData.boundingBox
+  let lng1: number = 0;
+  let lat1: number = 0;
+  let lng2: number = 0;
+  let lat2: number = 0;
+  let gridGeoJSON: object = {};
+  let pixelLatStart: number = 0;
+  let pixelLatEnd: number = 0;
+  let pixelLngStart: number = 0;
+  let pixelLngEnd: number = 0;
+  let pixelLatStep: number = 0;
+  let pixelLngStep: number = 0;
 
-  const [ pixelLatStart, pixelLatEnd ] = sortBy([ lat1, lat2 ])
-  const [ pixelLngStart, pixelLngEnd ] = sortBy([ lng1, lng2 ])
+  if (farmerData) {
+    const [ pixelsInLng, pixelsInLat ] = farmerData.pixelsData.dimensions
 
-  const pixelLatStep = (pixelLatEnd - pixelLatStart) / pixelsInLat
-  const pixelLngStep = (pixelLngEnd - pixelLngStart) / pixelsInLng
+    lng1 = farmerData.pixelsData.boundingBox[0]
+    lat1 = farmerData.pixelsData.boundingBox[1]
+    lng2 = farmerData.pixelsData.boundingBox[2] 
+    lat2 = farmerData.pixelsData.boundingBox[3]
+    pixelLatStart = sortBy([ lat1, lat2 ])[0]
+    pixelLatEnd = sortBy([ lat1, lat2 ])[1]
+    pixelLngStart = sortBy([ lng1, lng2 ])[0]
+    pixelLngEnd = sortBy([ lng1, lng2 ])[1]    
+
+    pixelLatStep = (pixelLatEnd - pixelLatStart) / pixelsInLat
+    pixelLngStep = (pixelLngEnd - pixelLngStart) / pixelsInLng
+
+    const pixelLats = [ ...range(pixelLatStart, pixelLatEnd, pixelLatStep), pixelLatEnd ]
+    const pixelLngs = [ ...range(pixelLngStart, pixelLngEnd, pixelLngStep), pixelLngEnd ]
+
+    gridGeoJSON = featureCollection([
+      ...pixelLats.map(lat =>
+        lineString([ [ pixelLngStart, lat ], [ pixelLngEnd, lat ] ])
+      ),
+      ...pixelLngs.map(lng =>
+        lineString([ [ lng, pixelLatStart ], [ lng, pixelLatEnd ] ])
+      )
+    ])
+  }
 
   const handleSelectedParameterChange = (event: any) => {
     setSelectedParameter(event.target.value)
@@ -123,7 +155,7 @@ const MapView = ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: 
 
   const getCenter = () => {
     if(selectedPlotId) {
-      const feature = farmerData.plotsGeoJSON.features.find((f: any) => f.properties.plotId === selectedPlotId)
+      const feature = farmerGeoData.plotsGeoJSON.features.find((f: any) => f.properties.plotId === selectedPlotId)
       const c = center(feature).geometry!.coordinates
       return {
         lat: c[1],
@@ -138,7 +170,7 @@ const MapView = ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: 
     }
 
     if (initialLoad) {
-      const result = CoordinateCalculator.calculateBounds(farmerData.plotsGeoJSON);
+      const result = CoordinateCalculator.calculateBounds(farmerGeoData.plotsGeoJSON);
       setInitialLoad(false);
       return {
         lat: result.lat.avg,
@@ -157,23 +189,13 @@ const MapView = ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: 
   }, [ selectedPlotId, selectedPixel ])
 
   useEffect(() => {
-    setBase64(createPixelMap(farmerData.pixelsData, date, selectedParameter))
-    setlegendColors(getLegendColors(selectedParameter))
+    if (farmerData) {
+      setBase64(createPixelMap(farmerData.pixelsData, date, selectedParameter))
+      setlegendColors(getLegendColors(selectedParameter))
+    }
   }, [ selectedParameter ])
 
-  const pixelLats = [ ...range(pixelLatStart, pixelLatEnd, pixelLatStep), pixelLatEnd ]
-  const pixelLngs = [ ...range(pixelLngStart, pixelLngEnd, pixelLngStep), pixelLngEnd ]
-
-  const gridGeoJSON = featureCollection([
-    ...pixelLats.map(lat =>
-      lineString([ [ pixelLngStart, lat ], [ pixelLngEnd, lat ] ])
-    ),
-    ...pixelLngs.map(lng =>
-      lineString([ [ lng, pixelLatStart ], [ lng, pixelLatEnd ] ])
-    )
-  ])
-
-  let pixelPolygon = undefined
+  let pixelPolygon = undefined;
   if(selectedPixel) {
     const [ latIndex, lngIndex ] = selectedPixel
     const lat1 = pixelLatStart + latIndex * pixelLatStep
@@ -192,6 +214,38 @@ const MapView = ({ navigate, date, farmerData, selectedPlotId, selectedPixel }: 
 
   const legendStyle = {
     background: legendColors[0]
+  }
+
+  if (!farmerData && farmerGeoData) {
+    return (
+      <Map
+        center={mapCenter as any}
+        zoom={zoom}
+        onzoomend={(e: any) => setZoom(e.target.getZoom())}
+        className={css`
+          height: 100%;
+          .leaflet-interactive:hover {
+            fill-opacity: 0.2 !important;
+          }
+          .leaflet-control-zoom {
+            border-radius: 17px;
+            left: 14px;
+          }
+          .leaflet-control-zoom-in {
+            border-radius: 17px 17px 0 0 !important;
+          }
+          .leaflet-control-zoom-out {
+            border-radius: 0 0 17px 17px !important;
+          }
+        `}
+        ref={(map: any) => leafletElement = map && map!.leafletElement}
+      >
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+        />
+      </Map>
+    )
   }
 
   return (
