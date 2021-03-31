@@ -22,8 +22,10 @@ type Props = RouteComponentProps<{
 
 const MapAndAnalytics = ({ match, history }: Props) => {
   const [ farmerData, setFarmerData ] = useState(null as any)
+  const [ farmerGeoData, setFarmerGeoData ] = useState(null as any)
   const [ sprinklingCache, setSprinklingCache ] = useState({})
   const contextValue = useContext(ApplicationContext)
+  const [isFetchingFarmerData, setIsFetchingFarmerData] = useState(false);
 
   const { date, selectionType, selectionId } = match.params
   const latestAvailableDate = DateTime.fromJSDate(new Date())
@@ -31,16 +33,33 @@ const MapAndAnalytics = ({ match, history }: Props) => {
                                 .toFormat('yyyy-MM-dd')
 
   useEffect(() => {
+    setIsFetchingFarmerData(true);
     (async () => {
       const isAuthenticated = contextValue.keycloak && contextValue.keycloak.token
       
       if (isAuthenticated) {
         const handleError = () => {
+          setIsFetchingFarmerData(false);
           EventEmitter.emit('open-text-popup', <LoadingError date={new Date(date)} />)
           window.stop()
         }
         const prefix = 'https://storage.googleapis.com/grow-with-the-flow.appspot.com'
         const dateToken = date ? date.replace(/-/g, '') : latestAvailableDate.replace(/-/g, '')
+        const plotsGeoJSON = await axiosInstance.get(`/plots`).then(({ data }) => {
+          return data
+        }).catch((error: Error) => {
+          console.error(error.message)
+          handleError()
+        })
+
+        if (plotsGeoJSON) {
+          plotsGeoJSON.features = plotsGeoJSON.features.filter((feature: any) => feature.properties.plotId)
+          const farmerGeoData = {
+            plotsGeoJSON
+          }
+          setFarmerGeoData(farmerGeoData);
+        }
+
         const landUse = await axios.get(`${prefix}/gwtf-land-use.json`).then(({ data }) => {
           return data
         }).catch((error: Error) => {
@@ -53,14 +72,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
           console.error(error.message)
           handleError()
         })
-        
         const pixelsData = await axiosInstance.get(`/pixels?on=${date}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater,relativeTranspiration`).then(({ data }) => {
-          return data
-        }).catch((error: Error) => {
-          console.error(error.message)
-          handleError()
-        })
-        const plotsGeoJSON = await axiosInstance.get(`/plots`).then(({ data }) => {
           return data
         }).catch((error: Error) => {
           console.error(error.message)
@@ -90,6 +102,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
   
           setFarmerData(farmerData)
           getPlotFeedback(farmerData)
+          setIsFetchingFarmerData(false)
         }
       }
     })()
@@ -129,7 +142,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
     return <Redirect to={`/map/${latestAvailableDate}`} />
   }
 
-  if(!farmerData) {
+  if(!farmerGeoData) {
     return(
       <div
         className={css`
@@ -179,36 +192,53 @@ const MapAndAnalytics = ({ match, history }: Props) => {
         <MapView
           navigate={navigate}
           farmerData={farmerData}
+          farmerGeoData={farmerGeoData}
           date={date}
           selectedPlotId={selectedPlotId}
           selectedPixel={selectedPixel}
         />
       </div>
-      <Paper
-        elevation={5}
-        className={css`
-          position: relative;
-          z-index: 1000;
-        `}
-        square
-      >
-        {(selectedPlotId || selectedPixel) ?
-          <Analytics
-            date={new Date(date)}
-            farmerData={farmerData}
-            navigate={navigate}
-            selectedPixel={selectedPixel}
-            selectedPlotId={selectedPlotId}
-            sprinklingCache={sprinklingCache}
-            setSprinklingCache={setSprinklingCache}
-          /> : <OverallSummary
-            date={new Date(date)}
-            farmerData={farmerData}
-            navigate={navigate}
-            sprinklingCache={sprinklingCache}
-          />
-        }
-      </Paper>
+      {farmerData ?
+        <Paper
+          elevation={5}
+          className={css`
+            position: relative;
+            z-index: 1000;
+          `}
+          square
+        >
+          {(selectedPlotId || selectedPixel) ?
+            <Analytics
+              date={new Date(date)}
+              farmerData={farmerData}
+              navigate={navigate}
+              selectedPixel={selectedPixel}
+              selectedPlotId={selectedPlotId}
+              sprinklingCache={sprinklingCache}
+              setSprinklingCache={setSprinklingCache}
+            /> : <OverallSummary
+              date={new Date(date)}
+              farmerData={farmerData}
+              navigate={navigate}
+              sprinklingCache={sprinklingCache}
+            />
+          }
+        </Paper> :
+        <div>
+          {isFetchingFarmerData &&
+            <div
+              className={css`
+                padding: 24px 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              `}
+            >
+              <CircularProgress/>
+            </div>
+          }
+        </div>
+      }
     </div>
   )
 }
