@@ -72,13 +72,13 @@ const MapAndAnalytics = ({ match, history }: Props) => {
           console.error(error.message)
           handleError()
         })
-        const pixelsData = await axiosInstance.get(`/pixels?on=${date}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater,relativeTranspiration`).then(({ data }) => {
+        const pixelsData = await axiosInstance.get(`/pixels?on=${date}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater,relativeTranspiration,developmentStage`).then(({ data }) => {
           return data
         }).catch((error: Error) => {
           console.error(error.message)
           handleError()
         })
-        const plotsAnalytics = await axiosInstance.get(`/plot-analytics?on=${date}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater,relativeTranspiration`).then(({ data }) => {
+        const plotsAnalytics = await axiosInstance.get(`/plot-analytics?on=${date}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater,relativeTranspiration,developmentStage`).then(({ data }) => {
           return data
         }).catch((error: Error) => {
           console.error(error.message)
