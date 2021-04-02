@@ -3,6 +3,7 @@ import './cookiebar.scss'
 import EventEmitter from '../../lib/EventEmitter'
 
 import CookieStatement from '../CookieStatement'
+import { css } from '@emotion/css'
 
 type State = {
   showCookiebar: boolean
@@ -64,7 +65,17 @@ export default class Cookiebar extends React.Component<{}, State> {
     if (showCookiebar === true) {
       return (
         <div className="cookie-bar">
-          <span className="message">Deze site gebruikt cookies om u een betere ervaring te leveren. Door deze website te gebruiken gaat u akkoord met de <a onClick={this.openTextPopup}>voorwaarden</a></span>
+          <span className="message">Deze site gebruikt cookies om u een betere ervaring te leveren. Door deze website te gebruiken gaat u akkoord met de 
+            <button className={css`
+              background: none;
+              border: none;
+              color: #5cf2ff;
+              font-size: 14px;`} 
+              onClick={this.openTextPopup}
+            >
+              voorwaarden
+            </button>
+          </span>
           <span className="mobile">This website uses cookies, <div onClick={this.openTextPopup}>learn more</div></span>
           <label className="close-cb" onClick={this.handleClose}>x</label>
         </div>

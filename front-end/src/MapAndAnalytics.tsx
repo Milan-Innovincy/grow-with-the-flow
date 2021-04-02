@@ -40,7 +40,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
       if (isAuthenticated) {
         const handleError = () => {
           setIsFetchingFarmerData(false);
-          EventEmitter.emit('open-text-popup', <LoadingError date={new Date(date)} />)
+          EventEmitter.emit('open-text-popup', <LoadingError date={new Date(date ? date : '')} />)
           window.stop()
         }
         const prefix = 'https://storage.googleapis.com/grow-with-the-flow.appspot.com'
@@ -106,7 +106,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
         }
       }
     })()
-  }, [contextValue.authenticated])
+  }, [contextValue.authenticated, contextValue.keycloak, date])
 
   const handleSprinklingUpdate = (payload: any) => {
     const { date, selectedPlotId, value, farmerData } = payload
