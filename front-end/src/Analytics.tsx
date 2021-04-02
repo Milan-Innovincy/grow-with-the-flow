@@ -343,7 +343,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
     // axios.put('/crop-status', {
     //   plotId: selectedPlotId,
     //   date,
-    //   cropStatus: event.target.value
+    //   cropStatus: cropStatus
     // }).then(() => {
     //   EventEmitter.emit('show-snackbar', {
     //     snackbarMessage: 'Crop status is aangepast.'
@@ -520,11 +520,11 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
               display: flex;
             `}
           >
-            <FormControl>
+            <FormControl className={css`margin-right: 10px !important;`}>
               <InputLabel htmlFor="component-simple">Gewas status veranderen</InputLabel>
               <Select
                 className={css`min-width: 200px;`}
-                value={cropStatus}
+                value={cropStatus ? cropStatus : ''}
                 onChange={handleCropStatusChange}
                 disabled={cropType !== 'corn' && cropType !== 'potato'}
               >
