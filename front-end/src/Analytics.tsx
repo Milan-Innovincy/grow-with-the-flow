@@ -2,7 +2,7 @@ import React, { ReactNode, useEffect, useState } from 'react'
 import { css } from '@emotion/css'
 import 'date-fns'
 import { ResponsiveContainer, ComposedChart, Area, Bar, XAxis, YAxis, CartesianGrid, LabelProps, RectangleProps, Line } from 'recharts'
-import { Paper, Fab, InputLabel, MenuItem, FormControl, Select } from '@material-ui/core'
+import { Paper, Fab, InputLabel, MenuItem, FormControl, Select, Input, Button } from '@material-ui/core'
 import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/pickers'
 import DateFnsUtils from '@date-io/date-fns'
 import { Close, Vanish, CarDefrostRear } from 'mdi-material-ui'
@@ -38,51 +38,65 @@ const getCropTypeIcon = (cropType: string) => {
   }
 }
 
-const cornCropStatusOptions = [
-  {
-    label: 'Opkomst',
-    value: 0
-  },
-  {
-    label: 'Vijfde blad',
-    value: 0.4
-  },
-  {
-    label: 'Derde bladkop',
-    value: 0.65
-  },
-  {
-    label: 'Pluimvorming',
-    value: 0.9
-  },
-  {
-    label: 'Bloei',
-    value: 1
-  },
-  {
-    label: 'Volledige afrijping',
-    value: 2
+const getCropType = (cropType: string) => {
+  switch(cropType) {
+    case 'Grasland':
+      return 'corn'
+    case 'Mais':
+      return 'corn'
+    case 'Aardappelen':
+      return 'potato'
+    default: 
+      return ''
   }
-]
+}
 
-const potatoCropStatusOptions = [
-  {
-    label: 'Opkomst',
-    value: 0
-  },
-  {
-    label: 'Gewasbedekking volledig',
-    value: 1.2
-  },
-  {
-    label: 'Aanzet knolontwikkeling',
-    value: 1.0
-  },
-  {
-    label: 'Afsterven',
-    value: 2.0
-  }
-]
+const cropStatusOptions: CropStatus = {
+  corn: [
+    {
+      label: 'Opkomst',
+      value: 0
+    },
+    {
+      label: 'Vijfde blad',
+      value: 0.4
+    },
+    {
+      label: 'Derde bladkop',
+      value: 0.65
+    },
+    {
+      label: 'Pluimvorming',
+      value: 0.9
+    },
+    {
+      label: 'Bloei',
+      value: 1
+    },
+    {
+      label: 'Volledige afrijping',
+      value: 2
+    }
+  ],
+  potato: [
+    {
+      label: 'Opkomst',
+      value: 0
+    },
+    {
+      label: 'Gewasbedekking volledig',
+      value: 1.2
+    },
+    {
+      label: 'Aanzet knolontwikkeling',
+      value: 1.0
+    },
+    {
+      label: 'Afsterven',
+      value: 2.0
+    }
+  ]
+}
 
 let updateSprinklingDialog: UpdateSprinklingDialog
 
@@ -202,6 +216,15 @@ type Props = {
   setSprinklingCache: (sprinklingCache: any) => void
 }
 
+type CropStatus = {
+  [key: string]: [CropStatusValue]
+}
+
+type CropStatusValue = {
+  label: string,
+  value: number
+}
+
 const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, sprinklingCache, setSprinklingCache }: Props) => {
   const [, setState] = useState(null as any)
   const [cropStatus, setCropStatus] = useState(null as any)
@@ -229,11 +252,12 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
     const [sprinklingData] = plotFeedback.filter((feedback: any) => feedback.plotId === selectedPlotId)
     const feature = farmerData.plotsGeoJSON.features.find((f: any) => f.properties!.plotId === selectedPlotId)
 
-    cropType = feature.properties.cropTypes    
+    cropType = getCropType(feature.properties.cropTypes)
     soilType = feature.properties.soilType
     area = feature.properties.plotSizeHa
     if (!!plotsAnalytics[feature.properties.plotId]) {
       data = plotsAnalytics[feature.properties.plotId].map((i: any) => {
+        const cropStatus = i.developmentStage;
         const quantityForDate = sprinklingData ? sprinklingData.quantities.find((q: any) => q.date === i.date) : null
         const sprinkling = quantityForDate ? quantityForDate.quantityMM : 0
         
@@ -241,6 +265,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
           date: DateTime.fromISO(i.date).toFormat('dd/MM/yyyy'),
           rainfall: i.measuredPrecipitation,
           sprinkling,
+          cropStatus,
           moisture: i.availableSoilWater,
           desiredMoisture: i.relativeTranspiration,
           evapotranspiration: i.evapotranspiration,
@@ -257,13 +282,14 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
   if (selectedPixel) {
     const [x, y] = selectedPixel
     label = `Pixel ${padStart(x.toString(), 3, '0')}${padStart(y.toString(), 3, '0')}`
-    cropType = pixelsData.landUse[x][y]
+    cropType = getCropType(pixelsData.landUse[x][y])
     soilType = pixelsData.soilMap[x][y]
     area = 1
     data = pixelsData.analytics.map((i: any, index: number) => ({
       date: DateTime.fromISO(i.time).toFormat('dd/MM/yyyy'),
       rainfall: i.measuredPrecipitation[x][y],
       sprinkling: sprinklingCache[`${selectedPixel.join(',')}-${index}`] || 0,
+      cropStatus: i.developmentStage,
       moisture: i.availableSoilWater[x][y],
       desiredMoisture: i.relativeTranspiration[x][y],
       evapotranspiration: i.evapotranspiration[x][y],
@@ -276,6 +302,9 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
   const currentSprinkling = current ? current.sprinkling : 0
   const currentEvapotranspiration = current ? current.evapotranspiration : 0
   const currentDeficit = current ? current.deficit : 0
+  const currentCropStatus = cropStatusOptions[cropType].find((object: CropStatusValue) => {
+      return object.value === current.cropStatus;
+  })
 
   setTimeout(() => {
     const nodes = document.querySelectorAll('.recharts-layer.recharts-cartesian-axis-tick')
@@ -307,6 +336,9 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
 
   const handleCropStatusChange = (event: any) => {
     setCropStatus(event.target.value)
+  }
+
+  const changeCropStatus = () => {
     // TODO: PUT to backend. Should look something like this:
     // axios.put('/crop-status', {
     //   plotId: selectedPlotId,
@@ -407,33 +439,6 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
               />
             </MuiPickersUtilsProvider>
           </div>
-
-          <FormControl variant="outlined" className={css`margin-left: 30px !important;`}>
-            <InputLabel id="crop-status-label">Crop status</InputLabel>
-            <Select
-              className={css`min-width: 150px;`}
-              labelId="crop-status-label"
-              id="demo-simple-select-outlined"
-              value={cropStatus}
-              onChange={handleCropStatusChange}
-              label="Crop status"
-              disabled={cropType !== 'Mais' && cropType !== 'Cons. en industrieaardappelen.'}
-            >
-              <MenuItem value="">
-                <em>None</em>
-              </MenuItem>
-              {
-                cropType === 'Mais' ? cornCropStatusOptions.map(( option: any ) => 
-                  <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>
-                ) : null
-              }
-              {
-                cropType === 'Aardappelen' ? potatoCropStatusOptions.map(( option: any ) => 
-                  <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>
-                ) : null
-              }
-            </Select>
-          </FormControl>
         </div>
 
         <div className={css`display: flex;`}>
@@ -496,12 +501,55 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
         <div
           className={css`
             display: flex;
-            padding-left: 20px;
-          `}>
-          <LegendItem label="Regenval in mm" shape="square" color="#64b5f6"/>
-          <LegendItem label="Beregening in mm" shape="square" color="#1565c0"/>
-          <LegendItem label="Vochtgehalte in mm" shape="circle" color="#fb8c00"/>
-          <LegendItem label="Gewenst vochtgehalte in mm" shape="circle" color="#00acc1"/>
+            justify-content: space-between;
+            padding: 0 20px;
+          `}
+        >
+          <div
+            className={css`
+              display: flex;
+            `}
+          >
+            <LegendItem label="Regenval in mm" shape="square" color="#64b5f6"/>
+            <LegendItem label="Beregening in mm" shape="square" color="#1565c0"/>
+            <LegendItem label="Vochtgehalte in mm" shape="circle" color="#fb8c00"/>
+            <LegendItem label="Gewenst vochtgehalte in mm" shape="circle" color="#00acc1"/>
+          </div>
+          <div
+            className={css`
+              display: flex;
+            `}
+          >
+            <FormControl>
+              <InputLabel htmlFor="component-simple">Gewas status veranderen</InputLabel>
+              <Select
+                className={css`min-width: 200px;`}
+                value={cropStatus}
+                onChange={handleCropStatusChange}
+                disabled={cropType !== 'corn' && cropType !== 'potato'}
+              >
+                {
+                  Object.keys(cropStatusOptions).map((key: string) => 
+                    key === cropType ? cropStatusOptions[key].map((object: CropStatusValue) =>
+                      <MenuItem key={object.value} value={object.value}>{object.label}</MenuItem>
+                    ) : null
+                  )
+                }
+              </Select>
+            </FormControl>
+            <Button 
+              variant="outlined" 
+              color="primary" 
+              className={css`margin-left:10px`} 
+              onClick={changeCropStatus}
+            >
+              Bijwerken
+            </Button>
+            <FormControl className={css`margin-left: 30px !important;`}>
+              <InputLabel id="crop-status-label">Huidige gewas status:</InputLabel>
+              <Input id="component-simple" value={currentCropStatus ? currentCropStatus.label : ''} readOnly />
+            </FormControl>
+          </div>
         </div>
         <ResponsiveContainer height={200}>
           <ComposedChart data={data} margin={{ top: 20, bottom: 0, left: 0, right: 0 }}>
