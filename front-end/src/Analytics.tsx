@@ -302,9 +302,9 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
   const currentSprinkling = current ? current.sprinkling : 0
   const currentEvapotranspiration = current ? current.evapotranspiration : 0
   const currentDeficit = current ? current.deficit : 0
-  const currentCropStatus = cropStatusOptions[cropType].find((object: CropStatusValue) => {
+  const currentCropStatus = cropType ? cropStatusOptions[cropType].find((object: CropStatusValue) => {
       return object.value === current.cropStatus;
-  })
+  }) : null
 
   setTimeout(() => {
     const nodes = document.querySelectorAll('.recharts-layer.recharts-cartesian-axis-tick')
@@ -515,6 +515,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
             <LegendItem label="Vochtgehalte in mm" shape="circle" color="#fb8c00"/>
             <LegendItem label="Gewenst vochtgehalte in mm" shape="circle" color="#00acc1"/>
           </div>
+          {currentCropStatus && 
           <div
             className={css`
               display: flex;
@@ -550,6 +551,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
               <Input id="component-simple" value={currentCropStatus ? currentCropStatus.label : ''} readOnly />
             </FormControl>
           </div>
+          }
         </div>
         <ResponsiveContainer height={200}>
           <ComposedChart data={data} margin={{ top: 20, bottom: 0, left: 0, right: 0 }}>
