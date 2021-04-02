@@ -44,7 +44,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
           window.stop()
         }
         const prefix = 'https://storage.googleapis.com/grow-with-the-flow.appspot.com'
-        const dateToken = date ? date.replace(/-/g, '') : latestAvailableDate.replace(/-/g, '')
+        // const dateToken = date ? date.replace(/-/g, '') : latestAvailableDate.replace(/-/g, '')
         const plotsGeoJSON = await axiosInstance.get(`/plots`).then(({ data }) => {
           return data
         }).catch((error: Error) => {
