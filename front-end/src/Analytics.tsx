@@ -10,7 +10,6 @@ import { DateTime, Duration } from 'luxon'
 import produce from 'immer'
 import { padStart } from 'lodash'
 import EventEmitter from './lib/EventEmitter'
-import axios from './lib/axios'
 
 import UpdateSprinklingDialog from './UpdateSprinklingDialog'
 import DateView from './DateView'
@@ -288,13 +287,15 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
         const formattedDate = new Date(DateTime.fromFormat(rawDate, 'dd/MM/yyyy').toFormat('yyyy-MM-dd'))
         const predictionDate = new Date(DateTime.fromJSDate(new Date()).minus(Duration.fromObject({ days: 1 })).toFormat('yyyy-MM-dd'))
   
-        if (new Date().toDateString() === formattedDate.toDateString()) {
-          textNode.style.fontWeight = '900'
-          textNode.style.fontSize = '12px'
-        }
-  
-        if (formattedDate >= predictionDate) {
-          textNode.style.fontStyle = 'italic'
+        if (textNode) {
+          if (new Date().toDateString() === formattedDate.toDateString()) {
+            textNode.style.fontWeight = '900'
+            textNode.style.fontSize = '12px'
+          }
+    
+          if (formattedDate >= predictionDate) {
+            textNode.style.fontStyle = 'italic'
+          }
         }
       }
     })
@@ -583,7 +584,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
               label={({ value, x, y, width, index }: LabelProps & { index: number }) =>
                 <g
                   onClick={async () => {
-                    const newValue = await updateSprinklingDialog.open(value as number, data[index])
+                    const newValue = await updateSprinklingDialog.open(value as number, data ? data[index] : '')
                     const updatedCache = produce(sprinklingCache, sprinklingCache => {
                       sprinklingCache[`${selectedPlotId || selectedPixel!.join(',')}-${index}`] = newValue
                     })
