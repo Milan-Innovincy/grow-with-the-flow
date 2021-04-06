@@ -224,8 +224,9 @@ const MapView = ({ navigate, date, farmerData, farmerGeoData, selectedPlotId, se
         onzoomend={(e: any) => setZoom(e.target.getZoom())}
         className={css`
           height: 100%;
+          .leaflet-interactive,
           .leaflet-interactive:hover {
-            fill-opacity: 0.2 !important;
+            fill-opacity: 0.4 !important;
           }
           .leaflet-control-zoom {
             border-radius: 17px;
@@ -256,8 +257,9 @@ const MapView = ({ navigate, date, farmerData, farmerGeoData, selectedPlotId, se
         onzoomend={(e: any) => setZoom(e.target.getZoom())}
         className={css`
           height: 100%;
+          .leaflet-interactive,
           .leaflet-interactive:hover {
-            fill-opacity: 0.2 !important;
+            fill-opacity: 0.4 !important;
           }
           .leaflet-control-zoom {
             border-radius: 17px;
