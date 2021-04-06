@@ -22,6 +22,37 @@ import { ReactComponent as RainfallIcon } from './icons/rainfall.svg'
 import { ReactComponent as IrrigationIcon } from './icons/irrigation.svg'
 import PlotListDialog from './PlotListDialog';
 
+const cropTypes = ['corn', 'potato']
+const cropStatusOptions: CropStatus = {
+  corn: [
+    { label: 'Opkomst', value: 0 },
+    { label: 'Vijfde blad', value: 0.4 },
+    { label: 'Derde bladkop', value: 0.65 },
+    { label: 'Pluimvorming', value: 0.9 },
+    { label: 'Bloei', value: 1 },
+    { label: 'Volledige afrijping', value: 2 }
+  ],
+  potato: [
+    { label: 'Opkomst', value: 0 },
+    { label: 'Gewasbedekking volledig', value: 1.2 },
+    { label: 'Aanzet knolontwikkeling', value: 1.0 },
+    { label: 'Afsterven', value: 2.0 }
+  ]
+}
+
+const getCropType = (cropType: string) => {
+  switch(cropType) {
+    case 'Grasland':
+      return 'grass'
+    case 'Mais':
+      return 'corn'
+    case 'Aardappelen':
+      return 'potato'
+    default: 
+      return ''
+  }
+}
+
 const getCropTypeIcon = (cropType: string) => {
   switch(cropType && cropType.trim()) {
     case 'Snijmais':
@@ -36,66 +67,6 @@ const getCropTypeIcon = (cropType: string) => {
     default:
       return <GenericIcon width={28} fill="#00acc1"/>
   }
-}
-
-const getCropType = (cropType: string) => {
-  switch(cropType) {
-    case 'Grasland':
-      return 'corn'
-    case 'Mais':
-      return 'corn'
-    case 'Aardappelen':
-      return 'potato'
-    default: 
-      return ''
-  }
-}
-
-const cropStatusOptions: CropStatus = {
-  corn: [
-    {
-      label: 'Opkomst',
-      value: 0
-    },
-    {
-      label: 'Vijfde blad',
-      value: 0.4
-    },
-    {
-      label: 'Derde bladkop',
-      value: 0.65
-    },
-    {
-      label: 'Pluimvorming',
-      value: 0.9
-    },
-    {
-      label: 'Bloei',
-      value: 1
-    },
-    {
-      label: 'Volledige afrijping',
-      value: 2
-    }
-  ],
-  potato: [
-    {
-      label: 'Opkomst',
-      value: 0
-    },
-    {
-      label: 'Gewasbedekking volledig',
-      value: 1.2
-    },
-    {
-      label: 'Aanzet knolontwikkeling',
-      value: 1.0
-    },
-    {
-      label: 'Afsterven',
-      value: 2.0
-    }
-  ]
 }
 
 let updateSprinklingDialog: UpdateSprinklingDialog
@@ -217,7 +188,7 @@ type Props = {
 }
 
 type CropStatus = {
-  [key: string]: [CropStatusValue]
+  [key: string]: CropStatusValue[]
 }
 
 type CropStatusValue = {
@@ -527,7 +498,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
                 className={css`min-width: 200px;`}
                 value={cropStatus ? cropStatus : ''}
                 onChange={handleCropStatusChange}
-                disabled={cropType !== 'corn' && cropType !== 'potato'}
+                disabled={cropTypes.every( type => cropType !== type )}
               >
                 {
                   Object.keys(cropStatusOptions).map((key: string) => 
