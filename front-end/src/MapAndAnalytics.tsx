@@ -40,11 +40,11 @@ const MapAndAnalytics = ({ match, history }: Props) => {
       if (isAuthenticated) {
         const handleError = () => {
           setIsFetchingFarmerData(false);
-          EventEmitter.emit('open-text-popup', <LoadingError date={new Date(date)} />)
+          EventEmitter.emit('open-text-popup', <LoadingError date={new Date(date ? date : '')} />)
           window.stop()
         }
         const prefix = 'https://storage.googleapis.com/grow-with-the-flow.appspot.com'
-        const dateToken = date ? date.replace(/-/g, '') : latestAvailableDate.replace(/-/g, '')
+        // const dateToken = date ? date.replace(/-/g, '') : latestAvailableDate.replace(/-/g, '')
         const plotsGeoJSON = await axiosInstance.get(`/plots`).then(({ data }) => {
           return data
         }).catch((error: Error) => {
@@ -72,13 +72,13 @@ const MapAndAnalytics = ({ match, history }: Props) => {
           console.error(error.message)
           handleError()
         })
-        const pixelsData = await axiosInstance.get(`/pixels?on=${date}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater,relativeTranspiration`).then(({ data }) => {
+        const pixelsData = await axiosInstance.get(`/pixels?on=${date}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater,relativeTranspiration,developmentStage`).then(({ data }) => {
           return data
         }).catch((error: Error) => {
           console.error(error.message)
           handleError()
         })
-        const plotsAnalytics = await axiosInstance.get(`/plot-analytics?on=${date}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater,relativeTranspiration`).then(({ data }) => {
+        const plotsAnalytics = await axiosInstance.get(`/plot-analytics?on=${date}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater,relativeTranspiration,developmentStage`).then(({ data }) => {
           return data
         }).catch((error: Error) => {
           console.error(error.message)
@@ -106,7 +106,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
         }
       }
     })()
-  }, [contextValue.authenticated])
+  }, [contextValue.authenticated, contextValue.keycloak, date])
 
   const handleSprinklingUpdate = (payload: any) => {
     const { date, selectedPlotId, value, farmerData } = payload

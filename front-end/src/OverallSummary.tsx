@@ -4,7 +4,7 @@ import { css } from '@emotion/css'
 import { DateTime } from 'luxon'
 import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/pickers'
 import DateFnsUtils from '@date-io/date-fns'
-import EventEmitter from './lib/EventEmitter'
+// import EventEmitter from './lib/EventEmitter'
 
 import DateView from './DateView'
 import PlotListDialog from './PlotListDialog'
