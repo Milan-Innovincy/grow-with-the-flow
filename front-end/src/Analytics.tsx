@@ -504,7 +504,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
                 {
                   Object.keys(cropStatusOptions).map((key: string) => 
                     key === cropType ? cropStatusOptions[key].map((object: CropStatusValue) =>
-                      <MenuItem key={object.value} value={object.value}>{object.label}</MenuItem>
+                      <MenuItem key={object.value} value={object.value}>{object.label} ({object.value})</MenuItem>
                     ) : null
                   )
                 }
@@ -520,7 +520,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
             </Button>
             <FormControl className={css`margin-left: 30px !important;`}>
               <InputLabel id="crop-status-label">Huidige gewas status:</InputLabel>
-              <Input id="component-simple" value={currentCropStatus ? currentCropStatus.label : ''} readOnly />
+              <Input id="component-simple" value={currentCropStatus ? `${currentCropStatus.label} (${currentCropStatus.value})` : ''} readOnly />
             </FormControl>
           </div>
           }
