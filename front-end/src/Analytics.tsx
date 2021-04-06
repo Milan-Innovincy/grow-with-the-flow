@@ -22,9 +22,9 @@ import { ReactComponent as RainfallIcon } from './icons/rainfall.svg'
 import { ReactComponent as IrrigationIcon } from './icons/irrigation.svg'
 import PlotListDialog from './PlotListDialog';
 
-const cropTypes = ['corn', 'potato']
+const cropTypes = ['mais', 'aardappelen']
 const cropStatusOptions: CropStatus = {
-  corn: [
+  mais: [
     { label: 'Opkomst', value: 0 },
     { label: 'Vijfde blad', value: 0.4 },
     { label: 'Derde bladkop', value: 0.65 },
@@ -32,22 +32,23 @@ const cropStatusOptions: CropStatus = {
     { label: 'Bloei', value: 1 },
     { label: 'Volledige afrijping', value: 2 }
   ],
-  potato: [
+  aardappelen: [
     { label: 'Opkomst', value: 0 },
     { label: 'Gewasbedekking volledig', value: 1.2 },
     { label: 'Aanzet knolontwikkeling', value: 1.0 },
     { label: 'Afsterven', value: 2.0 }
-  ]
+  ],
+  gras: []
 }
 
 const getCropType = (cropType: string) => {
   switch(cropType) {
     case 'Grasland':
-      return 'grass'
+      return 'gras'
     case 'Mais':
-      return 'corn'
+      return 'mais'
     case 'Aardappelen':
-      return 'potato'
+      return 'aardappelen'
     default: 
       return ''
   }
