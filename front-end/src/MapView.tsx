@@ -25,8 +25,8 @@ const parameters: object = {
     slug: 'deficit',
     label: 'Vochttekort',
     colors: {
-      min: '#fde3e3',
-      max: '#f32121'
+      min: '#FFE3D3',
+      max: '#F6511D'
     }
   },
   availableSoilWater: {
@@ -41,16 +41,16 @@ const parameters: object = {
     slug: 'relativeTranspiration',
     label: 'Benodigde beregening',
     colors: {
-      min: '#e3fdfa',
-      max: '#21f3d9'
+      min: '#DAE8FF',
+      max: '#2F3D8F'
     }
   },
   evapotranspiration: {
     slug: 'evapotranspiration',
-    label: 'Evapotranspiration',
+    label: 'Evapotranspiratie',
     colors: {
-      min: '#fdf4e3',
-      max: '#f39f21'
+      min: '#BECED1',
+      max: '#6a7152'
     }
   }
 }
