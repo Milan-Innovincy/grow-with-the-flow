@@ -11,6 +11,8 @@ import produce from 'immer'
 import { padStart } from 'lodash'
 import EventEmitter from './lib/EventEmitter'
 
+import axiosInstance from "./lib/axios"
+
 import UpdateSprinklingDialog from './UpdateSprinklingDialog'
 import DateView from './DateView'
 import { ReactComponent as AlfalfaIcon } from './icons/alfalfa.svg'
@@ -22,7 +24,7 @@ import { ReactComponent as RainfallIcon } from './icons/rainfall.svg'
 import { ReactComponent as IrrigationIcon } from './icons/irrigation.svg'
 import PlotListDialog from './PlotListDialog';
 
-const cropTypes = ['mais', 'aardappelen']
+const cropTypes = ['mais', 'aardappelen', 'gras']
 const cropStatusOptions: CropStatus = {
   mais: [
     { label: 'Opkomst', value: 0 },
@@ -38,7 +40,10 @@ const cropStatusOptions: CropStatus = {
     { label: 'Aanzet knolontwikkeling', value: 1.0 },
     { label: 'Afsterven', value: 2.0 }
   ],
-  gras: []
+  gras: [
+    { label: 'Dummy data', value: 0 },    
+    { label: 'Dummy data - 2', value: 2 }
+  ]
 }
 
 const getCropType = (cropType: string) => {
@@ -68,6 +73,35 @@ const getCropTypeIcon = (cropType: string) => {
     default:
       return <GenericIcon width={28} fill="#00acc1"/>
   }
+}
+
+const formatCropStatus = (cropStatuses: any, currentPlotId: string, cropType: string, date: string) => {
+  if (!cropStatuses || !cropStatuses.length) {
+    return
+  }
+  
+  const selectedPlot = cropStatuses.find((plot: any) => {
+    return plot.plotId === currentPlotId
+  })
+
+  if (!selectedPlot) {
+    return
+  }
+  
+  return cropStatusOptions[cropType].find((cropStatusValue: CropStatusValue) => {
+    return cropStatusValue.value === parseInt(selectedPlot.statuses.slice(-1).pop()['crop-status'])
+  })
+  
+  // NOTE FOR DEVELOPER!! IF THE VALUE HAS TO BE THE SAME AS THE SELECTED DATE, THEN USE THIS INSTEAD. REMOVE IF NOT NEEDED
+  // const splitDate = date.split('/')
+  // const formattedDate = `${splitDate[2]}-${splitDate[1]}-${splitDate[0]}`
+  // const selectedPlotStatus = selectedPlot.statuses.find((plotStatus: any) => {
+  //   return plotStatus.date === formattedDate
+  // })
+  
+  // return cropStatusOptions[cropType].find((cropStatusValue: CropStatusValue) => {
+  //   return cropStatusValue.value === parseInt(selectedPlotStatus['crop-status'])
+  // })
 }
 
 let updateSprinklingDialog: UpdateSprinklingDialog
@@ -199,11 +233,11 @@ type CropStatusValue = {
 
 const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, sprinklingCache, setSprinklingCache }: Props) => {
   const [, setState] = useState(null as any)
-  const [cropStatus, setCropStatus] = useState(null as any)
+  const [cropStatus, setCropStatus] = useState(0)
 
   useEffect(() => {
     window.dispatchEvent(new Event('resize'))
-    setCropStatus("")  
+    setCropStatus(0)
   }, [ selectedPlotId, selectedPixel ])
 
   const handlePlotfeedbackUpdated = () => {
@@ -211,14 +245,14 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
   }
   EventEmitter.on('plotfeedback-updated', handlePlotfeedbackUpdated)
   
-  const { pixelsData, plotsAnalytics, plotFeedback } = farmerData
+  const { pixelsData, plotsAnalytics, plotFeedback, plotCropStatus } = farmerData
 
   let label: string = ''
   let cropType: string = ''
   let soilType: string = ''
   let area: number = 0
   let data: Array<any> | undefined = undefined
-
+  
   if (selectedPlotId) {
     label = `Plot ${selectedPlotId}`
     const [sprinklingData] = plotFeedback.filter((feedback: any) => feedback.plotId === selectedPlotId)
@@ -227,9 +261,9 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
     cropType = getCropType(feature.properties.cropTypes)
     soilType = feature.properties.soilType
     area = feature.properties.plotSizeHa
+    
     if (!!plotsAnalytics[feature.properties.plotId]) {
       data = plotsAnalytics[feature.properties.plotId].map((i: any) => {
-        const cropStatus = i.developmentStage;
         const quantityForDate = sprinklingData ? sprinklingData.quantities.find((q: any) => q.date === i.date) : null
         const sprinkling = quantityForDate ? quantityForDate.quantityMM : 0
         
@@ -237,7 +271,6 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
           date: DateTime.fromISO(i.date).toFormat('dd/MM/yyyy'),
           rainfall: i.measuredPrecipitation,
           sprinkling,
-          cropStatus,
           moisture: i.availableSoilWater,
           desiredMoisture: i.relativeTranspiration,
           evapotranspiration: i.evapotranspiration,
@@ -261,22 +294,25 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
       date: DateTime.fromISO(i.time).toFormat('dd/MM/yyyy'),
       rainfall: i.measuredPrecipitation[x][y],
       sprinkling: sprinklingCache[`${selectedPixel.join(',')}-${index}`] || 0,
-      cropStatus: i.developmentStage,
       moisture: i.availableSoilWater[x][y],
       desiredMoisture: i.relativeTranspiration[x][y],
       evapotranspiration: i.evapotranspiration[x][y],
       deficit: i.deficit[x][y]
-    }))
+    }))    
   }
 
   const current = data!.find(i => i.date === DateTime.fromJSDate(date).toFormat('dd/MM/yyyy'))
+  const currentDate = current ? current.date : 0
   const currentRainfall = current ? current.rainfall : 0
   const currentSprinkling = current ? current.sprinkling : 0
   const currentEvapotranspiration = current ? current.evapotranspiration : 0
-  const currentDeficit = current ? current.deficit : 0
-  const currentCropStatus = cropType ? cropStatusOptions[cropType].find((object: CropStatusValue) => {
-      return object.value === current.cropStatus;
-  }) : null
+  const currentDeficit = current ? current.deficit : 0  
+  const currentCropStatus = formatCropStatus(
+    plotCropStatus, 
+    selectedPlotId ? selectedPlotId : '', 
+    cropType, 
+    currentDate
+  )
 
   setTimeout(() => {
     const nodes = document.querySelectorAll('.recharts-layer.recharts-cartesian-axis-tick')
@@ -306,25 +342,20 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
     document.querySelector('.MuiFormControl-root.MuiTextField-root.MuiFormControl-marginNormal button').click()
   }
 
-  const handleCropStatusChange = (event: any) => {
+  const handleCropStatusChange = (event: any) => {    
     setCropStatus(event.target.value)
   }
 
   const changeCropStatus = () => {
-    // TODO: PUT to backend. Should look something like this:
-    // axios.put('/crop-status', {
-    //   plotId: selectedPlotId,
-    //   date,
-    //   cropStatus: cropStatus
-    // }).then(() => {
-    //   EventEmitter.emit('show-snackbar', {
-    //     snackbarMessage: 'Crop status is aangepast.'
-    //   })
-    // }).catch(() => {
-    //   EventEmitter.emit('show-snackbar', {
-    //     snackbarMessage: 'Sorry, de crop status kon niet worden aangepast.'
-    //   })
-    // })
+    const formattedDate = DateTime.fromJSDate(new Date(date)).toFormat('yyyy-MM-dd')
+
+    axiosInstance.put(`/plot-feedback/crop-status?plotId=${selectedPlotId}&date=${formattedDate}&crop-status=${cropStatus.toString()}`)
+    .then(() => {
+      EventEmitter.emit('sprinkling-updated-success')
+    }).catch((error: Error) => {
+      EventEmitter.emit('sprinkling-updated-failure')
+      console.error(error)
+    })
   }
 
   const handleDateChange = (newDate: any) => {
@@ -487,17 +518,16 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
             <LegendItem label="Vochtgehalte in mm" shape="circle" color="#fb8c00"/>
             <LegendItem label="Gewenst vochtgehalte in mm" shape="circle" color="#00acc1"/>
           </div>
-          {currentCropStatus && 
           <div
             className={css`
               display: flex;
             `}
           >
-            <FormControl className={css`margin-right: 10px !important;`}>
+            <FormControl className={css`margin-right: 10px !important;`} disabled={!selectedPlotId}>
               <InputLabel htmlFor="component-simple">Gewas status veranderen</InputLabel>
               <Select
                 className={css`min-width: 200px;`}
-                value={cropStatus ? cropStatus : ''}
+                value={cropStatus}
                 onChange={handleCropStatusChange}
                 disabled={cropTypes.every( type => cropType !== type )}
               >
@@ -515,15 +545,15 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
               color="primary" 
               className={css`margin-left:10px`} 
               onClick={changeCropStatus}
+              disabled={!selectedPlotId}
             >
               Bijwerken
             </Button>
-            <FormControl className={css`margin-left: 30px !important;`}>
+            <FormControl className={css`margin-left: 30px !important;`}  disabled={!selectedPlotId}>
               <InputLabel id="crop-status-label">Huidige gewas status:</InputLabel>
               <Input id="component-simple" value={currentCropStatus ? `${currentCropStatus.label} (${currentCropStatus.value})` : ''} readOnly />
             </FormControl>
           </div>
-          }
         </div>
         <ResponsiveContainer height={200}>
           <ComposedChart data={data} margin={{ top: 20, bottom: 0, left: 0, right: 0 }}>

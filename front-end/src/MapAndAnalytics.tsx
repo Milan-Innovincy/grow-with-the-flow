@@ -95,7 +95,8 @@ const MapAndAnalytics = ({ match, history }: Props) => {
             pixelsData,
             plotsGeoJSON,
             plotsAnalytics,
-            plotFeedback: []
+            plotFeedback: [],
+            plotCropStatus: []
           }
   
           EventEmitter.on('sprinkling-update', handleSprinklingUpdate)
@@ -112,7 +113,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
     const { date, selectedPlotId, value, farmerData } = payload
     const formattedDate = DateTime.fromJSDate(new Date(date)).toFormat('yyyy-MM-dd')
 
-    axiosInstance.put(`/plot-feedback?plotId=${selectedPlotId}&date=${formattedDate}&irrigationMM=${value}`).then(({ data }) => {
+    axiosInstance.put(`/plot-feedback/irrigation?plotId=${selectedPlotId}&date=${formattedDate}&irrigationMM=${value}`).then(({ data }) => {
       EventEmitter.emit('sprinkling-updated-success', farmerData)
     }).catch((error: Error) => {
       EventEmitter.emit('sprinkling-updated-failure')
@@ -128,8 +129,18 @@ const MapAndAnalytics = ({ match, history }: Props) => {
     })
     const dateFrom = sortedDates[0]
     const dateTo = sortedDates[sortedDates.length - 1]
-    await axiosInstance.get(`/plot-feedback?from=${dateFrom}&to=${dateTo}`).then(({ data }) => {
+
+    await axiosInstance.get(`/plot-feedback/irrigation?from=${dateFrom}&to=${dateTo}`).then(({ data }) => {
       farmerData.plotFeedback = data
+      setFarmerData(farmerData)
+      EventEmitter.emit('plotfeedback-updated')
+    }).catch((error: Error) => {
+      // TODO: Properly handle error
+      throw new Error(error.message)
+    })
+
+    await axiosInstance.get(`/plot-feedback/crop-status?from=${dateFrom}&to=${dateTo}`).then(({ data }) => {
+      farmerData.plotCropStatus = data
       setFarmerData(farmerData)
       EventEmitter.emit('plotfeedback-updated')
     }).catch((error: Error) => {
