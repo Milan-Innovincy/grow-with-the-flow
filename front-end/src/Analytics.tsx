@@ -10,9 +10,9 @@ import { DateTime, Duration } from 'luxon'
 import produce from 'immer'
 import { padStart } from 'lodash'
 import EventEmitter from './lib/EventEmitter'
-// import MomentUtils from "@date-io/moment"
-// import "moment/locale/nl"
-
+import MomentUtils from '@date-io/moment'
+import moment from 'moment'
+import 'moment/locale/nl'
 
 import axiosInstance from "./lib/axios"
 
@@ -427,8 +427,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
               `}>
               <DateView date={date} />
             </div>
-            {/* <MuiPickersUtilsProvider locale="nl" utils={DateFnsUtils}> */}
-            <MuiPickersUtilsProvider utils={DateFnsUtils}>
+            <MuiPickersUtilsProvider libInstance={moment} utils={MomentUtils} locale={"nl"} >
               <KeyboardDatePicker
                 className={css`
                   display: none !important;
