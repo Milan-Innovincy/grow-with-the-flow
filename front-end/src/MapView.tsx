@@ -47,7 +47,7 @@ const parameters: object = {
   },
   evapotranspiration: {
     slug: 'evapotranspiration',
-    label: 'Verdamping',
+    label: 'Verdamping in mm',
     colors: {
       min: '#BECED1',
       max: '#6a7152'
