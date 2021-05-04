@@ -452,7 +452,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
               icon={<RainfallIcon fill="#80A1D4" className={css`width: 20px; height: 20px;`}/>}
           />
           <CurrentDataItem
-              label="Evapotranspiratie in mm"
+              label="Beschikbaar bodemvocht in mm"
               value={currentEvapotranspiration}
               color="#6A7152"
               icon={<CarDefrostRear fill="#6A7152" className={css`width: 18px !important; height: 18px !important; transform: rotate(180deg);`} />}
@@ -515,8 +515,8 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
           >
             <LegendItem label="Regenval in mm" shape="square" color="#64b5f6"/>
             <LegendItem label="Beregening in mm" shape="square" color="#1565c0"/>
-            <LegendItem label="Vochtgehalte in mm" shape="circle" color="#fb8c00"/>
-            <LegendItem label="Gewenst vochtgehalte in mm" shape="circle" color="#00acc1"/>
+            <LegendItem label="Beschikbaar bodemvocht in mm" shape="circle" color="#fb8c00"/>
+            <LegendItem label="Benodigd vochtgehalte in mm" shape="circle" color="#00acc1"/>
           </div>
           <div
             className={css`
