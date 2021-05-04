@@ -12,7 +12,7 @@ type Props = {
 
 export default class LoadingError extends React.Component<Props, {}> {
   handleDateChange = (newDate: any) => {
-    window.location = `${window.location.origin}/map/${DateTime.fromJSDate(newDate).toISODate()}`
+    window.location = `${window.location.origin}/map/${DateTime.fromMillis(moment(newDate).valueOf()).toISODate()}`
   }
 
   render() {
@@ -23,7 +23,7 @@ export default class LoadingError extends React.Component<Props, {}> {
         <h2>Excuses, daar ging iets fout...</h2>
         <p>We kunnen geen data vinden voor deze datum.</p>
 
-        <MuiPickersUtilsProvider libInstance={moment} utils={MomentUtils} locale={"nl"} >
+        <MuiPickersUtilsProvider libInstance={moment} utils={MomentUtils} >
           <KeyboardDatePicker
             margin="normal"
             id="date-picker-dialog"

@@ -25,7 +25,7 @@ const OverallSummary = ({ farmerData, date, navigate, sprinklingCache }: Props) 
   }
 
   const handleDateChange = (newDate: any) => {
-    window.location = `${window.location.origin}/map/${DateTime.fromJSDate(newDate).toISODate()}`
+    window.location = `${window.location.origin}/map/${DateTime.fromMillis(moment(newDate).valueOf()).toISODate()}`
   }
   
   return(

@@ -362,11 +362,11 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
 
   const handleDateChange = (newDate: any) => {
     if (selectedPlotId) {
-      window.location = `${window.location.origin}/map/${DateTime.fromJSDate(newDate).toISODate()}/plot/${selectedPlotId}`
+      window.location = `${window.location.origin}/map/${DateTime.fromMillis(moment(newDate).valueOf()).toISODate()}/plot/${selectedPlotId}`
     }
 
     if (selectedPixel) {
-      window.location = `${window.location.origin}/map/${DateTime.fromJSDate(newDate).toISODate()}/pixel/${selectedPixel}`
+      window.location = `${window.location.origin}/map/${DateTime.fromMillis(moment(newDate).valueOf()).toISODate()}/pixel/${selectedPixel}`
     }
   }
 
