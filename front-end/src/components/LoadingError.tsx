@@ -1,8 +1,10 @@
 import React from 'react'
 import 'date-fns'
 import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/pickers'
-import DateFnsUtils from '@date-io/date-fns'
 import { DateTime } from 'luxon'
+import MomentUtils from '@date-io/moment'
+import moment from 'moment'
+import 'moment/locale/nl'
 
 type Props = {
   date: any
@@ -21,7 +23,7 @@ export default class LoadingError extends React.Component<Props, {}> {
         <h2>Excuses, daar ging iets fout...</h2>
         <p>We kunnen geen data vinden voor deze datum.</p>
 
-        <MuiPickersUtilsProvider utils={DateFnsUtils}>
+        <MuiPickersUtilsProvider libInstance={moment} utils={MomentUtils} locale={"nl"} >
           <KeyboardDatePicker
             margin="normal"
             id="date-picker-dialog"
