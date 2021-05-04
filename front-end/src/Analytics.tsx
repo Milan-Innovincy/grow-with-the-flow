@@ -455,7 +455,11 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
               icon={<RainfallIcon fill="#80A1D4" className={css`width: 20px; height: 20px;`}/>}
           />
           <CurrentDataItem
+<<<<<<< HEAD
               label="Verdamping in mm"
+=======
+              label="Verdamping in mm"
+>>>>>>> master
               value={currentEvapotranspiration}
               color="#6A7152"
               icon={<CarDefrostRear fill="#6A7152" className={css`width: 18px !important; height: 18px !important; transform: rotate(180deg);`} />}
