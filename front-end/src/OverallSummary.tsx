@@ -3,8 +3,10 @@ import 'date-fns'
 import { css } from '@emotion/css'
 import { DateTime } from 'luxon'
 import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/pickers'
-import DateFnsUtils from '@date-io/date-fns'
 // import EventEmitter from './lib/EventEmitter'
+import MomentUtils from '@date-io/moment'
+import moment from 'moment'
+import 'moment/locale/nl'
 
 import DateView from './DateView'
 import PlotListDialog from './PlotListDialog'
@@ -23,7 +25,7 @@ const OverallSummary = ({ farmerData, date, navigate, sprinklingCache }: Props) 
   }
 
   const handleDateChange = (newDate: any) => {
-    window.location = `${window.location.origin}/map/${DateTime.fromJSDate(newDate).toISODate()}`
+    window.location = `${window.location.origin}/map/${DateTime.fromMillis(moment(newDate).valueOf()).toISODate()}`
   }
   
   return(
@@ -55,7 +57,7 @@ const OverallSummary = ({ farmerData, date, navigate, sprinklingCache }: Props) 
           `}>
           <DateView date={date} />
         </div>
-          <MuiPickersUtilsProvider utils={DateFnsUtils}>
+          <MuiPickersUtilsProvider libInstance={moment} utils={MomentUtils} locale={"nl"} >
             <KeyboardDatePicker
               className={css`
                 display: none !important;

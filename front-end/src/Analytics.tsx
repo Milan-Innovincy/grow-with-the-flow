@@ -4,12 +4,14 @@ import 'date-fns'
 import { ResponsiveContainer, ComposedChart, Area, Bar, XAxis, YAxis, CartesianGrid, LabelProps, RectangleProps, Line } from 'recharts'
 import { Paper, Fab, InputLabel, MenuItem, FormControl, Select, Input, Button } from '@material-ui/core'
 import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/pickers'
-import DateFnsUtils from '@date-io/date-fns'
 import { Close, Vanish, CarDefrostRear } from 'mdi-material-ui'
 import { DateTime, Duration } from 'luxon'
 import produce from 'immer'
 import { padStart } from 'lodash'
 import EventEmitter from './lib/EventEmitter'
+import MomentUtils from '@date-io/moment'
+import moment from 'moment'
+import 'moment/locale/nl'
 
 import axiosInstance from "./lib/axios"
 
@@ -27,7 +29,8 @@ import PlotListDialog from './PlotListDialog';
 const cropTypes = ['mais', 'aardappelen', 'gras']
 const cropStatusOptions: CropStatus = {
   mais: [
-    { label: 'Opkomst', value: 0 },
+    { label: 'Geen Activiteit', value: 0 },
+    { label: 'Opkomst', value: 0.01 },
     { label: 'Vijfde blad', value: 0.4 },
     { label: 'Derde bladkop', value: 0.65 },
     { label: 'Pluimvorming', value: 0.9 },
@@ -35,7 +38,8 @@ const cropStatusOptions: CropStatus = {
     { label: 'Volledige afrijping', value: 2 }
   ],
   aardappelen: [
-    { label: 'Opkomst', value: 0 },
+    { label: 'Geen Activiteit', value: 0 },
+    { label: 'Opkomst', value: 0.01 },
     { label: 'Gewasbedekking volledig', value: 1.2 },
     { label: 'Aanzet knolontwikkeling', value: 1.0 },
     { label: 'Afsterven', value: 2.0 }
@@ -360,11 +364,11 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
 
   const handleDateChange = (newDate: any) => {
     if (selectedPlotId) {
-      window.location = `${window.location.origin}/map/${DateTime.fromJSDate(newDate).toISODate()}/plot/${selectedPlotId}`
+      window.location = `${window.location.origin}/map/${DateTime.fromMillis(moment(newDate).valueOf()).toISODate()}/plot/${selectedPlotId}`
     }
 
     if (selectedPixel) {
-      window.location = `${window.location.origin}/map/${DateTime.fromJSDate(newDate).toISODate()}/pixel/${selectedPixel}`
+      window.location = `${window.location.origin}/map/${DateTime.fromMillis(moment(newDate).valueOf()).toISODate()}/pixel/${selectedPixel}`
     }
   }
 
@@ -424,7 +428,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
               `}>
               <DateView date={date} />
             </div>
-            <MuiPickersUtilsProvider utils={DateFnsUtils}>
+            <MuiPickersUtilsProvider libInstance={moment} utils={MomentUtils} locale={"nl"} >
               <KeyboardDatePicker
                 className={css`
                   display: none !important;
@@ -524,7 +528,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
             `}
           >
             <FormControl className={css`margin-right: 10px !important;`} disabled={!selectedPlotId}>
-              <InputLabel htmlFor="component-simple">Gewas status veranderen</InputLabel>
+              <InputLabel htmlFor="component-simple">Gewasstadium veranderen</InputLabel>
               <Select
                 className={css`min-width: 200px;`}
                 value={cropStatus}

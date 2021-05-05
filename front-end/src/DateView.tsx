@@ -4,7 +4,7 @@ import { DateTime } from 'luxon'
 import { CalendarBlank } from 'mdi-material-ui';
 
 const DateView =  ({ date }: { date: Date }) => {
-  const luxonDate = DateTime.fromJSDate(date)
+  const luxonDate = DateTime.fromJSDate(date).setLocale("nl")
   const day = luxonDate.toFormat('dd')
   const month = luxonDate.toFormat('MMMM')
   return(
