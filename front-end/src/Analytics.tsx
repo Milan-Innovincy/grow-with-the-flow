@@ -51,16 +51,16 @@ const cropStatusOptions: CropStatus = {
 }
 
 const getCropType = (cropType: string) => {
-  switch(cropType) {
-    case 'Grasland':
+  if(cropType.startsWith('Grasland')) {
       return 'gras'
-    case 'Mais':
-      return 'mais'
-    case 'Aardappelen':
-      return 'aardappelen'
-    default: 
-      return ''
-  }
+  };
+  if(cropType.startsWith('Mais')) {
+    return 'mais'
+  };
+  if(cropType.startsWith('Aardappelen')) {
+    return 'aardappelen'
+  } 
+  return ''
 }
 
 const getCropTypeIcon = (cropType: string) => {
@@ -91,7 +91,7 @@ const formatCropStatus = (cropStatuses: any, currentPlotId: string, cropType: st
   if (!selectedPlot) {
     return
   }
-  
+
   return cropStatusOptions[cropType].find((cropStatusValue: CropStatusValue) => {
     return cropStatusValue.value === parseInt(selectedPlot.statuses.slice(-1).pop()['crop-status'])
   })
