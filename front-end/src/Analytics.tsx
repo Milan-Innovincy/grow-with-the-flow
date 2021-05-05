@@ -29,7 +29,8 @@ import PlotListDialog from './PlotListDialog';
 const cropTypes = ['mais', 'aardappelen', 'gras']
 const cropStatusOptions: CropStatus = {
   mais: [
-    { label: 'Opkomst', value: 0 },
+    { label: 'Geen Activiteit', value: 0 },
+    { label: 'Opkomst', value: 0.01 },
     { label: 'Vijfde blad', value: 0.4 },
     { label: 'Derde bladkop', value: 0.65 },
     { label: 'Pluimvorming', value: 0.9 },
@@ -37,7 +38,8 @@ const cropStatusOptions: CropStatus = {
     { label: 'Volledige afrijping', value: 2 }
   ],
   aardappelen: [
-    { label: 'Opkomst', value: 0 },
+    { label: 'Geen Activiteit', value: 0 },
+    { label: 'Opkomst', value: 0.01 },
     { label: 'Gewasbedekking volledig', value: 1.2 },
     { label: 'Aanzet knolontwikkeling', value: 1.0 },
     { label: 'Afsterven', value: 2.0 }
@@ -526,7 +528,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
             `}
           >
             <FormControl className={css`margin-right: 10px !important;`} disabled={!selectedPlotId}>
-              <InputLabel htmlFor="component-simple">Gewas status veranderen</InputLabel>
+              <InputLabel htmlFor="component-simple">Gewasstadium veranderen</InputLabel>
               <Select
                 className={css`min-width: 200px;`}
                 value={cropStatus}
