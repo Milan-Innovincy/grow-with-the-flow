@@ -520,7 +520,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
             <LegendItem label="Regenval in mm" shape="square" color="#64b5f6"/>
             <LegendItem label="Beregening in mm" shape="square" color="#1565c0"/>
             <LegendItem label="Beschikbaar bodemvocht in mm" shape="circle" color="#fb8c00"/>
-            <LegendItem label="Benodigd vochtgehalte in mm" shape="circle" color="#00acc1"/>
+            <LegendItem label="Waterstressfactor in mm" shape="circle" color="#00acc1"/>
           </div>
           <div
             className={css`
