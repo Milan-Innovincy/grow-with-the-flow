@@ -39,10 +39,10 @@ const parameters: object = {
   },
   relativeTranspiration: {
     slug: 'relativeTranspiration',
-    label: 'Benodigde beregening',
+    label: 'Waterstressfactor',
     colors: {
-      min: '#DAE8FF',
-      max: '#2F3D8F'
+      min: '#107520',
+      max: '#fcad03'
     }
   },
   evapotranspiration: {
