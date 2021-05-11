@@ -276,8 +276,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
           rainfall: i.measuredPrecipitation,
           sprinkling,
           moisture: i.availableSoilWater,
-          desiredMoisture: i.relativeTranspiration,
-          // desiredMoisture: i.relativeTranspiration*10,
+          desiredMoisture: i.relativeTranspiration*10,
           evapotranspiration: i.evapotranspiration,
           deficit: i.deficit
         }
@@ -301,7 +300,6 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
       sprinkling: sprinklingCache[`${selectedPixel.join(',')}-${index}`] || 0,
       moisture: i.availableSoilWater[x][y],
       desiredMoisture: i.relativeTranspiration[x][y],
-      // desiredMoisture: i.relativeTranspiration[x][y]*10,
       evapotranspiration: i.evapotranspiration[x][y],
       deficit: i.deficit[x][y]
     }))    
