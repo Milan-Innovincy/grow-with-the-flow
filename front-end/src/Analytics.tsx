@@ -310,7 +310,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
   const currentRainfall = current ? current.rainfall : 0
   const currentSprinkling = current ? current.sprinkling : 0
   const currentEvapotranspiration = current ? current.evapotranspiration : 0
-  const currentDeficit = current ? current.deficit : 0  
+  const currentAvailableSoilWater = current ? current.moisture : 0  
   const currentCropStatus = formatCropStatus(
     plotCropStatus, 
     selectedPlotId ? selectedPlotId : '', 
@@ -463,7 +463,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
           />
           <CurrentDataItem
               label="Beschikbaar bodemvocht in mm"
-              value={currentDeficit}
+              value={currentAvailableSoilWater}
               color="#f6511d"
               icon={<Vanish fill="#f6511d" width={20} className={css`width: 18px !important; height: 18px !important;`}/>}
           />
