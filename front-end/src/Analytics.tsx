@@ -464,8 +464,8 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
           <CurrentDataItem
               label="Beschikbaar bodemvocht in mm"
               value={currentDeficit}
-              color="#F6511D"
-              icon={<Vanish fill="#F6511D" width={20} className={css`width: 18px !important; height: 18px !important;`}/>}
+              color="#f6511d"
+              icon={<Vanish fill="#fb8c00" width={20} className={css`width: 18px !important; height: 18px !important;`}/>}
           />
           <CurrentDataItem
               label="Te beregenen in mm"
@@ -519,7 +519,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
           >
             <LegendItem label="Regenval in mm" shape="square" color="#64b5f6"/>
             <LegendItem label="Beregening in mm" shape="square" color="#1565c0"/>
-            <LegendItem label="Beschikbaar bodemvocht in mm" shape="circle" color="#fb8c00"/>
+            <LegendItem label="Beschikbaar bodemvocht in mm" shape="circle" color="#f6511d"/>
             <LegendItem label="Waterstressfactor" shape="circle" color="#00acc1"/>
           </div>
           <div
