@@ -54,7 +54,7 @@ const getCropType = (cropType: string) => {
   if(cropType.startsWith('Grasland')) {
       return 'gras'
   };
-  if(cropType.startsWith('Mais')) {
+  if(cropType.startsWith('Mais') || (cropType.startsWith('Maïs'))) {
     return 'mais'
   };
   if(cropType.startsWith('Aardappelen')) {
@@ -270,13 +270,14 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
       data = plotsAnalytics[feature.properties.plotId].map((i: any) => {
         const quantityForDate = sprinklingData ? sprinklingData.quantities.find((q: any) => q.date === i.date) : null
         const sprinkling = quantityForDate ? quantityForDate.quantityMM : 0
-        
+        console.log(i)
         return { 
           date: DateTime.fromISO(i.date).toFormat('dd/MM/yyyy'),
           rainfall: i.measuredPrecipitation,
           sprinkling,
           moisture: i.availableSoilWater,
           desiredMoisture: i.relativeTranspiration,
+          // desiredMoisture: i.relativeTranspiration*10,
           evapotranspiration: i.evapotranspiration,
           deficit: i.deficit
         }
@@ -300,6 +301,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
       sprinkling: sprinklingCache[`${selectedPixel.join(',')}-${index}`] || 0,
       moisture: i.availableSoilWater[x][y],
       desiredMoisture: i.relativeTranspiration[x][y],
+      // desiredMoisture: i.relativeTranspiration[x][y]*10,
       evapotranspiration: i.evapotranspiration[x][y],
       deficit: i.deficit[x][y]
     }))    
@@ -520,7 +522,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
             <LegendItem label="Regenval in mm" shape="square" color="#64b5f6"/>
             <LegendItem label="Beregening in mm" shape="square" color="#1565c0"/>
             <LegendItem label="Beschikbaar bodemvocht in mm" shape="circle" color="#fb8c00"/>
-            <LegendItem label="Benodigd vochtgehalte in mm" shape="circle" color="#00acc1"/>
+            <LegendItem label="Waterstressfactor" shape="circle" color="#00acc1"/>
           </div>
           <div
             className={css`
@@ -611,7 +613,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
             <Line
               dataKey="desiredMoisture"
               xAxisId={2}
-              yAxisId="right"
+              yAxisId="left"
               type="natural"
               stroke="#00acc1"
             />
