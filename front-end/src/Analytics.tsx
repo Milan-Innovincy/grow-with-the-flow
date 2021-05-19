@@ -45,8 +45,8 @@ const cropStatusOptions: CropStatus = {
     { label: 'Afsterven', value: 2.0 }
   ],
   gras: [
-    { label: 'Dummy data', value: 0 },    
-    { label: 'Dummy data - 2', value: 2 }
+    { label: 'Geen activiteit', value: 0 },    
+    { label: 'Bemaaien', value: 2 }
   ]
 }
 
