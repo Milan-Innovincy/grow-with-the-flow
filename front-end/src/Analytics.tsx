@@ -270,7 +270,6 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
       data = plotsAnalytics[feature.properties.plotId].map((i: any) => {
         const quantityForDate = sprinklingData ? sprinklingData.quantities.find((q: any) => q.date === i.date) : null
         const sprinkling = quantityForDate ? quantityForDate.quantityMM : 0
-        console.log(i)
         return { 
           date: DateTime.fromISO(i.date).toFormat('dd/MM/yyyy'),
           rainfall: i.measuredPrecipitation,
@@ -296,6 +295,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
     area = 1
     data = pixelsData.analytics.map((i: any, index: number) => ({
       date: DateTime.fromISO(i.time).toFormat('dd/MM/yyyy'),
+      isForecast: i.isForecast,
       rainfall: i.measuredPrecipitation[x][y],
       sprinkling: sprinklingCache[`${selectedPixel.join(',')}-${index}`] || 0,
       moisture: i.availableSoilWater[x][y],
