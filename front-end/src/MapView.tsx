@@ -74,17 +74,17 @@ let createPixelMap = (pixelsData: any, date: string, parameter: string) => {
     width,
     height
   })
-  
-  for(let y = 0; y < height; y++) {
-    for(let x = 0; x < width; x++) {
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
       const idx = (width * y + x) << 2
-      const value = grid[height-1-y][x]
-      
-      const rgba = (typeof(value) === 'number' && value !== -999) ? f(value).rgba() : [0,0,0,0]
-      png.data[idx  ] = rgba[0]
-      png.data[idx+1] = rgba[1]
-      png.data[idx+2] = rgba[2]
-      png.data[idx+3] = rgba[3] * 255
+      const value = grid[height - 1 - y][x]
+
+      const rgba = (typeof (value) === 'number' && value !== -999) ? f(value).rgba() : [0, 0, 0, 0]
+      png.data[idx] = rgba[0]
+      png.data[idx + 1] = rgba[1]
+      png.data[idx + 2] = rgba[2]
+      png.data[idx + 3] = rgba[3] * 255
     }
   }
 
@@ -102,12 +102,12 @@ const getLegendColors = (parameter: string) => {
 }
 
 const MapView = ({ navigate, date, farmerData, farmerGeoData, selectedPlotId, selectedPixel }: Props) => {
-  const [ selectedParameter, setSelectedParameter ] = useState('deficit')
-  const [ legendColors, setlegendColors ] = useState(getLegendColors(selectedParameter))
-  const [ pixelSelection, setPixelSelection ] = useState(false)
-  const [ zoom, setZoom ] = useState(14)
-  const [ initialLoad, setInitialLoad ] = useState(true)
-  const [ base64, setBase64 ] = useState('')
+  const [selectedParameter, setSelectedParameter] = useState('deficit')
+  const [legendColors, setlegendColors] = useState(getLegendColors(selectedParameter))
+  const [pixelSelection, setPixelSelection] = useState(false)
+  const [zoom, setZoom] = useState(14)
+  const [initialLoad, setInitialLoad] = useState(true)
+  const [base64, setBase64] = useState('')
 
   let lng1: number = 0;
   let lat1: number = 0;
@@ -122,29 +122,29 @@ const MapView = ({ navigate, date, farmerData, farmerGeoData, selectedPlotId, se
   let pixelLngStep: number = 0;
 
   if (farmerData) {
-    const [ pixelsInLng, pixelsInLat ] = farmerData.pixelsData.dimensions
+    const [pixelsInLng, pixelsInLat] = farmerData.pixelsData.dimensions
 
     lng1 = farmerData.pixelsData.boundingBox[0]
     lat1 = farmerData.pixelsData.boundingBox[1]
-    lng2 = farmerData.pixelsData.boundingBox[2] 
+    lng2 = farmerData.pixelsData.boundingBox[2]
     lat2 = farmerData.pixelsData.boundingBox[3]
-    pixelLatStart = sortBy([ lat1, lat2 ])[0]
-    pixelLatEnd = sortBy([ lat1, lat2 ])[1]
-    pixelLngStart = sortBy([ lng1, lng2 ])[0]
-    pixelLngEnd = sortBy([ lng1, lng2 ])[1]    
+    pixelLatStart = sortBy([lat1, lat2])[0]
+    pixelLatEnd = sortBy([lat1, lat2])[1]
+    pixelLngStart = sortBy([lng1, lng2])[0]
+    pixelLngEnd = sortBy([lng1, lng2])[1]
 
     pixelLatStep = (pixelLatEnd - pixelLatStart) / pixelsInLat
     pixelLngStep = (pixelLngEnd - pixelLngStart) / pixelsInLng
 
-    const pixelLats = [ ...range(pixelLatStart, pixelLatEnd, pixelLatStep), pixelLatEnd ]
-    const pixelLngs = [ ...range(pixelLngStart, pixelLngEnd, pixelLngStep), pixelLngEnd ]
+    const pixelLats = [...range(pixelLatStart, pixelLatEnd, pixelLatStep), pixelLatEnd]
+    const pixelLngs = [...range(pixelLngStart, pixelLngEnd, pixelLngStep), pixelLngEnd]
 
     gridGeoJSON = featureCollection([
       ...pixelLats.map(lat =>
-        lineString([ [ pixelLngStart, lat ], [ pixelLngEnd, lat ] ])
+        lineString([[pixelLngStart, lat], [pixelLngEnd, lat]])
       ),
       ...pixelLngs.map(lng =>
-        lineString([ [ lng, pixelLatStart ], [ lng, pixelLatEnd ] ])
+        lineString([[lng, pixelLatStart], [lng, pixelLatEnd]])
       )
     ])
   }
@@ -154,7 +154,7 @@ const MapView = ({ navigate, date, farmerData, farmerGeoData, selectedPlotId, se
   }
 
   const getCenter = () => {
-    if(selectedPlotId) {
+    if (selectedPlotId) {
       const feature = farmerGeoData.plotsGeoJSON.features.find((f: any) => f.properties.plotId === selectedPlotId)
       const c = center(feature).geometry!.coordinates
       return {
@@ -162,7 +162,7 @@ const MapView = ({ navigate, date, farmerData, farmerGeoData, selectedPlotId, se
         lng: c[0]
       }
     }
-    if(selectedPixel) {
+    if (selectedPixel) {
       return {
         lat: pixelLatStart + selectedPixel[0] * pixelLatStep,
         lng: pixelLngStart + selectedPixel[1] * pixelLngStep
@@ -181,23 +181,23 @@ const MapView = ({ navigate, date, farmerData, farmerGeoData, selectedPlotId, se
     return null;
   }
 
-  const [ mapCenter, setMapCenter ] = useState(getCenter())
+  const [mapCenter, setMapCenter] = useState(getCenter())
 
   useEffect(() => {
     const mapCenter = getCenter()
     setMapCenter(mapCenter as any)
-  }, [ selectedPlotId, selectedPixel ])
+  }, [selectedPlotId, selectedPixel])
 
   useEffect(() => {
     if (farmerData) {
       setBase64(createPixelMap(farmerData.pixelsData, date, selectedParameter))
       setlegendColors(getLegendColors(selectedParameter))
     }
-  }, [ selectedParameter ])
+  }, [selectedParameter])
 
   let pixelPolygon = undefined;
-  if(selectedPixel) {
-    const [ latIndex, lngIndex ] = selectedPixel
+  if (selectedPixel) {
+    const [latIndex, lngIndex] = selectedPixel
     const lat1 = pixelLatStart + latIndex * pixelLatStep
     const lat2 = lat1 + pixelLatStep
     const lng1 = pixelLngStart + lngIndex * pixelLngStep
@@ -290,7 +290,7 @@ const MapView = ({ navigate, date, farmerData, farmerGeoData, selectedPlotId, se
         />
         <ImageOverlay
           url={base64}
-          bounds={[ [ lat1, lng1 ], [ lat2, lng2 ] ]}
+          bounds={[[lat1, lng1], [lat2, lng2]]}
           opacity={pixelSelection ? 0.5 : 0}
         />
         <GeoJSON
@@ -351,7 +351,7 @@ const MapView = ({ navigate, date, farmerData, farmerGeoData, selectedPlotId, se
             autoWidth={true}
           >
             {
-              Object.keys(parameters).map(( parameterName: string ) => 
+              Object.keys(parameters).map((parameterName: string) =>
                 <MenuItem key={parameterName} value={parameterName}>{parameters[parameterName].label}</MenuItem>
               )
             }
@@ -362,10 +362,10 @@ const MapView = ({ navigate, date, farmerData, farmerGeoData, selectedPlotId, se
           size="medium"
           disableFocusRipple={true}
         >
-          {pixelSelection ? <GridOff/> : <Grid/>}
+          {pixelSelection ? <GridOff /> : <Grid />}
         </Fab>
       </div>
-      
+
       {pixelSelection ? <Box
         className={css`
           display: flex;
