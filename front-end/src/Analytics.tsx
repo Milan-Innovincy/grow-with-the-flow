@@ -559,7 +559,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
             </FormControl>
           </div>
         </div>
-        <ResponsiveContainer height={200}>
+        <ResponsiveContainer height={200}>         
           <ComposedChart data={data} margin={{ top: 20, bottom: 0, left: 0, right: 0 }}>
             <defs>
               <linearGradient id="moistureColor" x1="0" y1="0" x2="0" y2="1">
@@ -632,6 +632,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
             />
             <Bar
               dataKey="sprinkling"
+              isAnimationActive={false}
               xAxisId={1}
               yAxisId="left"
               fill="#1565c0"
