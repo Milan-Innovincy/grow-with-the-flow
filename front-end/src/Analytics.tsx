@@ -111,6 +111,22 @@ const formatCropStatus = (cropStatuses: any, currentPlotId: string, cropType: st
 
 }
 
+const developmentStateToLabel = (developmentState: number, cropType: string) => {
+  console.log(developmentState, cropType);
+
+  if (!cropType) {
+    return
+  }
+  if (!cropStatusOptions[cropType]) {
+    return
+  }
+
+  const nextStageIndex = cropStatusOptions[cropType].findIndex((cropStatusValue: CropStatusValue) => {
+    return developmentState < cropStatusValue.value
+  })
+  return cropStatusOptions[cropType][nextStageIndex - 1];
+}
+
 let updateSprinklingDialog: UpdateSprinklingDialog
 
 const SelectedSumData = ({ circleContent, label, text }: { circleContent: ReactNode, label: string, text: string }) =>
@@ -268,7 +284,7 @@ const Analytics: React.FC<Props> = ({ navigate, farmerData, date, selectedPlotId
   const [soilType, setSoilType] = useState<string>('');
   const [area, setArea] = useState<number>(0);
 
-  const [current, setCurrent] = useState<Current>(null);
+  //const [current, setCurrent] = useState<Current>(null);
 
   useEffect(() => {
     const { pixelsData, plotsAnalytics, plotFeedback, plotCropStatus } = farmerData
@@ -324,38 +340,38 @@ const Analytics: React.FC<Props> = ({ navigate, farmerData, date, selectedPlotId
 
     }
 
-    const currentData = analyticsData.find(i => i.date === DateTime.fromJSDate(date).toFormat('dd/MM/yyyy'));
 
-    console.log(currentData);
 
-    if (currentData) {
-      setCurrent({
-        date: currentData.date,
-        rainfall: currentData.rainfall,
-        sprinkling: currentData.sprinkling,
-        evapotranspiration: currentData.evapotranspiration,
-        availableSoilWater: currentData.moisture,
-        developmentStage: currentData.developmentStage,
-        cropStatus: formatCropStatus(
-          plotCropStatus,
-          selectedPlotId ? selectedPlotId : '',
-          cropType,
-          currentData.date
-        )
-      });
-      // setCropStatus(formatCropStatus(
-      //   plotCropStatus,
-      //   selectedPlotId ? selectedPlotId : '',
-      //   cropType,
-      //   currentData.date
-      // ).value.toString());
-    }
+    // console.log(currentData);
+
+    // if (currentData) {
+    //   setCurrent({
+    //     date: currentData.date,
+    //     rainfall: currentData.rainfall,
+    //     sprinkling: currentData.sprinkling,
+    //     evapotranspiration: currentData.evapotranspiration,
+    //     availableSoilWater: currentData.moisture,
+    //     developmentStage: currentData.developmentStage,
+    //     cropStatus: formatCropStatus(
+    //       plotCropStatus,
+    //       selectedPlotId ? selectedPlotId : '',
+    //       cropType,
+    //       currentData.date
+    //     )
+    //   });
+    // setCropStatus(formatCropStatus(
+    //   plotCropStatus,
+    //   selectedPlotId ? selectedPlotId : '',
+    //   cropType,
+    //   currentData.date
+    // ).value.toString());
+    //}
 
 
 
   }, [selectedPlotId, selectedPixel, sprinklingCache, farmerData, farmerData.plotCropStatus])
-  console.log('current', current);
-
+  //console.log('current', current);
+  const currentAnalyticsData = analyticsData.find(i => i.date === DateTime.fromJSDate(date).toFormat('dd/MM/yyyy'));
 
   setTimeout(() => {
     const nodes = document.querySelectorAll('.recharts-layer.recharts-cartesian-axis-tick')
@@ -484,29 +500,29 @@ const Analytics: React.FC<Props> = ({ navigate, farmerData, date, selectedPlotId
             </MuiPickersUtilsProvider>
           </div>
         </div>
-        {current && (
+        {currentAnalyticsData && (
           <div className={css`display: flex;`}>
             <CurrentDataItem
               label="Regenval in mm"
-              value={current.rainfall}
+              value={currentAnalyticsData.rainfall}
               color="#80A1D4"
               icon={<RainfallIcon fill="#80A1D4" className={css`width: 20px; height: 20px;`} />}
             />
             <CurrentDataItem
               label="Verdamping in mm"
-              value={current.evapotranspiration}
+              value={currentAnalyticsData.evapotranspiration}
               color="#6A7152"
               icon={<CarDefrostRear fill="#6A7152" className={css`width: 18px !important; height: 18px !important; transform: rotate(180deg);`} />}
             />
             <CurrentDataItem
               label="Beschikbaar bodemvocht in mm"
-              value={current.availableSoilWater}
+              value={currentAnalyticsData.moisture}
               color="#f6511d"
               icon={<Vanish fill="#f6511d" width={20} className={css`width: 18px !important; height: 18px !important;`} />}
             />
             <CurrentDataItem
               label="Te beregenen in mm"
-              value={current.sprinkling}
+              value={currentAnalyticsData.sprinkling}
               color="#1565c0"
               icon={<IrrigationIcon fill="#1565c0" className={css`width: 20px; height: 20px;`} />}
             />
@@ -584,7 +600,7 @@ const Analytics: React.FC<Props> = ({ navigate, farmerData, date, selectedPlotId
             </FormControl>
             <FormControl className={css`margin-left: 30px !important;`} disabled={!selectedPlotId}>
               <InputLabel id="crop-status-label">Huidige gewas status:</InputLabel>
-              <Input id="component-simple" value={current && current.cropStatus ? `${current.cropStatus.label} (${current.cropStatus.value})` : ''} readOnly />
+              <Input id="component-simple" value={currentAnalyticsData && developmentStateToLabel(currentAnalyticsData.developmentStage, cropType) ? `${developmentStateToLabel(currentAnalyticsData.developmentStage, cropType).label} ${currentAnalyticsData.developmentStage.toFixed(2)}` : ''} readOnly />
             </FormControl>
           </div>
         </div>
