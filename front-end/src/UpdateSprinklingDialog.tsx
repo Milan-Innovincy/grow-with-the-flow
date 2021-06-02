@@ -45,6 +45,7 @@ export default class UpdateSprinklingDialog extends Component<Props, State> {
       selectedPlotId: this.props.selectedPlotId,
       farmerData: this.props.farmerData
     }
+    
     EventEmitter.emit('sprinkling-update', payload)
     this.setState({ loading: true })
   }

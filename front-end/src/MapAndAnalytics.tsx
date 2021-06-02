@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useContext} from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import { RouteComponentProps, Redirect } from 'react-router-dom'
 import axios from 'axios'
 import { css } from '@emotion/css'
@@ -21,22 +21,32 @@ type Props = RouteComponentProps<{
 }>
 
 const MapAndAnalytics = ({ match, history }: Props) => {
-  const [ farmerData, setFarmerData ] = useState(null as any)
-  const [ farmerGeoData, setFarmerGeoData ] = useState(null as any)
-  const [ sprinklingCache, setSprinklingCache ] = useState({})
+  const [farmerData, setFarmerData] = useState(null as any)
+  const [farmerGeoData, setFarmerGeoData] = useState(null as any)
+  const [sprinklingCache, setSprinklingCache] = useState({})
   const contextValue = useContext(ApplicationContext)
   const [isFetchingFarmerData, setIsFetchingFarmerData] = useState(false);
 
   const { date, selectionType, selectionId } = match.params
   const latestAvailableDate = DateTime.fromJSDate(new Date())
-                                .minus(Duration.fromObject({ days: 2 }))
-                                .toFormat('yyyy-MM-dd')
+    .minus(Duration.fromObject({ days: 2 }))
+    .toFormat('yyyy-MM-dd')
+
+  useEffect(() => {
+    EventEmitter.on('sprinkling-updated-success', (data) => {
+      updateFarmerDataOnSprinklingUpdate(data.farmerData)
+    });
+  }, [])
+
+  const updateFarmerDataOnSprinklingUpdate = async (farmerData) => {
+    await getPlotFeedback(farmerData);
+  }
 
   useEffect(() => {
     setIsFetchingFarmerData(true);
     (async () => {
       const isAuthenticated = contextValue.keycloak && contextValue.keycloak.token
-      
+
       if (isAuthenticated) {
         const handleError = () => {
           setIsFetchingFarmerData(false);
@@ -88,9 +98,9 @@ const MapAndAnalytics = ({ match, history }: Props) => {
         if (landUse && soilMap && pixelsData && plotsGeoJSON && plotsAnalytics) {
           pixelsData.landUse = landUse
           pixelsData.soilMap = soilMap
-  
-          plotsGeoJSON.features = plotsGeoJSON.features.filter((feature: any) => feature.properties.plotId)        
-          
+
+          plotsGeoJSON.features = plotsGeoJSON.features.filter((feature: any) => feature.properties.plotId)
+
           const farmerData = {
             pixelsData,
             plotsGeoJSON,
@@ -98,9 +108,9 @@ const MapAndAnalytics = ({ match, history }: Props) => {
             plotFeedback: [],
             plotCropStatus: []
           }
-  
+
           EventEmitter.on('sprinkling-update', handleSprinklingUpdate)
-  
+
           setFarmerData(farmerData)
           getPlotFeedback(farmerData)
           setIsFetchingFarmerData(false)
@@ -111,10 +121,11 @@ const MapAndAnalytics = ({ match, history }: Props) => {
 
   const handleSprinklingUpdate = (payload: any) => {
     const { date, selectedPlotId, value, farmerData } = payload
+
     const formattedDate = DateTime.fromJSDate(new Date(date)).toFormat('yyyy-MM-dd')
 
     axiosInstance.put(`/plot-feedback/irrigation?plotId=${selectedPlotId}&date=${formattedDate}&irrigationMM=${value}`).then(({ data }) => {
-      EventEmitter.emit('sprinkling-updated-success', farmerData)
+      EventEmitter.emit('sprinkling-updated-success', payload)
     }).catch((error: Error) => {
       EventEmitter.emit('sprinkling-updated-failure')
       console.error(error)
@@ -130,31 +141,24 @@ const MapAndAnalytics = ({ match, history }: Props) => {
     const dateFrom = sortedDates[0]
     const dateTo = sortedDates[sortedDates.length - 1]
 
-    await axiosInstance.get(`/plot-feedback/irrigation?from=${dateFrom}&to=${dateTo}`).then(({ data }) => {
-      farmerData.plotFeedback = data
-      setFarmerData(farmerData)
-      EventEmitter.emit('plotfeedback-updated')
-    }).catch((error: Error) => {
-      // TODO: Properly handle error
-      throw new Error(error.message)
-    })
+    const promises = [axiosInstance.get(`/plot-feedback/crop-status?from=${dateFrom}&to=${dateTo}`), axiosInstance.get(`/plot-feedback/irrigation?from=${dateFrom}&to=${dateTo}`)];
 
-    await axiosInstance.get(`/plot-feedback/crop-status?from=${dateFrom}&to=${dateTo}`).then(({ data }) => {
-      farmerData.plotCropStatus = data
-      setFarmerData(farmerData)
-      EventEmitter.emit('plotfeedback-updated')
-    }).catch((error: Error) => {
+    const results = await Promise.all(promises).catch((error: Error) => {
       // TODO: Properly handle error
       throw new Error(error.message)
-    })
+    });
+
+    const data = results.map(res => res.data);
+    setFarmerData({ ...farmerData, plotCropStatus: data[0], plotFeedback: data[1] });
+    EventEmitter.emit('plotfeedback-updated');
   }
 
   if (!date) {
     return <Redirect to={`/map/${latestAvailableDate}`} />
   }
 
-  if(!farmerGeoData) {
-    return(
+  if (!farmerGeoData) {
+    return (
       <div
         className={css`
           height: 100%;
@@ -163,7 +167,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
           justify-content: center;
         `}
       >
-        <CircularProgress/>
+        <CircularProgress />
       </div>
     )
   }
@@ -171,8 +175,8 @@ const MapAndAnalytics = ({ match, history }: Props) => {
   let selectedPlotId: string | undefined = undefined
   let selectedPixel: Array<number> | undefined = undefined
 
-  if(selectionId) {
-    switch(selectionType) {
+  if (selectionId) {
+    switch (selectionType) {
       case 'plot':
         selectedPlotId = selectionId
         break
@@ -180,11 +184,11 @@ const MapAndAnalytics = ({ match, history }: Props) => {
         selectedPixel = selectionId.split('-').map(n => parseInt(n, 10))
         break
       default:
-        return <Redirect to={`/map/${date}`}/>
+        return <Redirect to={`/map/${date}`} />
     }
   }
 
-  const navigate = (path: string) => history.push(path)
+  const navigate = (path: string) => history.push(path);
 
   return (
     <div
@@ -245,7 +249,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
                 justify-content: center;
               `}
             >
-              <CircularProgress/>
+              <CircularProgress />
             </div>
           }
         </div>
