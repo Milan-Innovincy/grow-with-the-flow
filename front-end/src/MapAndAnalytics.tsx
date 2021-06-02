@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useContext} from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import { RouteComponentProps, Redirect } from 'react-router-dom'
 import axios from 'axios'
 import { css } from '@emotion/css'
@@ -21,22 +21,22 @@ type Props = RouteComponentProps<{
 }>
 
 const MapAndAnalytics = ({ match, history }: Props) => {
-  const [ farmerData, setFarmerData ] = useState(null as any)
-  const [ farmerGeoData, setFarmerGeoData ] = useState(null as any)
-  const [ sprinklingCache, setSprinklingCache ] = useState({})
+  const [farmerData, setFarmerData] = useState(null as any)
+  const [farmerGeoData, setFarmerGeoData] = useState(null as any)
+  const [sprinklingCache, setSprinklingCache] = useState({})
   const contextValue = useContext(ApplicationContext)
   const [isFetchingFarmerData, setIsFetchingFarmerData] = useState(false);
 
   const { date, selectionType, selectionId } = match.params
   const latestAvailableDate = DateTime.fromJSDate(new Date())
-                                .minus(Duration.fromObject({ days: 2 }))
-                                .toFormat('yyyy-MM-dd')
+    .minus(Duration.fromObject({ days: 2 }))
+    .toFormat('yyyy-MM-dd')
 
   useEffect(() => {
     setIsFetchingFarmerData(true);
     (async () => {
       const isAuthenticated = contextValue.keycloak && contextValue.keycloak.token
-      
+
       if (isAuthenticated) {
         const handleError = () => {
           setIsFetchingFarmerData(false);
@@ -88,9 +88,9 @@ const MapAndAnalytics = ({ match, history }: Props) => {
         if (landUse && soilMap && pixelsData && plotsGeoJSON && plotsAnalytics) {
           pixelsData.landUse = landUse
           pixelsData.soilMap = soilMap
-  
-          plotsGeoJSON.features = plotsGeoJSON.features.filter((feature: any) => feature.properties.plotId)        
-          
+
+          plotsGeoJSON.features = plotsGeoJSON.features.filter((feature: any) => feature.properties.plotId)
+
           const farmerData = {
             pixelsData,
             plotsGeoJSON,
@@ -98,9 +98,9 @@ const MapAndAnalytics = ({ match, history }: Props) => {
             plotFeedback: [],
             plotCropStatus: []
           }
-  
+
           EventEmitter.on('sprinkling-update', handleSprinklingUpdate)
-  
+
           setFarmerData(farmerData)
           getPlotFeedback(farmerData)
           setIsFetchingFarmerData(false)
@@ -153,8 +153,8 @@ const MapAndAnalytics = ({ match, history }: Props) => {
     return <Redirect to={`/map/${latestAvailableDate}`} />
   }
 
-  if(!farmerGeoData) {
-    return(
+  if (!farmerGeoData) {
+    return (
       <div
         className={css`
           height: 100%;
@@ -163,7 +163,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
           justify-content: center;
         `}
       >
-        <CircularProgress/>
+        <CircularProgress />
       </div>
     )
   }
@@ -171,8 +171,8 @@ const MapAndAnalytics = ({ match, history }: Props) => {
   let selectedPlotId: string | undefined = undefined
   let selectedPixel: Array<number> | undefined = undefined
 
-  if(selectionId) {
-    switch(selectionType) {
+  if (selectionId) {
+    switch (selectionType) {
       case 'plot':
         selectedPlotId = selectionId
         break
@@ -180,7 +180,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
         selectedPixel = selectionId.split('-').map(n => parseInt(n, 10))
         break
       default:
-        return <Redirect to={`/map/${date}`}/>
+        return <Redirect to={`/map/${date}`} />
     }
   }
 
@@ -245,7 +245,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
                 justify-content: center;
               `}
             >
-              <CircularProgress/>
+              <CircularProgress />
             </div>
           }
         </div>
