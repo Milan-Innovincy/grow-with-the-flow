@@ -20,9 +20,96 @@ type Props = RouteComponentProps<{
   selectionId?: string
 }>
 
+
+
+export type FarmerData = {
+  pixelsData: {
+    analytics: {
+      availableSoilWater: number[][]
+      deficit: number[][]
+      developmentStage: number[][]
+      evapotranspiration: number[][]
+      isForecast: boolean
+      measuredPrecipitation: number[][]
+      relativeTranspiration: number[][]
+      time: string
+    }[]
+    boundingBox: number[]
+    dimensions: number[]
+    landUse: string[][]
+    soilMap: string[][]
+  }
+  plotCropStatus: {
+    plotId: string;
+    statuses: {
+      "crop-status": string
+      date: string
+    }[]
+  }[]
+  plotFeedback: {
+    plotId: string;
+    quantities: {
+      date: string;
+      quantityMM: number
+    }[]
+  }[]
+  plotsAnalytics: {
+    [key: string]: {
+      availableSoilWater: number
+      date: string
+      deficit: number
+      developmentStage: number
+      evapotranspiration: number
+      isForecast: boolean
+      measuredPrecipitation: number
+      relativeTranspiration: number
+    }
+  }
+  plotsGeoJSON: {
+    features: {
+      geometry: {
+        coordinates: number[][];
+        type: string
+      }
+      properties: {
+        cropTypes: string
+        farmerId: string
+        farmerName: string
+        featureType: string
+        name: string
+        plotId: string
+        plotSizeHa: number
+        soilType: string
+      }
+      type: string
+    }[]
+  }
+}
+export type FarmerGeoData = {
+  plotsGeoJSON: {
+    features: {
+      geometry: {
+        coordinates: number[][];
+        type: string
+      }
+      properties: {
+        cropTypes: string
+        farmerId: string
+        farmerName: string
+        featureType: string
+        name: string
+        plotId: string
+        plotSizeHa: number
+        soilType: string
+      }
+      type: string
+    }[]
+  }
+}
+
 const MapAndAnalytics = ({ match, history }: Props) => {
-  const [farmerData, setFarmerData] = useState(null as any)
-  const [farmerGeoData, setFarmerGeoData] = useState(null as any)
+  const [farmerData, setFarmerData] = useState<FarmerData>(null)
+  const [farmerGeoData, setFarmerGeoData] = useState<FarmerGeoData>(null)
   const [sprinklingCache, setSprinklingCache] = useState({})
   const contextValue = useContext(ApplicationContext)
   const [isFetchingFarmerData, setIsFetchingFarmerData] = useState(false);
@@ -54,7 +141,6 @@ const MapAndAnalytics = ({ match, history }: Props) => {
           window.stop()
         }
         const prefix = 'https://storage.googleapis.com/grow-with-the-flow.appspot.com'
-        // const dateToken = date ? date.replace(/-/g, '') : latestAvailableDate.replace(/-/g, '')
         const plotsGeoJSON = await axiosInstance.get(`/plots`).then(({ data }) => {
           return data
         }).catch((error: Error) => {
