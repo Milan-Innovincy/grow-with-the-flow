@@ -82,6 +82,7 @@ const getCropTypeIcon = (cropType: string) => {
 
 const formatCropStatus = (cropStatuses: any, currentPlotId: string, cropType: string, date: string) => {
 
+
   if (!cropStatuses || !cropStatuses.length) {
     return
   }
@@ -112,7 +113,6 @@ const formatCropStatus = (cropStatuses: any, currentPlotId: string, cropType: st
 }
 
 const developmentStateToLabel = (developmentState: number, cropType: string) => {
-  console.log(developmentState, cropType);
 
   if (!cropType) {
     return
@@ -254,15 +254,7 @@ type CropStatusValue = {
   value: number
 }
 
-type Current = {
-  date: string;
-  rainfall: number;
-  sprinkling: number;
-  evapotranspiration: number;
-  availableSoilWater: number;
-  cropStatus: CropStatusValue | undefined;
-  developmentStage: number;
-}
+
 
 type AnalyticsData = {
   date: string;
@@ -277,19 +269,18 @@ type AnalyticsData = {
 
 
 const Analytics: React.FC<Props> = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, sprinklingCache, setSprinklingCache }) => {
-  const [cropStatus, setCropStatus] = useState<string>('0')
+  const [cropStatus, setCropStatus] = useState<CropStatusValue>()
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData[]>([]);
   const [label, setLabel] = useState<string>('');
   const [cropType, setCropType] = useState<string>('');
   const [soilType, setSoilType] = useState<string>('');
   const [area, setArea] = useState<number>(0);
 
-  //const [current, setCurrent] = useState<Current>(null);
-
   useEffect(() => {
     const { pixelsData, plotsAnalytics, plotFeedback, plotCropStatus } = farmerData
 
     if (selectedPlotId) {
+
       setLabel(`Plot ${selectedPlotId}`)
       const [sprinklingData] = plotFeedback.filter((feedback: any) => feedback.plotId === selectedPlotId)
       const feature = farmerData.plotsGeoJSON.features.find((f: any) => f.properties!.plotId === selectedPlotId)
@@ -297,6 +288,7 @@ const Analytics: React.FC<Props> = ({ navigate, farmerData, date, selectedPlotId
       setCropType(getCropType(feature.properties.cropTypes))
       setSoilType(feature.properties.soilType)
       setArea(feature.properties.plotSizeHa)
+      setCropStatus(formatCropStatus(plotCropStatus, selectedPlotId, getCropType(feature.properties.cropTypes), DateTime.fromJSDate(date).toFormat('dd/MM/yyyy')));
 
       if (!!plotsAnalytics[feature.properties.plotId]) {
         setAnalyticsData(plotsAnalytics[feature.properties.plotId].map((i: any) => {
@@ -340,37 +332,7 @@ const Analytics: React.FC<Props> = ({ navigate, farmerData, date, selectedPlotId
 
     }
 
-
-
-    // console.log(currentData);
-
-    // if (currentData) {
-    //   setCurrent({
-    //     date: currentData.date,
-    //     rainfall: currentData.rainfall,
-    //     sprinkling: currentData.sprinkling,
-    //     evapotranspiration: currentData.evapotranspiration,
-    //     availableSoilWater: currentData.moisture,
-    //     developmentStage: currentData.developmentStage,
-    //     cropStatus: formatCropStatus(
-    //       plotCropStatus,
-    //       selectedPlotId ? selectedPlotId : '',
-    //       cropType,
-    //       currentData.date
-    //     )
-    //   });
-    // setCropStatus(formatCropStatus(
-    //   plotCropStatus,
-    //   selectedPlotId ? selectedPlotId : '',
-    //   cropType,
-    //   currentData.date
-    // ).value.toString());
-    //}
-
-
-
   }, [selectedPlotId, selectedPixel, sprinklingCache, farmerData, farmerData.plotCropStatus])
-  //console.log('current', current);
   const currentAnalyticsData = analyticsData.find(i => i.date === DateTime.fromJSDate(date).toFormat('dd/MM/yyyy'));
 
   setTimeout(() => {
@@ -585,7 +547,7 @@ const Analytics: React.FC<Props> = ({ navigate, farmerData, date, selectedPlotId
               <InputLabel htmlFor="component-simple">Gewasstadium veranderen</InputLabel>
               <Select
                 className={css`min-width: 200px;`}
-                value={cropStatus}
+                value={cropStatus && cropStatus.value ? cropStatus.value.toString() : ''}
                 onChange={changeCropStatus}
                 disabled={cropTypes.every(type => cropType !== type)}
               >
