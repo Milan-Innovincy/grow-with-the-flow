@@ -31,10 +31,11 @@ const PlotListDialog = ({ farmerData, date, navigate }: Props) => {
                   <TableCell>ID</TableCell>
                   {contextValue.keycloak.tokenParsed.user_type === "WATERBOARD_MANAGER" && <TableCell>Boer</TableCell>}
                   <TableCell>Gewas</TableCell>
-                  <TableCell>Vochtgehalte</TableCell>
-                  <TableCell>Watertekort</TableCell>
-                  <TableCell>Verdamping</TableCell>
-                  <TableCell>Beregening</TableCell>
+                  <TableCell>Vochtgehalte (mm)</TableCell>
+                  <TableCell>Watertekort (mm)</TableCell>
+                  <TableCell>Waterstressfactor (%)</TableCell>
+                  <TableCell>Verdamping (mm)</TableCell>
+                  <TableCell>Beregening (mm)</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -63,6 +64,7 @@ const PlotListDialog = ({ farmerData, date, navigate }: Props) => {
                       <TableCell>{feature.properties.cropTypes}</TableCell>
                       <TableCell>{Math.round(analytics.availableSoilWater)}</TableCell>
                       <TableCell>{Math.round(analytics.deficit)}</TableCell>
+                      <TableCell>{Math.round(analytics.relativeTranspiration * 100)}%</TableCell>
                       <TableCell>{Math.round(analytics.evapotranspiration)}</TableCell>
                       <TableCell>{sprinkling}</TableCell>
                     </TableRow>
