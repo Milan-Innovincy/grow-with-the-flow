@@ -110,7 +110,6 @@ export type FarmerGeoData = {
 const MapAndAnalytics = ({ match, history }: Props) => {
   const [farmerData, setFarmerData] = useState<FarmerData>(null)
   const [farmerGeoData, setFarmerGeoData] = useState<FarmerGeoData>(null)
-  const [sprinklingCache, setSprinklingCache] = useState({})
   const contextValue = useContext(ApplicationContext)
   const [isFetchingFarmerData, setIsFetchingFarmerData] = useState(false);
 
@@ -336,7 +335,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
             selectedPixel={selectedPixel}
           />}
       </div>
-      {farmerData ?
+      {farmerData && !isFetchingFarmerData ?
         <Paper
           elevation={5}
           className={css`
@@ -352,30 +351,24 @@ const MapAndAnalytics = ({ match, history }: Props) => {
               navigate={navigate}
               selectedPixel={selectedPixel}
               selectedPlotId={selectedPlotId}
-              sprinklingCache={sprinklingCache}
-              setSprinklingCache={setSprinklingCache}
             /> : <OverallSummary
               date={new Date(date)}
               farmerData={farmerData}
               navigate={navigate}
-              sprinklingCache={sprinklingCache}
             />
           }
         </Paper> :
-        <div>
-          {isFetchingFarmerData &&
-            <div
-              className={css`
+        <div
+          className={css`
                 padding: 24px 0;
                 display: flex;
                 align-items: center;
                 justify-content: center;
               `}
-            >
-              <CircularProgress />
-            </div>
-          }
+        >
+          <CircularProgress />
         </div>
+
       }
     </div>
   )

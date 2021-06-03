@@ -1,5 +1,5 @@
-import React from 'react'
-import { Button, Dialog, DialogActions, DialogContent, Table, TableHead, TableRow, TableCell, TableBody } from '@material-ui/core'
+import React, { useContext } from 'react'
+import { Button, Dialog, DialogActions, DialogContent, Table, TableHead, TableRow, TableCell, TableBody, Typography } from '@material-ui/core'
 import { css } from '@emotion/css'
 import { ApplicationContext } from "./ApplicationContext";
 import { FarmerData } from './MapAndAnalytics';
@@ -11,6 +11,8 @@ type Props = {
 }
 
 const PlotListDialog = ({ farmerData, date, navigate }: Props) => {
+  const contextValue = useContext(ApplicationContext)
+
   return (
     <ApplicationContext.Consumer>
       {({ showModal, toggleShowModal }) =>
@@ -20,15 +22,18 @@ const PlotListDialog = ({ farmerData, date, navigate }: Props) => {
           fullScreen
         >
           <DialogContent>
+            <Typography variant="h6">
+              Perceeloverzicht {date}
+            </Typography>
             <Table>
               <TableHead>
                 <TableRow>
                   <TableCell>ID</TableCell>
-                  <TableCell>Boer</TableCell>
-                  <TableCell>GEWAS</TableCell>
+                  {contextValue.keycloak.tokenParsed.user_type === "WATERBOARD_MANAGER" && <TableCell>Boer</TableCell>}
+                  <TableCell>Gewas</TableCell>
                   <TableCell>Vochtgehalte</TableCell>
-                  <TableCell>Vocht tekort</TableCell>
-                  <TableCell>Evapotranspiratie</TableCell>
+                  <TableCell>Watertekort</TableCell>
+                  <TableCell>Verdamping</TableCell>
                   <TableCell>Beregening</TableCell>
                 </TableRow>
               </TableHead>
@@ -54,7 +59,7 @@ const PlotListDialog = ({ farmerData, date, navigate }: Props) => {
                       className={css`cursor: pointer;`}
                     >
                       <TableCell>{feature.properties.plotId}</TableCell>
-                      <TableCell>{feature.properties.farmerName}</TableCell>
+                      {contextValue.keycloak.tokenParsed.user_type === "WATERBOARD_MANAGER" && <TableCell>{feature.properties.farmerName}</TableCell>}
                       <TableCell>{feature.properties.cropTypes}</TableCell>
                       <TableCell>{Math.round(analytics.availableSoilWater)}</TableCell>
                       <TableCell>{Math.round(analytics.deficit)}</TableCell>
