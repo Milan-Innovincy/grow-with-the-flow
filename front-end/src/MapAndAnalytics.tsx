@@ -20,9 +20,96 @@ type Props = RouteComponentProps<{
   selectionId?: string
 }>
 
+
+
+export type FarmerData = {
+  pixelsData: {
+    analytics: {
+      availableSoilWater: number[][]
+      deficit: number[][]
+      developmentStage: number[][]
+      evapotranspiration: number[][]
+      isForecast: boolean
+      measuredPrecipitation: number[][]
+      relativeTranspiration: number[][]
+      time: string
+    }[]
+    boundingBox: number[]
+    dimensions: number[]
+    landUse: string[][]
+    soilMap: string[][]
+  }
+  plotCropStatus: {
+    plotId: string;
+    statuses: {
+      "crop-status": string
+      date: string
+    }[]
+  }[]
+  plotFeedback: {
+    plotId: string;
+    quantities: {
+      date: string;
+      quantityMM: number
+    }[]
+  }[]
+  plotsAnalytics: {
+    [key: string]: {
+      availableSoilWater: number
+      date: string
+      deficit: number
+      developmentStage: number
+      evapotranspiration: number
+      isForecast: boolean
+      measuredPrecipitation: number
+      relativeTranspiration: number
+    }
+  }
+  plotsGeoJSON: {
+    features: {
+      geometry: {
+        coordinates: number[][];
+        type: string
+      }
+      properties: {
+        cropTypes: string
+        farmerId: string
+        farmerName: string
+        featureType: string
+        name: string
+        plotId: string
+        plotSizeHa: number
+        soilType: string
+      }
+      type: string
+    }[]
+  }
+}
+export type FarmerGeoData = {
+  plotsGeoJSON: {
+    features: {
+      geometry: {
+        coordinates: number[][];
+        type: string
+      }
+      properties: {
+        cropTypes: string
+        farmerId: string
+        farmerName: string
+        featureType: string
+        name: string
+        plotId: string
+        plotSizeHa: number
+        soilType: string
+      }
+      type: string
+    }[]
+  }
+}
+
 const MapAndAnalytics = ({ match, history }: Props) => {
-  const [farmerData, setFarmerData] = useState(null as any)
-  const [farmerGeoData, setFarmerGeoData] = useState(null as any)
+  const [farmerData, setFarmerData] = useState<FarmerData>(null)
+  const [farmerGeoData, setFarmerGeoData] = useState<FarmerGeoData>(null)
   const [sprinklingCache, setSprinklingCache] = useState({})
   const contextValue = useContext(ApplicationContext)
   const [isFetchingFarmerData, setIsFetchingFarmerData] = useState(false);
@@ -33,13 +120,13 @@ const MapAndAnalytics = ({ match, history }: Props) => {
     .toFormat('yyyy-MM-dd')
 
   useEffect(() => {
-    EventEmitter.on('sprinkling-updated-success', (data) => {
-      updateFarmerDataOnSprinklingUpdate(data.farmerData)
-    });
-  }, [])
 
-  const updateFarmerDataOnSprinklingUpdate = async (farmerData) => {
-    await getPlotFeedback(farmerData);
+    EventEmitter.on('sprinkling-updated-success', updateFarmerDataOnSprinklingUpdate);
+    return () => EventEmitter.removeListener('sprinkling-updated-success', updateFarmerDataOnSprinklingUpdate);
+  }, [farmerData])
+
+  const updateFarmerDataOnSprinklingUpdate = async () => {
+    await updatePlotFeedback();
   }
 
   useEffect(() => {
@@ -54,7 +141,6 @@ const MapAndAnalytics = ({ match, history }: Props) => {
           window.stop()
         }
         const prefix = 'https://storage.googleapis.com/grow-with-the-flow.appspot.com'
-        // const dateToken = date ? date.replace(/-/g, '') : latestAvailableDate.replace(/-/g, '')
         const plotsGeoJSON = await axiosInstance.get(`/plots`).then(({ data }) => {
           return data
         }).catch((error: Error) => {
@@ -111,7 +197,6 @@ const MapAndAnalytics = ({ match, history }: Props) => {
 
           EventEmitter.on('sprinkling-update', handleSprinklingUpdate)
 
-          setFarmerData(farmerData)
           getPlotFeedback(farmerData)
           setIsFetchingFarmerData(false)
         }
@@ -120,12 +205,12 @@ const MapAndAnalytics = ({ match, history }: Props) => {
   }, [contextValue.authenticated, contextValue.keycloak, date])
 
   const handleSprinklingUpdate = (payload: any) => {
-    const { date, selectedPlotId, value, farmerData } = payload
+    const { date, selectedPlotId, value } = payload
 
     const formattedDate = DateTime.fromJSDate(new Date(date)).toFormat('yyyy-MM-dd')
 
     axiosInstance.put(`/plot-feedback/irrigation?plotId=${selectedPlotId}&date=${formattedDate}&irrigationMM=${value}`).then(({ data }) => {
-      EventEmitter.emit('sprinkling-updated-success', payload)
+      EventEmitter.emit('sprinkling-updated-success')
     }).catch((error: Error) => {
       EventEmitter.emit('sprinkling-updated-failure')
       console.error(error)
@@ -133,6 +218,28 @@ const MapAndAnalytics = ({ match, history }: Props) => {
   }
 
   const getPlotFeedback = async (farmerData: any) => {
+    const { plotsAnalytics } = farmerData
+    const datesInTimeRange = plotsAnalytics[Object.keys(plotsAnalytics)[0]].map((a: any) => a.date)
+    const sortedDates = datesInTimeRange.sort((dateA: string, dateB: string) => {
+      return Date.parse(dateA) > Date.parse(dateB)
+    })
+    const dateFrom = sortedDates[0]
+    const dateTo = sortedDates[sortedDates.length - 1]
+
+    const promises = [axiosInstance.get(`/plot-feedback/crop-status?from=${dateFrom}&to=${dateTo}`), axiosInstance.get(`/plot-feedback/irrigation?from=${dateFrom}&to=${dateTo}`)];
+
+    const results = await Promise.all(promises).catch((error: Error) => {
+      // TODO: Properly handle error
+      throw new Error(error.message)
+    });
+
+    const data = results.map(res => res.data);
+    setFarmerData({ ...farmerData, plotCropStatus: data[0], plotFeedback: data[1] });
+    EventEmitter.emit('plotfeedback-updated');
+  }
+
+  const updatePlotFeedback = async () => {
+
     const { plotsAnalytics } = farmerData
     const datesInTimeRange = plotsAnalytics[Object.keys(plotsAnalytics)[0]].map((a: any) => a.date)
     const sortedDates = datesInTimeRange.sort((dateA: string, dateB: string) => {
