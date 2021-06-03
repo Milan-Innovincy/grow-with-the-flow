@@ -197,8 +197,8 @@ const MapAndAnalytics = ({ match, history }: Props) => {
 
           EventEmitter.on('sprinkling-update', handleSprinklingUpdate)
 
-          getPlotFeedback(farmerData)
-          setIsFetchingFarmerData(false)
+          getPlotFeedback(farmerData);
+
         }
       }
     })()
@@ -236,6 +236,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
     const data = results.map(res => res.data);
     setFarmerData({ ...farmerData, plotCropStatus: data[0], plotFeedback: data[1] });
     EventEmitter.emit('plotfeedback-updated');
+    setIsFetchingFarmerData(false);
   }
 
   const updatePlotFeedback = async () => {
@@ -258,6 +259,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
     const data = results.map(res => res.data);
     setFarmerData({ ...farmerData, plotCropStatus: data[0], plotFeedback: data[1] });
     EventEmitter.emit('plotfeedback-updated');
+    setIsFetchingFarmerData(false);
   }
 
   if (!date) {
@@ -297,6 +299,19 @@ const MapAndAnalytics = ({ match, history }: Props) => {
 
   const navigate = (path: string) => history.push(path);
 
+  // if (isFetchingFarmerData) {
+  //   return (<div
+  //     className={css`
+  //     height: 100%;
+  //     display: flex;
+  //     align-items: center;
+  //     justify-content: center;
+  //   `}
+  //   >
+  //     <CircularProgress />
+  //   </div>)
+  // }
+
   return (
     <div
       className={css`
@@ -311,14 +326,15 @@ const MapAndAnalytics = ({ match, history }: Props) => {
           flex: 1;
         `}
       >
-        <MapView
-          navigate={navigate}
-          farmerData={farmerData}
-          farmerGeoData={farmerGeoData}
-          date={date}
-          selectedPlotId={selectedPlotId}
-          selectedPixel={selectedPixel}
-        />
+        {farmerData &&
+          <MapView
+            navigate={navigate}
+            farmerData={farmerData}
+            farmerGeoData={farmerGeoData}
+            date={date}
+            selectedPlotId={selectedPlotId}
+            selectedPixel={selectedPixel}
+          />}
       </div>
       {farmerData ?
         <Paper
