@@ -241,8 +241,6 @@ type Props = {
   date: Date
   selectedPlotId?: string
   selectedPixel?: Array<number>
-  sprinklingCache: any
-  setSprinklingCache: (sprinklingCache: any) => void
 }
 
 type CropStatus = {
@@ -268,7 +266,7 @@ type AnalyticsData = {
 }
 
 
-const Analytics: React.FC<Props> = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, sprinklingCache, setSprinklingCache }) => {
+const Analytics: React.FC<Props> = ({ navigate, farmerData, date, selectedPlotId, selectedPixel }) => {
   const [cropStatus, setCropStatus] = useState<CropStatusValue>()
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData[]>([]);
   const [label, setLabel] = useState<string>('');
@@ -321,7 +319,7 @@ const Analytics: React.FC<Props> = ({ navigate, farmerData, date, selectedPlotId
         date: DateTime.fromISO(i.time).toFormat('dd/MM/yyyy'),
         isForecast: i.isForecast,
         rainfall: i.measuredPrecipitation[x][y],
-        sprinkling: sprinklingCache[`${selectedPixel.join(',')}-${index}`] || 0,
+        sprinkling: 0,
         moisture: i.availableSoilWater[x][y],
         desiredMoisture: i.relativeTranspiration[x][y] * 10,
         evapotranspiration: i.evapotranspiration[x][y],
@@ -332,7 +330,7 @@ const Analytics: React.FC<Props> = ({ navigate, farmerData, date, selectedPlotId
 
     }
 
-  }, [selectedPlotId, selectedPixel, sprinklingCache, farmerData, farmerData.plotCropStatus])
+  }, [selectedPlotId, selectedPixel, farmerData, farmerData.plotCropStatus])
   const currentAnalyticsData = analyticsData.find(i => i.date === DateTime.fromJSDate(date).toFormat('dd/MM/yyyy'));
 
   setTimeout(() => {
@@ -378,11 +376,11 @@ const Analytics: React.FC<Props> = ({ navigate, farmerData, date, selectedPlotId
 
   const handleDateChange = (newDate: any) => {
     if (selectedPlotId) {
-      window.location = `${window.location.origin}/map/${DateTime.fromMillis(moment(newDate).valueOf()).toISODate()}/plot/${selectedPlotId}`
+      navigate(`/map/${DateTime.fromMillis(moment(newDate).valueOf()).toISODate()}/plot/${selectedPlotId}`);
     }
 
     if (selectedPixel) {
-      window.location = `${window.location.origin}/map/${DateTime.fromMillis(moment(newDate).valueOf()).toISODate()}/pixel/${selectedPixel}`
+      navigate(`/map/${DateTime.fromMillis(moment(newDate).valueOf()).toISODate()}/pixel/${selectedPixel.join("-")}`);
     }
   }
 
@@ -502,7 +500,7 @@ const Analytics: React.FC<Props> = ({ navigate, farmerData, date, selectedPlotId
               farmerData={farmerData}
               date={DateTime.fromJSDate(date).toISODate()}
               navigate={navigate}
-              sprinklingCache={sprinklingCache}
+
             />
           </div>
         )}
@@ -611,7 +609,7 @@ const Analytics: React.FC<Props> = ({ navigate, farmerData, date, selectedPlotId
               dataKey="moisture"
               xAxisId={2}
               yAxisId="right"
-              type="natural"
+              type="basis"
               stroke="#f6511d"
               fill="url(#moistureColor)"
             />
@@ -619,7 +617,7 @@ const Analytics: React.FC<Props> = ({ navigate, farmerData, date, selectedPlotId
               dataKey="desiredMoisture"
               xAxisId={2}
               yAxisId="left"
-              type="natural"
+              type="basis"
               stroke="#00acc1"
             />
             <Bar
@@ -648,11 +646,7 @@ const Analytics: React.FC<Props> = ({ navigate, farmerData, date, selectedPlotId
               label={({ value, x, y, width, index }: LabelProps & { index: number }) =>
                 <g
                   onClick={async () => {
-                    const newValue = await updateSprinklingDialog.open(value as number, analyticsData ? analyticsData[index] : '')
-                    const updatedCache = produce(sprinklingCache, sprinklingCache => {
-                      sprinklingCache[`${selectedPlotId || selectedPixel!.join(',')}-${index}`] = newValue
-                    })
-                    setSprinklingCache(updatedCache)
+                    await updateSprinklingDialog.open(value as number, analyticsData ? analyticsData[index] : '');
                   }}
                 >
                   <circle

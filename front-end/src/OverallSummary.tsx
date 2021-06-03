@@ -15,20 +15,19 @@ type Props = {
   farmerData: any
   date: Date
   navigate: (path: string) => void
-  sprinklingCache: any
 }
 
-const OverallSummary = ({ farmerData, date, navigate, sprinklingCache }: Props) => {
+const OverallSummary = ({ farmerData, date, navigate }: Props) => {
 
   const handleDateViewClick = () => {
     document.querySelector('.MuiFormControl-root.MuiTextField-root.MuiFormControl-marginNormal button').click()
   }
 
   const handleDateChange = (newDate: any) => {
-    window.location = `${window.location.origin}/map/${DateTime.fromMillis(moment(newDate).valueOf()).toISODate()}`
+    navigate(`/map/${DateTime.fromMillis(moment(newDate).valueOf()).toISODate()}`)
   }
-  
-  return(
+
+  return (
     <div
       className={css`
         display: flex;
@@ -57,30 +56,29 @@ const OverallSummary = ({ farmerData, date, navigate, sprinklingCache }: Props) 
           `}>
           <DateView date={date} />
         </div>
-          <MuiPickersUtilsProvider libInstance={moment} utils={MomentUtils} locale={"nl"} >
-            <KeyboardDatePicker
-              className={css`
+        <MuiPickersUtilsProvider libInstance={moment} utils={MomentUtils} locale={"nl"} >
+          <KeyboardDatePicker
+            className={css`
                 display: none !important;
               `}
-              margin="normal"
-              id="date-picker-dialog"
-              disableFuture={true}
-              label="Date picker dialog"
-              format="yyyy-MM-dd"
-              value={date}
-              onChange={handleDateChange}
-              KeyboardButtonProps={{
-                'aria-label': 'change date',
-              }}
-            />
-          </MuiPickersUtilsProvider>
+            margin="normal"
+            id="date-picker-dialog"
+            disableFuture={true}
+            label="Date picker dialog"
+            format="yyyy-MM-dd"
+            value={date}
+            onChange={handleDateChange}
+            KeyboardButtonProps={{
+              'aria-label': 'change date',
+            }}
+          />
+        </MuiPickersUtilsProvider>
       </div>
       <div>
         <PlotListDialog
           farmerData={farmerData}
           date={DateTime.fromJSDate(date).toISODate()}
           navigate={navigate}
-          sprinklingCache={sprinklingCache}
         />
       </div>
     </div>
