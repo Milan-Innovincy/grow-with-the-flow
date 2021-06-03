@@ -42,8 +42,15 @@ class App extends Component<{}, IState> {
     }
   }
 
+
   componentDidMount() {
     const keycloak = this.state.keycloak
+
+    keycloak.onTokenExpired = () => {
+      keycloak.updateToken(30).then(() => {
+        EventEmitter.emit('authenticated', keycloak.token)
+      }).catch(() => { });
+    }
 
     keycloak.init({ onLoad: 'login-required' }).then((authenticated: boolean) => {
 
