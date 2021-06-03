@@ -17,8 +17,8 @@ const parameters: object = {
     slug: 'measuredPrecipitation',
     label: 'Neerslag',
     colors: {
-      min: '#e3f2fd',
-      max: '#2196f3'
+      min: 'rgba(230, 244, 255, 0.01)',
+      max: '#008dff'
     }
   },
   deficit: {
@@ -64,12 +64,15 @@ type Props = {
   selectedPixel?: Array<number>
 }
 
-let createPixelMap = (pixelsData: any, date: string, parameter: string) => {
+let createPixelMap = (pixelsData: any, date: string, parameter: string, minValue: number, maxValue: number) => {
   const grid = pixelsData.analytics.find((a: any) => a.time === date)[parameter]
   const height = grid.length
   const width = grid[0].length
 
-  const f = chroma.scale([parameters[parameter].colors.min, parameters[parameter].colors.max]).domain([0, 500])
+  const f = chroma
+    .scale([parameters[parameter].colors.min, parameters[parameter].colors.max])
+    .domain([minValue, maxValue])
+
   const png = new PNG({
     width,
     height
@@ -181,7 +184,10 @@ const MapView = ({ navigate, date, farmerData, farmerGeoData, selectedPlotId, se
     return null;
   }
 
-  const [mapCenter, setMapCenter] = useState(getCenter())
+  const [mapCenter, setMapCenter] = useState(getCenter());
+
+  const [minValue, setMinValue] = useState();
+  const [maxValue, setMaxValue] = useState();
 
   useEffect(() => {
     const mapCenter = getCenter()
@@ -189,8 +195,13 @@ const MapView = ({ navigate, date, farmerData, farmerGeoData, selectedPlotId, se
   }, [selectedPlotId, selectedPixel])
 
   useEffect(() => {
+
     if (farmerData) {
-      setBase64(createPixelMap(farmerData.pixelsData, date, selectedParameter))
+      const minValue = farmerData.pixelsData.analytics[0][selectedParameter].flat().reduce((prev, current) => Math.min(prev, current));
+      const maxValue = farmerData.pixelsData.analytics[0][selectedParameter].flat().reduce((prev, current) => Math.max(prev, current));
+      setMinValue(minValue);
+      setMaxValue(maxValue);
+      setBase64(createPixelMap(farmerData.pixelsData, date, selectedParameter, minValue, maxValue));
       setlegendColors(getLegendColors(selectedParameter))
     }
   }, [selectedParameter])
@@ -379,7 +390,7 @@ const MapView = ({ navigate, date, farmerData, farmerGeoData, selectedPlotId, se
           border-radius: 4px;
         `}
       >
-        <small className={css`padding-right: 5px; color: rgba(0, 0, 0, 0.87);`}>Min.</small>
+        <small className={css`padding-right: 5px; color: rgba(0, 0, 0, 0.87);`}>Min. ({minValue && minValue.toFixed(2)})</small>
         <div className={css`
           background-color: rgba(${legendColors[0][0]}, ${legendColors[0][1]}, ${legendColors[0][2]}, ${legendColors[0][3]});
           width: 30px;
@@ -392,7 +403,7 @@ const MapView = ({ navigate, date, farmerData, farmerGeoData, selectedPlotId, se
           background-color: rgba(${legendColors[2][0]}, ${legendColors[2][1]}, ${legendColors[2][2]}, ${legendColors[2][3]});
           width: 30px;
           height: 20px;`}></div>
-        <small className={css`padding-left: 5px; color: rgba(0, 0, 0, 0.87);`}>Max.</small>
+        <small className={css`padding-left: 5px; color: rgba(0, 0, 0, 0.87);`}>Max. ({maxValue && maxValue.toFixed(2)})</small>
       </Box> : null}
     </>
   )
