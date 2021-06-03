@@ -10,6 +10,7 @@ import { sortBy } from 'lodash'
 import { PNG } from 'pngjs'
 import chroma from 'chroma-js'
 import CoordinateCalculator from "./CoordinateCalculator";
+import { FarmerData } from './MapAndAnalytics'
 const { GeoJSONFillable, Patterns } = require('react-leaflet-geojson-patterns')
 
 const parameters: object = {
@@ -57,7 +58,7 @@ const parameters: object = {
 
 type Props = {
   navigate: (path: string) => void
-  farmerData: any
+  farmerData: FarmerData
   farmerGeoData: any
   date: string
   selectedPlotId?: string
@@ -390,7 +391,10 @@ const MapView = ({ navigate, date, farmerData, farmerGeoData, selectedPlotId, se
           border-radius: 4px;
         `}
       >
-        <small className={css`padding-right: 5px; color: rgba(0, 0, 0, 0.87);`}>Min. ({minValue && minValue.toFixed(2)})</small>
+        <small className={css`padding-right: 5px; color: rgba(0, 0, 0, 0.87);`}>Min. ({minValue && minValue.toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        })})</small>
         <div className={css`
           background-color: rgba(${legendColors[0][0]}, ${legendColors[0][1]}, ${legendColors[0][2]}, ${legendColors[0][3]});
           width: 30px;
@@ -403,7 +407,10 @@ const MapView = ({ navigate, date, farmerData, farmerGeoData, selectedPlotId, se
           background-color: rgba(${legendColors[2][0]}, ${legendColors[2][1]}, ${legendColors[2][2]}, ${legendColors[2][3]});
           width: 30px;
           height: 20px;`}></div>
-        <small className={css`padding-left: 5px; color: rgba(0, 0, 0, 0.87);`}>Max. ({maxValue && maxValue.toFixed(2)})</small>
+        <small className={css`padding-left: 5px; color: rgba(0, 0, 0, 0.87);`}>Max. ({maxValue && maxValue.toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        })})</small>
       </Box> : null}
     </>
   )

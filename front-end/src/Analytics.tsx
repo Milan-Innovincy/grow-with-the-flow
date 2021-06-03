@@ -216,7 +216,7 @@ const CurrentDataItem = ({ label, value, color, icon }: { label: string, value: 
         margin-right: 10px;
       `}
     >
-      <div className={css`position: relative; z-index: 1;`}>{Math.abs(value).toFixed()}</div>
+      <div className={css`position: relative; z-index: 1;`}>{Math.round(value)}</div>
       <div
         className={css`
           position: absolute;
@@ -560,7 +560,10 @@ const Analytics: React.FC<Props> = ({ navigate, farmerData, date, selectedPlotId
             </FormControl>
             <FormControl className={css`margin-left: 30px !important;`} disabled={!selectedPlotId}>
               <InputLabel id="crop-status-label">Huidige gewas status:</InputLabel>
-              <Input id="component-simple" value={currentAnalyticsData && developmentStateToLabel(currentAnalyticsData.developmentStage, cropType) ? `${developmentStateToLabel(currentAnalyticsData.developmentStage, cropType).label} ${currentAnalyticsData.developmentStage.toFixed(2)}` : ''} readOnly />
+              <Input id="component-simple" value={currentAnalyticsData && developmentStateToLabel(currentAnalyticsData.developmentStage, cropType) ? `${developmentStateToLabel(currentAnalyticsData.developmentStage, cropType).label} ${currentAnalyticsData.developmentStage.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })}` : ''} readOnly />
             </FormControl>
           </div>
         </div>
@@ -609,7 +612,7 @@ const Analytics: React.FC<Props> = ({ navigate, farmerData, date, selectedPlotId
               dataKey="moisture"
               xAxisId={2}
               yAxisId="right"
-              type="basis"
+              type="natural"
               stroke="#f6511d"
               fill="url(#moistureColor)"
             />
@@ -617,7 +620,7 @@ const Analytics: React.FC<Props> = ({ navigate, farmerData, date, selectedPlotId
               dataKey="desiredMoisture"
               xAxisId={2}
               yAxisId="left"
-              type="basis"
+              type="natural"
               stroke="#00acc1"
             />
             <Bar
