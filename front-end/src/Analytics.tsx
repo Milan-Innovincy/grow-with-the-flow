@@ -609,7 +609,7 @@ const Analytics: React.FC<Props> = ({ navigate, farmerData, date, selectedPlotId
               dataKey="moisture"
               xAxisId={2}
               yAxisId="right"
-              type="natural"
+              type="basis"
               stroke="#f6511d"
               fill="url(#moistureColor)"
             />
@@ -617,7 +617,7 @@ const Analytics: React.FC<Props> = ({ navigate, farmerData, date, selectedPlotId
               dataKey="desiredMoisture"
               xAxisId={2}
               yAxisId="left"
-              type="natural"
+              type="basis"
               stroke="#00acc1"
             />
             <Bar
