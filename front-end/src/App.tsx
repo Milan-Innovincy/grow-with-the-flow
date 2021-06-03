@@ -34,11 +34,11 @@ interface IState {
 class App extends Component<{}, IState> {
   constructor(props: any) {
     super(props)
-    
+
     this.state = {
-        authenticated: false,
-        keycloak: Keycloak('/keycloak.json'),
-        showModal: false
+      authenticated: false,
+      keycloak: Keycloak('/keycloak.json'),
+      showModal: false
     }
   }
 
@@ -46,7 +46,7 @@ class App extends Component<{}, IState> {
     const keycloak = this.state.keycloak
 
     keycloak.init({ onLoad: 'login-required' }).then((authenticated: boolean) => {
-      
+
       if (authenticated === true) {
         EventEmitter.emit('authenticated', keycloak.token)
       }
@@ -89,8 +89,8 @@ class App extends Component<{}, IState> {
               <TopBar />
               <div className={css`flex: 1; overflow: hidden;`}>
                 <Switch>
-                  <Route path="/map/:date?/:selectionType?/:selectionId?" component={MapAndAnalytics}/>
-                  <Redirect to="/map"/>
+                  <Route path="/map/:date?/:selectionType?/:selectionId?" component={MapAndAnalytics} />
+                  <Redirect to="/map" />
                 </Switch>
               </div>
               <TextPopup />

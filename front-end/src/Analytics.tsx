@@ -92,6 +92,10 @@ const formatCropStatus = (cropStatuses: any, currentPlotId: string, cropType: st
     return
   }
 
+  if (!cropType) {
+    return
+  }
+
   return cropStatusOptions[cropType].find((cropStatusValue: CropStatusValue) => {
     return cropStatusValue.value === parseInt(selectedPlot.statuses.slice(-1).pop()['crop-status'])
   })
@@ -236,87 +240,88 @@ type CropStatusValue = {
 }
 
 const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, sprinklingCache, setSprinklingCache }: Props) => {
-  const [, setState] = useState(null as any)
   const [cropStatus, setCropStatus] = useState(0)
+  const [analyticsData, setAnalyticsData] = useState<any[]>([]);
+  const [label, setLabel] = useState<string>('');
+  const [cropType, setCropType] = useState<string>('');
+  const [soilType, setSoilType] = useState<string>('');
+  const [area, setArea] = useState<number>(0);
+
+  //current
+  const [current, setCurrent] = useState(null);
+  const [currentDate, setCurrentDate] = useState(null);
+  const [currentRainfall, setCurrentRainfall] = useState(null);
+  const [currentSprinkling, setCurrentSprinkling] = useState(null);
+  const [currentEvapotranspiration, setCurrentEvapotranspiration] = useState(null);
+  const [currentAvailableSoilWater, setCurrentAvailableSoilWater] = useState(null);
+  const [currentCropStatus, setCurrentCropStatus] = useState<any>(null);
 
   useEffect(() => {
-    window.dispatchEvent(new Event('resize'))
-    setCropStatus(0)
-  }, [selectedPlotId, selectedPixel])
+    const { pixelsData, plotsAnalytics, plotFeedback, plotCropStatus } = farmerData
 
-  const handlePlotfeedbackUpdated = () => {
-    setState({})
-  }
-  EventEmitter.on('plotfeedback-updated', handlePlotfeedbackUpdated)
+    if (selectedPlotId) {
+      setLabel(`Plot ${selectedPlotId}`)
+      const [sprinklingData] = plotFeedback.filter((feedback: any) => feedback.plotId === selectedPlotId)
+      const feature = farmerData.plotsGeoJSON.features.find((f: any) => f.properties!.plotId === selectedPlotId)
 
-  const { pixelsData, plotsAnalytics, plotFeedback, plotCropStatus } = farmerData
+      setCropType(getCropType(feature.properties.cropTypes))
+      setSoilType(feature.properties.soilType)
+      setArea(feature.properties.plotSizeHa)
 
-  let label: string = ''
-  let cropType: string = ''
-  let soilType: string = ''
-  let area: number = 0
-  let data: Array<any> | undefined = undefined
-
-  if (selectedPlotId) {
-    label = `Plot ${selectedPlotId}`
-    const [sprinklingData] = plotFeedback.filter((feedback: any) => feedback.plotId === selectedPlotId)
-    const feature = farmerData.plotsGeoJSON.features.find((f: any) => f.properties!.plotId === selectedPlotId)
-
-    cropType = getCropType(feature.properties.cropTypes)
-    soilType = feature.properties.soilType
-    area = feature.properties.plotSizeHa
-
-    if (!!plotsAnalytics[feature.properties.plotId]) {
-      data = plotsAnalytics[feature.properties.plotId].map((i: any) => {
-        const quantityForDate = sprinklingData ? sprinklingData.quantities.find((q: any) => q.date === i.date) : null
-        const sprinkling = quantityForDate ? quantityForDate.quantityMM : 0
-        return {
-          date: DateTime.fromISO(i.date).toFormat('dd/MM/yyyy'),
-          rainfall: i.measuredPrecipitation,
-          sprinkling,
-          moisture: i.availableSoilWater,
-          desiredMoisture: i.relativeTranspiration * 10,
-          evapotranspiration: i.evapotranspiration,
-          deficit: i.deficit
-        }
-      })
-    } else {
-      alert("No data available for this plot.");
-      navigate(`/map/${DateTime.fromJSDate(date).toISODate()}`);
-      return <></>;
+      if (!!plotsAnalytics[feature.properties.plotId]) {
+        setAnalyticsData(plotsAnalytics[feature.properties.plotId].map((i: any) => {
+          const quantityForDate = sprinklingData ? sprinklingData.quantities.find((q: any) => q.date === i.date) : null
+          const sprinkling = quantityForDate ? quantityForDate.quantityMM : 0
+          return {
+            date: DateTime.fromISO(i.date).toFormat('dd/MM/yyyy'),
+            rainfall: i.measuredPrecipitation,
+            sprinkling,
+            moisture: i.availableSoilWater,
+            desiredMoisture: i.relativeTranspiration * 10,
+            evapotranspiration: i.evapotranspiration,
+            deficit: i.deficit
+          }
+        }))
+      } else {
+        alert("No data available for this plot.");
+        navigate(`/map/${DateTime.fromJSDate(date).toISODate()}`);
+      }
     }
-  }
 
-  if (selectedPixel) {
-    const [x, y] = selectedPixel
-    label = `Pixel ${padStart(x.toString(), 3, '0')}${padStart(y.toString(), 3, '0')}`
-    cropType = getCropType(pixelsData.landUse[x][y])
-    soilType = pixelsData.soilMap[x][y]
-    area = 1
-    data = pixelsData.analytics.map((i: any, index: number) => ({
-      date: DateTime.fromISO(i.time).toFormat('dd/MM/yyyy'),
-      isForecast: i.isForecast,
-      rainfall: i.measuredPrecipitation[x][y],
-      sprinkling: sprinklingCache[`${selectedPixel.join(',')}-${index}`] || 0,
-      moisture: i.availableSoilWater[x][y],
-      desiredMoisture: i.relativeTranspiration[x][y] * 10,
-      evapotranspiration: i.evapotranspiration[x][y],
-      deficit: i.deficit[x][y]
-    }))
-  }
+    if (selectedPixel) {
+      const [x, y] = selectedPixel;
+      setLabel(`Pixel ${padStart(x.toString(), 3, '0')}${padStart(y.toString(), 3, '0')}`);
+      setCropType(getCropType(pixelsData.landUse[x][y]));
+      setSoilType(pixelsData.soilMap[x][y]);
+      setArea(1)
+      setAnalyticsData(pixelsData.analytics.map((i: any, index: number) => ({
+        date: DateTime.fromISO(i.time).toFormat('dd/MM/yyyy'),
+        isForecast: i.isForecast,
+        rainfall: i.measuredPrecipitation[x][y],
+        sprinkling: sprinklingCache[`${selectedPixel.join(',')}-${index}`] || 0,
+        moisture: i.availableSoilWater[x][y],
+        desiredMoisture: i.relativeTranspiration[x][y] * 10,
+        evapotranspiration: i.evapotranspiration[x][y],
+        deficit: i.deficit[x][y]
+      })))
 
-  const current = data!.find(i => i.date === DateTime.fromJSDate(date).toFormat('dd/MM/yyyy'))
-  const currentDate = current ? current.date : 0
-  const currentRainfall = current ? current.rainfall : 0
-  const currentSprinkling = current ? current.sprinkling : 0
-  const currentEvapotranspiration = current ? current.evapotranspiration : 0
-  const currentAvailableSoilWater = current ? current.moisture : 0
-  const currentCropStatus = formatCropStatus(
-    plotCropStatus,
-    selectedPlotId ? selectedPlotId : '',
-    cropType,
-    currentDate
-  )
+    }
+
+    setCurrent(analyticsData.find(i => i.date === DateTime.fromJSDate(date).toFormat('dd/MM/yyyy')))
+    setCurrentDate(current ? current.date : 0)
+    setCurrentRainfall(current ? current.rainfall : 0)
+    setCurrentSprinkling(current ? current.sprinkling : 0)
+    setCurrentEvapotranspiration(current ? current.evapotranspiration : 0)
+    setCurrentAvailableSoilWater(current ? current.moisture : 0)
+    setCurrentCropStatus(formatCropStatus(
+      plotCropStatus,
+      selectedPlotId ? selectedPlotId : '',
+      cropType,
+      currentDate
+    ))
+
+  }, [selectedPlotId, selectedPixel, sprinklingCache, farmerData])
+
 
   setTimeout(() => {
     const nodes = document.querySelectorAll('.recharts-layer.recharts-cartesian-axis-tick')
@@ -560,7 +565,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
           </div>
         </div>
         <ResponsiveContainer height={200}>
-          <ComposedChart data={data} margin={{ top: 20, bottom: 0, left: 0, right: 0 }}>
+          <ComposedChart data={analyticsData} margin={{ top: 20, bottom: 0, left: 0, right: 0 }}>
             <defs>
               <linearGradient id="moistureColor" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#ff9800" stopOpacity={0.8} />
@@ -641,7 +646,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
               label={({ value, x, y, width, index }: LabelProps & { index: number }) =>
                 <g
                   onClick={async () => {
-                    const newValue = await updateSprinklingDialog.open(value as number, data ? data[index] : '')
+                    const newValue = await updateSprinklingDialog.open(value as number, analyticsData ? analyticsData[index] : '')
                     const updatedCache = produce(sprinklingCache, sprinklingCache => {
                       sprinklingCache[`${selectedPlotId || selectedPixel!.join(',')}-${index}`] = newValue
                     })
