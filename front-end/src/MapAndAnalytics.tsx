@@ -298,19 +298,6 @@ const MapAndAnalytics = ({ match, history }: Props) => {
 
   const navigate = (path: string) => history.push(path);
 
-  // if (isFetchingFarmerData) {
-  //   return (<div
-  //     className={css`
-  //     height: 100%;
-  //     display: flex;
-  //     align-items: center;
-  //     justify-content: center;
-  //   `}
-  //   >
-  //     <CircularProgress />
-  //   </div>)
-  // }
-
   return (
     <div
       className={css`
