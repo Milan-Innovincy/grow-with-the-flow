@@ -54,7 +54,7 @@ const getCropType = (cropType: string) => {
   if (cropType.startsWith('Grasland')) {
     return 'gras'
   };
-  if (cropType.startsWith('Mais') || (cropType.startsWith('Maïs'))) {
+  if (cropType.startsWith('Mais') || (cropType.startsWith('Maïs')) || (cropType.startsWith("MaÃ¯s"))) {
     return 'mais'
   };
   if (cropType.startsWith('Aardappelen')) {
@@ -637,6 +637,7 @@ const Analytics = ({ navigate, farmerData, date, selectedPlotId, selectedPixel, 
             />
             <Bar
               dataKey="sprinkling"
+              isAnimationActive={false}
               xAxisId={1}
               yAxisId="left"
               fill="#1565c0"
