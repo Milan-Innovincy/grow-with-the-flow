@@ -5,7 +5,6 @@ import {
   DialogActions,
   DialogContent,
 } from "@material-ui/core";
-// import './cookiebar.scss'
 import EventEmitter from "../lib/EventEmitter";
 
 type State = {
