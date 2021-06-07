@@ -1,67 +1,70 @@
-import React, { Component } from 'react'
-import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
-import { css } from '@emotion/css'
-import { BrowserRouter, Switch, Route, Redirect } from 'react-router-dom'
+import React, { Component } from "react";
+import { MuiThemeProvider, createMuiTheme } from "@material-ui/core/styles";
+import { css } from "@emotion/css";
+import { BrowserRouter, Switch, Route, Redirect } from "react-router-dom";
 
-import TopBar from './TopBar'
-import MapAndAnalytics from './MapAndAnalytics'
-import { ApplicationContext } from './ApplicationContext'
-import Snackbar from './Snackbar'
-import Cookiebar from './components/Cookiebar/Cookiebar'
-import TextPopup from './components/TextPopup'
-import EventEmitter from './lib/EventEmitter'
-import Keycloak from "keycloak-js"
+import TopBar from "./TopBar";
+import MapAndAnalytics from "./MapAndAnalytics";
+import { ApplicationContext } from "./ApplicationContext";
+import Snackbar from "./Snackbar";
+import Cookiebar from "./components/Cookiebar/Cookiebar";
+import TextPopup from "./components/TextPopup";
+import EventEmitter from "./lib/EventEmitter";
+import Keycloak from "keycloak-js";
 
 const theme = createMuiTheme({
   palette: {
     primary: {
-      main: '#2F3D50',
-      contrastText: '#fff'
+      main: "#2F3D50",
+      contrastText: "#fff",
     },
     secondary: {
-      main: '#fff',
-      contrastText: '#000'
-    }
-  }
-})
+      main: "#fff",
+      contrastText: "#000",
+    },
+  },
+});
 
 interface IState {
-  authenticated: boolean,
-  keycloak: Keycloak.KeycloakInstance,
-  showModal: boolean,
+  authenticated: boolean;
+  keycloak: Keycloak.KeycloakInstance;
+  showModal: boolean;
 }
 
 class App extends Component<{}, IState> {
   constructor(props: any) {
-    super(props)
+    super(props);
 
     this.state = {
       authenticated: false,
-      keycloak: Keycloak('/keycloak.json'),
-      showModal: false
-    }
+      keycloak: Keycloak("/keycloak.json"),
+      showModal: false,
+    };
   }
 
-
   componentDidMount() {
-    const keycloak = this.state.keycloak
+    const keycloak = this.state.keycloak;
 
     keycloak.onTokenExpired = () => {
-      keycloak.updateToken(30).then(() => {
-        EventEmitter.emit('authenticated', keycloak.token)
-      }).catch(() => { });
-    }
+      keycloak
+        .updateToken(30)
+        .then(() => {
+          EventEmitter.emit("authenticated", keycloak.token);
+        })
+        .catch(() => {});
+    };
 
-    keycloak.init({ onLoad: 'login-required' }).then((authenticated: boolean) => {
-
-      if (authenticated === true) {
-        EventEmitter.emit('authenticated', keycloak.token)
-      }
-      this.setState({
-        keycloak: keycloak,
-        authenticated: authenticated
-      })
-    })
+    keycloak
+      .init({ onLoad: "login-required" })
+      .then((authenticated: boolean) => {
+        if (authenticated === true) {
+          EventEmitter.emit("authenticated", keycloak.token);
+        }
+        this.setState({
+          keycloak: keycloak,
+          authenticated: authenticated,
+        });
+      });
   }
 
   render() {
@@ -73,30 +76,39 @@ class App extends Component<{}, IState> {
           showModal: this.state.showModal,
           toggleShowModal: () => {
             this.setState({
-              showModal: !this.state.showModal
-            })
-          }
+              showModal: !this.state.showModal,
+            });
+          },
         }}
       >
         <BrowserRouter>
           <MuiThemeProvider theme={theme}>
-            <div className={css`
-                  position: absolute;
-                  top: 0;
-                  bottom: 0;
-                  left: 0;
-                  right: 0;
-                  overflow: hidden;
-                  display: flex;
-                  flex-direction: column;
-                  z-index: -1;
-                `}
+            <div
+              className={css`
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                z-index: -1;
+              `}
             >
               <Cookiebar />
               <TopBar />
-              <div className={css`flex: 1; overflow: hidden;`}>
+              <div
+                className={css`
+                  flex: 1;
+                  overflow: hidden;
+                `}
+              >
                 <Switch>
-                  <Route path="/map/:date?/:selectionType?/:selectionId?" component={MapAndAnalytics} />
+                  <Route
+                    path="/map/:date?/:selectionType?/:selectionId?"
+                    component={MapAndAnalytics}
+                  />
                   <Redirect to="/map" />
                 </Switch>
               </div>
@@ -106,7 +118,7 @@ class App extends Component<{}, IState> {
           </MuiThemeProvider>
         </BrowserRouter>
       </ApplicationContext.Provider>
-    )
+    );
   }
 }
 

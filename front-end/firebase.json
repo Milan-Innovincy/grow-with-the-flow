@@ -1,11 +1,7 @@
 {
   "hosting": {
     "public": "build",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
       {
         "source": "**",
@@ -13,13 +9,17 @@
       }
     ]
   },
-  "headers": [{
-    "source": "/service-worker.js",
-    "headers": [{
-      "key": "Cache-Control",
-      "value": "no-cache, no-store, must-revalidate"
-    }]
-  }],
+  "headers": [
+    {
+      "source": "/service-worker.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
+    }
+  ],
   "emulators": {
     "firestore": {
       "port": 8080

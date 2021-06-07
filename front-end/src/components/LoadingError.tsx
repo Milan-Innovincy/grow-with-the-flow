@@ -1,29 +1,34 @@
-import React from 'react'
-import 'date-fns'
-import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/pickers'
-import { DateTime } from 'luxon'
-import MomentUtils from '@date-io/moment'
-import moment from 'moment'
-import 'moment/locale/nl'
+import React from "react";
+import "date-fns";
+import {
+  MuiPickersUtilsProvider,
+  KeyboardDatePicker,
+} from "@material-ui/pickers";
+import { DateTime } from "luxon";
+import MomentUtils from "@date-io/moment";
+import moment from "moment";
+import "moment/locale/nl";
 
 type Props = {
-  date: any
-}
+  date: any;
+};
 
 export default class LoadingError extends React.Component<Props, {}> {
   handleDateChange = (newDate: any) => {
-    window.location = `${window.location.origin}/map/${DateTime.fromMillis(moment(newDate).valueOf()).toISODate()}`
-  }
+    window.location = `${window.location.origin}/map/${DateTime.fromMillis(
+      moment(newDate).valueOf()
+    ).toISODate()}`;
+  };
 
   render() {
-    const { date } = this.props
+    const { date } = this.props;
 
     return (
       <div>
         <h2>Excuses, daar ging iets fout...</h2>
         <p>We kunnen geen data vinden voor deze datum.</p>
 
-        <MuiPickersUtilsProvider libInstance={moment} utils={MomentUtils} >
+        <MuiPickersUtilsProvider libInstance={moment} utils={MomentUtils}>
           <KeyboardDatePicker
             margin="normal"
             id="date-picker-dialog"
@@ -33,11 +38,11 @@ export default class LoadingError extends React.Component<Props, {}> {
             value={date}
             onChange={this.handleDateChange}
             KeyboardButtonProps={{
-              'aria-label': 'change date',
+              "aria-label": "change date",
             }}
           />
         </MuiPickersUtilsProvider>
       </div>
-    )
+    );
   }
 }
