@@ -82,7 +82,6 @@ const getCropTypeIcon = (cropType: string) => {
 
 const formatCropStatus = (cropStatuses: any, currentPlotId: string, cropType: string, date: string) => {
 
-
   if (!cropStatuses || !cropStatuses.length) {
     return
   }
@@ -99,12 +98,15 @@ const formatCropStatus = (cropStatuses: any, currentPlotId: string, cropType: st
     return
   }
 
-
   const splitDate = date.split('/')
   const formattedDate = `${splitDate[2]}-${splitDate[1]}-${splitDate[0]}`
   const selectedPlotStatus = selectedPlot.statuses.find((plotStatus: any) => {
     return plotStatus.date === formattedDate
   })
+
+  if (!selectedPlotStatus) {
+    return
+  }
 
   return cropStatusOptions[cropType].find((cropStatusValue: CropStatusValue) => {
     return cropStatusValue.value === parseFloat(selectedPlotStatus['crop-status'])
