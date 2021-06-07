@@ -1,13 +1,13 @@
-import React from 'react'
-import { css } from '@emotion/css'
-import { DateTime } from 'luxon'
-import { CalendarBlank } from 'mdi-material-ui';
+import React from "react";
+import { css } from "@emotion/css";
+import { DateTime } from "luxon";
+import { CalendarBlank } from "mdi-material-ui";
 
-const DateView =  ({ date }: { date: Date }) => {
-  const luxonDate = DateTime.fromJSDate(date).setLocale("nl")
-  const day = luxonDate.toFormat('dd')
-  const month = luxonDate.toFormat('MMMM')
-  return(
+const DateView = ({ date }: { date: Date }) => {
+  const luxonDate = DateTime.fromJSDate(date).setLocale("nl");
+  const day = luxonDate.toFormat("dd");
+  const month = luxonDate.toFormat("MMMM");
+  return (
     <div
       className={css`
         position: relative;
@@ -24,7 +24,11 @@ const DateView =  ({ date }: { date: Date }) => {
         `}
       >
         <CalendarBlank
-          className={css`width: 50px !important; height: 50px !important; color: #e0f2f1;`}
+          className={css`
+            width: 50px !important;
+            height: 50px !important;
+            color: #e0f2f1;
+          `}
         />
         <div
           className={css`
@@ -38,11 +42,19 @@ const DateView =  ({ date }: { date: Date }) => {
             align-items: flex-end;
             justify-content: center;
           `}
-        >{day}</div>
+        >
+          {day}
+        </div>
       </div>
-      <div className={css`margin-top: 6px;`}>{month}</div>
+      <div
+        className={css`
+          margin-top: 6px;
+        `}
+      >
+        {month}
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default DateView
+export default DateView;

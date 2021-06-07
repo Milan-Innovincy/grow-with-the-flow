@@ -1,45 +1,45 @@
-import React from 'react'
-import { Snackbar as MaterialSnackbar } from '@material-ui/core'
-import EventEmitter from './lib/EventEmitter'
+import React from "react";
+import { Snackbar as MaterialSnackbar } from "@material-ui/core";
+import EventEmitter from "./lib/EventEmitter";
 
 type State = {
-  snackbarMessage: string,
-  showSnackbar: boolean,
+  snackbarMessage: string;
+  showSnackbar: boolean;
   anchorOrigin: {
-    vertical: "bottom" | "top",
-    horizontal: "left" | "right" | "center"
-  }
-}
+    vertical: "bottom" | "top";
+    horizontal: "left" | "right" | "center";
+  };
+};
 
 export default class Snackbar extends React.Component<{}, State> {
   state: State = {
     showSnackbar: false,
-    snackbarMessage: '',
-    anchorOrigin: { vertical: 'bottom', horizontal: 'right' }
-  }
+    snackbarMessage: "",
+    anchorOrigin: { vertical: "bottom", horizontal: "right" },
+  };
 
   handleShowSnackbar = ({ snackbarMessage }: { snackbarMessage: string }) => {
     this.setState({
       showSnackbar: true,
       snackbarMessage,
-    })
-  }
+    });
+  };
 
   handleOnClose = () => {
     this.setState({
       showSnackbar: false,
-      snackbarMessage: ''
-    })
-  }
+      snackbarMessage: "",
+    });
+  };
 
   componentDidMount() {
-    EventEmitter.on('show-snackbar', this.handleShowSnackbar)
+    EventEmitter.on("show-snackbar", this.handleShowSnackbar);
   }
 
   render() {
-    const { anchorOrigin, showSnackbar, snackbarMessage } = this.state
-    
-    return(
+    const { anchorOrigin, showSnackbar, snackbarMessage } = this.state;
+
+    return (
       <MaterialSnackbar
         autoHideDuration={3000}
         anchorOrigin={anchorOrigin}
@@ -47,6 +47,6 @@ export default class Snackbar extends React.Component<{}, State> {
         onClose={this.handleOnClose}
         message={snackbarMessage}
       />
-    )
+    );
   }
 }

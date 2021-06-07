@@ -12,7 +12,7 @@
   font-size: 14px;
   font-family: "Lato", sans-serif;
   font-weight: 100;
-  transition: .8s;
+  transition: 0.8s;
   // animation: slideIn .8s;
   // animation-delay: .8s;
   z-index: 1101;
@@ -21,7 +21,7 @@
     white-space: nowrap;
     text-shadow: 0 1px 0 darken(red, 10%);
 
-    @media (max-width: 767px){
+    @media (max-width: 767px) {
       display: none;
     }
   }
@@ -29,7 +29,7 @@
   .mobile {
     display: none;
 
-    @media (max-width: 767px){
+    @media (max-width: 767px) {
       display: inline-block;
     }
   }
@@ -54,7 +54,7 @@
   top: 0;
   cursor: pointer;
   border-radius: 3px;
-  box-shadow: inset 0 0 3px 0 rgba(0,0,0,.2);
+  box-shadow: inset 0 0 3px 0 rgba(0, 0, 0, 0.2);
   line-height: 30px;
   height: 30px;
   width: 30px;
@@ -67,5 +67,5 @@
 }
 
 a {
-  color: rgb(92, 242, 255);;
+  color: rgb(92, 242, 255);
 }
