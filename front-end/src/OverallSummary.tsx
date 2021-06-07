@@ -6,7 +6,6 @@ import {
   MuiPickersUtilsProvider,
   KeyboardDatePicker,
 } from "@material-ui/pickers";
-// import EventEmitter from './lib/EventEmitter'
 import MomentUtils from "@date-io/moment";
 import moment from "moment";
 import "moment/locale/nl";
