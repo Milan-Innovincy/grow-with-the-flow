@@ -63,7 +63,7 @@ export type FarmerData = {
       isForecast: boolean
       measuredPrecipitation: number
       relativeTranspiration: number
-    }
+    }[]
   }
   plotsGeoJSON: {
     features: {
