@@ -85,7 +85,12 @@ const PlotListDialog = ({ farmerData, date, navigate }: Props) => {
           },
         };
       } else {
-        return {};
+        return {
+          properties: feature.properties,
+          analytics: {
+            sprinkling: sprinkling,
+          },
+        };
       }
     });
     if (orderBy && order) {
@@ -167,7 +172,7 @@ const PlotListDialog = ({ farmerData, date, navigate }: Props) => {
               <TableBody>
                 {tableData.map((data) => (
                   <TableRow
-                    key={data.properties!.plotId}
+                    key={data.properties && data.properties!.plotId}
                     onClick={() => {
                       navigate(`/map/${date}/plot/${data.properties.plotId}`);
                       toggleShowModal();
@@ -176,22 +181,38 @@ const PlotListDialog = ({ farmerData, date, navigate }: Props) => {
                       cursor: pointer;
                     `}
                   >
-                    <TableCell>{data.properties.plotId}</TableCell>
+                    <TableCell>
+                      {data.properties && data.properties.plotId}
+                    </TableCell>
                     {isManager && (
-                      <TableCell>{data.properties.farmerName}</TableCell>
+                      <TableCell>
+                        {data.properties && data.properties.farmerName}
+                      </TableCell>
                     )}
-                    <TableCell>{data.properties.cropTypes}</TableCell>
                     <TableCell>
-                      {Math.round(data.analytics.availableSoilWater)}
-                    </TableCell>
-                    <TableCell>{Math.round(data.analytics.deficit)}</TableCell>
-                    <TableCell>
-                      {Math.round(data.analytics.relativeTranspiration * 100)}%
+                      {data.properties && data.properties.cropTypes}
                     </TableCell>
                     <TableCell>
-                      {Math.round(data.analytics.evapotranspiration)}
+                      {data.properties &&
+                        Math.round(data.analytics.availableSoilWater)}
                     </TableCell>
-                    <TableCell>{data.analytics.sprinkling}</TableCell>
+                    <TableCell>
+                      {data.properties && Math.round(data.analytics.deficit)}
+                    </TableCell>
+                    <TableCell>
+                      {Math.round(
+                        data.properties &&
+                          data.analytics.relativeTranspiration * 100
+                      )}
+                      %
+                    </TableCell>
+                    <TableCell>
+                      {data.properties &&
+                        Math.round(data.analytics.evapotranspiration)}
+                    </TableCell>
+                    <TableCell>
+                      {data.properties && data.analytics.sprinkling}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
