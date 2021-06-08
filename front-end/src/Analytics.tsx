@@ -748,7 +748,7 @@ const Analytics: React.FC<Props> = ({
               disabled={!selectedPlotId}
             >
               <InputLabel htmlFor="component-simple">
-                Gewasstadium veranderen
+                Actuele gewasstatus
               </InputLabel>
               <Select
                 className={css`
@@ -783,7 +783,7 @@ const Analytics: React.FC<Props> = ({
               disabled={!selectedPlotId}
             >
               <InputLabel id="crop-status-label">
-                Huidige gewas status:
+                Berekend gewasstatus
               </InputLabel>
               <Input
                 id="component-simple"
