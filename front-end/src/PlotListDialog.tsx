@@ -14,6 +14,7 @@ import {
   Link,
   IconButton,
   Input,
+  CircularProgress,
 } from "@material-ui/core";
 import blue from "@material-ui/core/colors/blue";
 import EditIcon from "@material-ui/icons/Edit";
@@ -22,6 +23,7 @@ import CancelIcon from "@material-ui/icons/Cancel";
 
 import { ApplicationContext } from "./ApplicationContext";
 import { FarmerData } from "./MapAndAnalytics";
+import axiosInstance from "./lib/axios";
 
 type Props = {
   farmerData: FarmerData;
@@ -193,8 +195,8 @@ const PlotListDialog = ({ farmerData, date, navigate }: Props) => {
                     <TableCell>{data.properties.cropTypes}</TableCell>
                     <TableCell>
                       <EditableRowField
-                        defaultValue={"name"}
-                        onSave={() => console.log("saving")}
+                        defaultValue={data.properties.name}
+                        plotId={data.properties.plotId}
                       />
                     </TableCell>
                     <TableCell>
@@ -226,16 +228,34 @@ export default PlotListDialog;
 
 interface EditableRowFieldProps {
   defaultValue: string;
-  onSave: (name: string) => any;
+  plotId: string;
 }
 const EditableRowField: React.FC<EditableRowFieldProps> = ({
-  onSave,
   defaultValue,
+  plotId,
 }) => {
   const [editState, setEditState] = useState(false);
   const [name, setName] = useState(defaultValue);
+  const [saving, setSaving] = useState(false);
 
-  if (!editState) {
+  const onSave = () => {
+    setSaving(true);
+    axiosInstance
+      .put(`/plot/${plotId}`)
+      .then(() => {
+        setEditState(false);
+        setSaving(false);
+      })
+      .catch((error: Error) => {
+        setName(defaultValue);
+        setEditState(false);
+        setSaving(false);
+        console.error(error);
+      });
+  };
+  if (saving) {
+    return <CircularProgress />;
+  } else if (!editState) {
     return (
       <div style={{ display: "flex", alignItems: "center" }}>
         <span style={{ minWidth: "150px" }}>{name}</span>
@@ -258,8 +278,7 @@ const EditableRowField: React.FC<EditableRowFieldProps> = ({
         />
         <IconButton
           onClick={() => {
-            onSave(name);
-            setEditState(false);
+            onSave();
           }}
           style={{ marginLeft: "12px" }}
           size="small"
