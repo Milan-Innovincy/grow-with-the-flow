@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import { MuiThemeProvider, createMuiTheme } from "@material-ui/core/styles";
 import { css } from "@emotion/css";
 import { BrowserRouter, Switch, Route, Redirect } from "react-router-dom";
-
 import TopBar from "./TopBar";
 import MapAndAnalytics from "./MapAndAnalytics";
 import { ApplicationContext } from "./ApplicationContext";

@@ -11,10 +11,19 @@ import {
   TableBody,
   Typography,
   TableSortLabel,
+  Link,
+  IconButton,
+  Input,
+  CircularProgress,
 } from "@material-ui/core";
-import { css } from "@emotion/css";
+import blue from "@material-ui/core/colors/blue";
+import EditIcon from "@material-ui/icons/Edit";
+import SaveIcon from "@material-ui/icons/Save";
+import CancelIcon from "@material-ui/icons/Cancel";
+
 import { ApplicationContext } from "./ApplicationContext";
 import { FarmerData } from "./MapAndAnalytics";
+import axiosInstance from "./lib/axios";
 
 type Props = {
   farmerData: FarmerData;
@@ -115,6 +124,7 @@ const PlotListDialog = ({ farmerData, date, navigate }: Props) => {
                   <TableCell>ID</TableCell>
                   {isManager && <TableCell>Boer</TableCell>}
                   <TableCell>Gewas</TableCell>
+                  <TableCell>Perceelnaam</TableCell>
                   <TableCell>
                     <TableSortLabel
                       active={orderBy === "availableSoilWater"}
@@ -143,7 +153,6 @@ const PlotListDialog = ({ farmerData, date, navigate }: Props) => {
                     </TableSortLabel>
                   </TableCell>
                   <TableCell>
-                    {" "}
                     <TableSortLabel
                       active={orderBy === "evapotranspiration"}
                       direction={order}
@@ -153,7 +162,6 @@ const PlotListDialog = ({ farmerData, date, navigate }: Props) => {
                     </TableSortLabel>
                   </TableCell>
                   <TableCell>
-                    {" "}
                     <TableSortLabel
                       active={orderBy === "sprinkling"}
                       direction={order}
@@ -166,21 +174,31 @@ const PlotListDialog = ({ farmerData, date, navigate }: Props) => {
               </TableHead>
               <TableBody>
                 {tableData.map((data) => (
-                  <TableRow
-                    key={data.properties!.plotId}
-                    onClick={() => {
-                      navigate(`/map/${date}/plot/${data.properties.plotId}`);
-                      toggleShowModal();
-                    }}
-                    className={css`
-                      cursor: pointer;
-                    `}
-                  >
-                    <TableCell>{data.properties.plotId}</TableCell>
+                  <TableRow key={data.properties!.plotId}>
+                    <TableCell>
+                      <Link
+                        style={{ cursor: "pointer", color: blue[500] }}
+                        color={"primary"}
+                        onClick={() => {
+                          navigate(
+                            `/map/${date}/plot/${data.properties.plotId}`
+                          );
+                          toggleShowModal();
+                        }}
+                      >
+                        {data.properties.plotId}
+                      </Link>
+                    </TableCell>
                     {isManager && (
                       <TableCell>{data.properties.farmerName}</TableCell>
                     )}
                     <TableCell>{data.properties.cropTypes}</TableCell>
+                    <TableCell>
+                      <EditableRowField
+                        defaultValue={data.properties.name}
+                        plotId={data.properties.plotId}
+                      />
+                    </TableCell>
                     <TableCell>
                       {Math.round(data.analytics.availableSoilWater)}
                     </TableCell>
@@ -207,3 +225,76 @@ const PlotListDialog = ({ farmerData, date, navigate }: Props) => {
 };
 
 export default PlotListDialog;
+
+interface EditableRowFieldProps {
+  defaultValue: string;
+  plotId: string;
+}
+const EditableRowField: React.FC<EditableRowFieldProps> = ({
+  defaultValue,
+  plotId,
+}) => {
+  const [editState, setEditState] = useState(false);
+  const [name, setName] = useState(defaultValue);
+  const [saving, setSaving] = useState(false);
+
+  const onSave = () => {
+    setSaving(true);
+    axiosInstance
+      .put(`/plot/${plotId}`, { name: name })
+      .then(() => {
+        setEditState(false);
+        setSaving(false);
+      })
+      .catch((error: Error) => {
+        setName(defaultValue);
+        setEditState(false);
+        setSaving(false);
+        console.error(error);
+      });
+  };
+  if (saving) {
+    return <CircularProgress />;
+  } else if (!editState) {
+    return (
+      <div style={{ display: "flex", alignItems: "center" }}>
+        <span style={{ minWidth: "150px" }}>{name}</span>
+        <IconButton
+          onClick={() => setEditState(true)}
+          style={{ marginLeft: "12px" }}
+          size="small"
+        >
+          <EditIcon />
+        </IconButton>
+      </div>
+    );
+  } else {
+    return (
+      <div style={{ display: "flex", alignItems: "center" }}>
+        <Input
+          style={{ minWidth: "150px" }}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <IconButton
+          onClick={() => {
+            onSave();
+          }}
+          style={{ marginLeft: "12px" }}
+          size="small"
+        >
+          <SaveIcon />
+        </IconButton>
+        <IconButton
+          onClick={() => {
+            setName(defaultValue);
+            setEditState(false);
+          }}
+          size="small"
+        >
+          <CancelIcon />
+        </IconButton>
+      </div>
+    );
+  }
+};
