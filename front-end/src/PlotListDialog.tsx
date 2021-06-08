@@ -241,7 +241,7 @@ const EditableRowField: React.FC<EditableRowFieldProps> = ({
   const onSave = () => {
     setSaving(true);
     axiosInstance
-      .put(`/plot/${plotId}`)
+      .put(`/plot/${plotId}`, { name: name })
       .then(() => {
         setEditState(false);
         setSaving(false);
