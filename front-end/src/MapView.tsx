@@ -77,7 +77,6 @@ let createPixelMap = (
   ];
   const height = grid.length;
   const width = grid[0].length;
-
   const f = chroma
     .scale([parameters[parameter].colors.min, parameters[parameter].colors.max])
     .domain([minValue, maxValue]);
@@ -93,7 +92,7 @@ let createPixelMap = (
       const value = grid[height - 1 - y][x];
 
       const rgba =
-        typeof value === "number" && value !== -999
+        typeof value === "number" && value !== -999 && value !== 0
           ? f(value).rgba()
           : [0, 0, 0, 0];
       png.data[idx] = rgba[0];
@@ -234,13 +233,27 @@ const MapView = ({
   }, [selectedPlotId, selectedPixel]);
 
   useEffect(() => {
-    if (farmerData) {
-      const minValue = farmerData.pixelsData.analytics[0][selectedParameter]
-        .flat()
-        .reduce((prev, current) => Math.min(prev, current));
-      const maxValue = farmerData.pixelsData.analytics[0][selectedParameter]
-        .flat()
-        .reduce((prev, current) => Math.max(prev, current));
+    if (
+      farmerData &&
+      farmerData.pixelsData.analytics.find((a: any) => a.time === date)
+    ) {
+      const minValue =
+        farmerData.pixelsData.analytics[0][selectedParameter]
+          .flat()
+          .filter((x) => x !== 0).length === 0
+          ? 0
+          : farmerData.pixelsData.analytics[0][selectedParameter]
+              .flat()
+              .filter((x) => x !== 0)
+              .reduce((prev, current) => Math.min(prev, current));
+
+      const maxValue =
+        farmerData.pixelsData.analytics[0][selectedParameter].flat().length ===
+        0
+          ? 0
+          : farmerData.pixelsData.analytics[0][selectedParameter]
+              .flat()
+              .reduce((prev, current) => Math.max(prev, current));
       setMinValue(minValue);
       setMaxValue(maxValue);
       setBase64(
@@ -253,8 +266,12 @@ const MapView = ({
         )
       );
       setlegendColors(getLegendColors(selectedParameter));
+    } else {
+      setMinValue(null);
+      setMaxValue(null);
+      setBase64(null);
     }
-  }, [selectedParameter]);
+  }, [selectedParameter, date, selectedPixel, selectedPlotId, farmerData]);
 
   let pixelPolygon = undefined;
   if (selectedPixel) {
