@@ -78,6 +78,7 @@ const OverallSummary = ({ farmerData, date, navigate }: Props) => {
             margin="normal"
             id="date-picker-dialog"
             disableFuture={true}
+            minDate="2021.01.01"
             label="Date picker dialog"
             format="yyyy-MM-dd"
             value={date}
