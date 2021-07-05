@@ -748,7 +748,7 @@ const Analytics: React.FC<Props> = ({
               disabled={!selectedPlotId}
             >
               <InputLabel htmlFor="component-simple">
-                Actuele gewasstatus
+                Update gewasstatus
               </InputLabel>
               <Select
                 className={css`
