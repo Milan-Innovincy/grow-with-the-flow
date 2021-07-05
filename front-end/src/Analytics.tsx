@@ -867,7 +867,6 @@ const Analytics: React.FC<Props> = ({
               dataKey="moisture"
               xAxisId={2}
               yAxisId="right"
-              type="natural"
               stroke="#f6511d"
               fill="url(#moistureColor)"
             />
@@ -875,7 +874,6 @@ const Analytics: React.FC<Props> = ({
               dataKey="desiredMoisture"
               xAxisId={2}
               yAxisId="left"
-              type="natural"
               stroke="#00acc1"
             />
             <Bar
