@@ -22,14 +22,7 @@ const parameters: object = {
       max: "#008dff",
     },
   },
-  deficit: {
-    slug: "deficit",
-    label: "Vochttekort",
-    colors: {
-      min: "#FFE3D3",
-      max: "#F6511D",
-    },
-  },
+
   availableSoilWater: {
     slug: "availableSoilWater",
     label: "Beschikbaar vochtgehalte",
@@ -125,7 +118,9 @@ const MapView = ({
   selectedPlotId,
   selectedPixel,
 }: Props) => {
-  const [selectedParameter, setSelectedParameter] = useState("deficit");
+  const [selectedParameter, setSelectedParameter] = useState(
+    "measuredPrecipitation"
+  );
   const [legendColors, setlegendColors] = useState(
     getLegendColors(selectedParameter)
   );
