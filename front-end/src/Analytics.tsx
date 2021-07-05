@@ -64,8 +64,8 @@ const cropStatusOptions: CropStatus = {
   aardappelen: [
     { label: "Geen Activiteit", value: 0 },
     { label: "Opkomst", value: 0.01 },
-    { label: "Gewasbedekking volledig", value: 1.2 },
     { label: "Aanzet knolontwikkeling", value: 1.0 },
+    { label: "Gewasbedekking volledig", value: 1.2 },
     { label: "Afsterven", value: 2.0 },
   ],
   gras: [
