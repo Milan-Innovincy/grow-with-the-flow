@@ -21,7 +21,6 @@ import {
   FormControl,
   Select,
   Input,
-  Button,
 } from "@material-ui/core";
 import {
   MuiPickersUtilsProvider,
@@ -529,6 +528,27 @@ const Analytics: React.FC<Props> = ({
     }
   };
 
+  const disableToday = (newDate: any) => {
+    const fullDate = new Date();
+    const year = fullDate.getFullYear();
+    let month = fullDate.getMonth() + 1;
+    if (month < 10) {
+      month = "0" + month;
+    }
+
+    let day = fullDate.getDate();
+    if (day < 10) {
+      day = "0" + day;
+    }
+
+    const today = year + "-" + month + "-" + day;
+    const dayApp = DateTime.fromMillis(moment(newDate).valueOf()).toISODate();
+
+    if (today === dayApp) {
+      return true;
+    }
+  };
+
   return (
     <Paper
       elevation={5}
@@ -602,6 +622,7 @@ const Analytics: React.FC<Props> = ({
                 id="date-picker-dialog"
                 disableFuture={true}
                 minDate="2021.01.01"
+                shouldDisableDate={disableToday}
                 label="Date picker dialog"
                 format="yyyy-MM-dd"
                 value={date}
