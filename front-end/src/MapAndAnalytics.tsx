@@ -113,7 +113,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
 
   const { date, selectionType, selectionId } = match.params;
   const latestAvailableDate = DateTime.fromJSDate(new Date())
-    .minus(Duration.fromObject({ days: 2 }))
+    .minus(Duration.fromObject({ days: 1 }))
     .toFormat("yyyy-MM-dd");
 
   useEffect(() => {

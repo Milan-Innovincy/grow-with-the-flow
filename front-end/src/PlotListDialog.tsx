@@ -144,7 +144,7 @@ const PlotListDialog = ({ farmerData, date, navigate }: Props) => {
                       direction={order}
                       onClick={() => sortColumn("relativeTranspiration")}
                     >
-                      Waterstressfactor (%)
+                      Droogtestress (%)
                     </TableSortLabel>
                   </TableCell>
                   <TableCell>

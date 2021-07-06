@@ -21,7 +21,6 @@ import {
   FormControl,
   Select,
   Input,
-  Button,
 } from "@material-ui/core";
 import {
   MuiPickersUtilsProvider,
@@ -64,8 +63,8 @@ const cropStatusOptions: CropStatus = {
   aardappelen: [
     { label: "Geen Activiteit", value: 0 },
     { label: "Opkomst", value: 0.01 },
-    { label: "Gewasbedekking volledig", value: 1.2 },
     { label: "Aanzet knolontwikkeling", value: 1.0 },
+    { label: "Gewasbedekking volledig", value: 1.2 },
     { label: "Afsterven", value: 2.0 },
   ],
   gras: [
@@ -529,6 +528,27 @@ const Analytics: React.FC<Props> = ({
     }
   };
 
+  const disableToday = (newDate: any) => {
+    const fullDate = new Date();
+    const year = fullDate.getFullYear();
+    let month = fullDate.getMonth() + 1;
+    if (month < 10) {
+      month = "0" + month;
+    }
+
+    let day = fullDate.getDate();
+    if (day < 10) {
+      day = "0" + day;
+    }
+
+    const today = year + "-" + month + "-" + day;
+    const dayApp = DateTime.fromMillis(moment(newDate).valueOf()).toISODate();
+
+    if (today === dayApp) {
+      return true;
+    }
+  };
+
   return (
     <Paper
       elevation={5}
@@ -601,6 +621,8 @@ const Analytics: React.FC<Props> = ({
                 margin="normal"
                 id="date-picker-dialog"
                 disableFuture={true}
+                minDate="2021.01.01"
+                shouldDisableDate={disableToday}
                 label="Date picker dialog"
                 format="yyyy-MM-dd"
                 value={date}
@@ -731,7 +753,7 @@ const Analytics: React.FC<Props> = ({
               color="#f6511d"
             />
             <LegendItem
-              label="Waterstressfactor"
+              label="Droogtestress in %"
               shape="circle"
               color="#00acc1"
             />
@@ -748,7 +770,7 @@ const Analytics: React.FC<Props> = ({
               disabled={!selectedPlotId}
             >
               <InputLabel htmlFor="component-simple">
-                Actuele gewasstatus
+                Update gewasstatus
               </InputLabel>
               <Select
                 className={css`
@@ -867,7 +889,6 @@ const Analytics: React.FC<Props> = ({
               dataKey="moisture"
               xAxisId={2}
               yAxisId="right"
-              type="natural"
               stroke="#f6511d"
               fill="url(#moistureColor)"
             />
@@ -875,7 +896,6 @@ const Analytics: React.FC<Props> = ({
               dataKey="desiredMoisture"
               xAxisId={2}
               yAxisId="left"
-              type="natural"
               stroke="#00acc1"
             />
             <Bar
