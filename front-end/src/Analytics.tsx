@@ -64,8 +64,8 @@ const cropStatusOptions: CropStatus = {
   aardappelen: [
     { label: "Geen Activiteit", value: 0 },
     { label: "Opkomst", value: 0.01 },
-    { label: "Gewasbedekking volledig", value: 1.2 },
     { label: "Aanzet knolontwikkeling", value: 1.0 },
+    { label: "Gewasbedekking volledig", value: 1.2 },
     { label: "Afsterven", value: 2.0 },
   ],
   gras: [
@@ -749,7 +749,7 @@ const Analytics: React.FC<Props> = ({
               disabled={!selectedPlotId}
             >
               <InputLabel htmlFor="component-simple">
-                Actuele gewasstatus
+                Update gewasstatus
               </InputLabel>
               <Select
                 className={css`
@@ -868,7 +868,6 @@ const Analytics: React.FC<Props> = ({
               dataKey="moisture"
               xAxisId={2}
               yAxisId="right"
-              type="natural"
               stroke="#f6511d"
               fill="url(#moistureColor)"
             />
@@ -876,7 +875,6 @@ const Analytics: React.FC<Props> = ({
               dataKey="desiredMoisture"
               xAxisId={2}
               yAxisId="left"
-              type="natural"
               stroke="#00acc1"
             />
             <Bar
