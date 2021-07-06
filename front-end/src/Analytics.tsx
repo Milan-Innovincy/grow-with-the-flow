@@ -730,7 +730,11 @@ const Analytics: React.FC<Props> = ({
               shape="circle"
               color="#f6511d"
             />
-            <LegendItem label="Droogtestress" shape="circle" color="#00acc1" />
+            <LegendItem
+              label="Droogtestress in %"
+              shape="circle"
+              color="#00acc1"
+            />
           </div>
           <div
             className={css`
