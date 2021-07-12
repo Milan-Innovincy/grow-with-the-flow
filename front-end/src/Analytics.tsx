@@ -774,7 +774,7 @@ const Analytics: React.FC<Props> = ({
                 margin-left: 0 !important;
               `}
             >
-              <InputLabel htmlFor="component-simple">Waarde links</InputLabel>
+              <InputLabel htmlFor="component-simple">Y-as links</InputLabel>
               <Select
                 className={css`
                   min-width: 180px;
@@ -794,7 +794,7 @@ const Analytics: React.FC<Props> = ({
                 margin-right: 1rem !important;
               `}
             >
-              <InputLabel htmlFor="component-simple">Waarde rechts</InputLabel>
+              <InputLabel htmlFor="component-simple">Y-as rechts</InputLabel>
               <Select
                 className={css`
                   min-width: 180px;
