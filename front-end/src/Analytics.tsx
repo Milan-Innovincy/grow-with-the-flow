@@ -549,8 +549,8 @@ const Analytics: React.FC<Props> = ({
     }
   };
 
-  const [leftAxe, setLeftAxe] = useState("");
-  const [rightAxe, setRightAxe] = useState("");
+  const [leftAxe, setLeftAxe] = useState("rainfall");
+  const [rightAxe, setRightAxe] = useState("moisture");
 
   const displayRainfall =
     leftAxe === "rainfall" ? true : rightAxe === "rainfall" ? true : false;
@@ -774,7 +774,7 @@ const Analytics: React.FC<Props> = ({
                 margin-left: 0 !important;
               `}
             >
-              <InputLabel htmlFor="component-simple">Y-as links</InputLabel>
+              <InputLabel htmlFor="component-simple">Y-as Links</InputLabel>
               <Select
                 className={css`
                   min-width: 180px;
@@ -794,7 +794,7 @@ const Analytics: React.FC<Props> = ({
                 margin-right: 1rem !important;
               `}
             >
-              <InputLabel htmlFor="component-simple">Y-as rechts</InputLabel>
+              <InputLabel htmlFor="component-simple">Y-as Rechts</InputLabel>
               <Select
                 className={css`
                   min-width: 180px;
