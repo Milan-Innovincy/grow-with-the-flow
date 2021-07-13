@@ -26,7 +26,13 @@ import {
   MuiPickersUtilsProvider,
   KeyboardDatePicker,
 } from "@material-ui/pickers";
-import { Close, Vanish, CarDefrostRear } from "mdi-material-ui";
+import {
+  Close,
+  Vanish,
+  CarDefrostRear,
+  WaterPercent,
+  Thermometer,
+} from "mdi-material-ui";
 import { DateTime, Duration } from "luxon";
 import produce from "immer";
 import { padStart } from "lodash";
@@ -303,7 +309,7 @@ const CurrentDataItem = ({
           z-index: 1;
         `}
       >
-        {Math.round(value)}
+        {value}
       </div>
       <div
         className={css`
@@ -354,6 +360,8 @@ type AnalyticsData = {
   evapotranspiration: number;
   deficit: number;
   developmentStage: number;
+  temperature: number;
+  humidity: number;
 };
 
 const Analytics: React.FC<Props> = ({
@@ -373,6 +381,7 @@ const Analytics: React.FC<Props> = ({
   useEffect(() => {
     const { pixelsData, plotsAnalytics, plotFeedback, plotCropStatus } =
       farmerData;
+    console.log("data", farmerData);
 
     if (selectedPlotId) {
       setLabel(`Plot ${selectedPlotId}`);
@@ -402,15 +411,18 @@ const Analytics: React.FC<Props> = ({
               ? sprinklingData.quantities.find((q: any) => q.date === i.date)
               : null;
             const sprinkling = quantityForDate ? quantityForDate.quantityMM : 0;
+
             return {
               date: DateTime.fromISO(i.date).toFormat("dd/MM/yyyy"),
               rainfall: i.measuredPrecipitation,
               sprinkling,
               moisture: i.availableSoilWater,
-              desiredMoisture: i.relativeTranspiration * 10,
+              desiredMoisture: i.relativeTranspiration * 100,
               evapotranspiration: i.evapotranspiration,
               deficit: i.deficit,
               developmentStage: i.developmentStage,
+              temperature: i.averageTemperature,
+              humidity: i.humidity.toFixed(2),
             };
           })
         );
@@ -422,6 +434,7 @@ const Analytics: React.FC<Props> = ({
 
     if (selectedPixel) {
       const [x, y] = selectedPixel;
+
       setLabel(
         `Pixel ${padStart(x.toString(), 3, "0")}${padStart(
           y.toString(),
@@ -432,6 +445,7 @@ const Analytics: React.FC<Props> = ({
       setCropType(getCropType(pixelsData.landUse[x][y]));
       setSoilType(pixelsData.soilMap[x][y]);
       setArea(1);
+
       setAnalyticsData(
         pixelsData.analytics.map((i: any, index: number) => ({
           date: DateTime.fromISO(i.time).toFormat("dd/MM/yyyy"),
@@ -439,10 +453,12 @@ const Analytics: React.FC<Props> = ({
           rainfall: i.measuredPrecipitation[x][y],
           sprinkling: 0,
           moisture: i.availableSoilWater[x][y],
-          desiredMoisture: i.relativeTranspiration[x][y] * 10,
+          desiredMoisture: i.relativeTranspiration[x][y] * 100,
           evapotranspiration: i.evapotranspiration[x][y],
           deficit: i.deficit[x][y],
           developmentStage: i.developmentStage,
+          temperature: i.averageTemperature[x][y],
+          humidity: i.humidity[x][y].toFixed(2),
         }))
       );
     }
@@ -528,26 +544,26 @@ const Analytics: React.FC<Props> = ({
     }
   };
 
-  const disableToday = (newDate: any) => {
-    const fullDate = new Date();
-    const year = fullDate.getFullYear();
-    let month = fullDate.getMonth() + 1;
-    if (month < 10) {
-      month = "0" + month;
-    }
+  // const disableToday = (newDate: any) => {
+  //   const fullDate = new Date();
+  //   const year = fullDate.getFullYear();
+  //   let month = fullDate.getMonth() + 1;
+  //   if (month < 10) {
+  //     month = "0" + month;
+  //   }
 
-    let day = fullDate.getDate();
-    if (day < 10) {
-      day = "0" + day;
-    }
+  //   let day = fullDate.getDate();
+  //   if (day < 10) {
+  //     day = "0" + day;
+  //   }
 
-    const today = year + "-" + month + "-" + day;
-    const dayApp = DateTime.fromMillis(moment(newDate).valueOf()).toISODate();
+  //   const today = year + "-" + month + "-" + day;
+  //   const dayApp = DateTime.fromMillis(moment(newDate).valueOf()).toISODate();
 
-    if (today === dayApp) {
-      return true;
-    }
-  };
+  //   if (today === dayApp) {
+  //     return true;
+  //   }
+  // };
 
   const [leftAxe, setLeftAxe] = useState("rainfall");
   const [rightAxe, setRightAxe] = useState("moisture");
@@ -567,6 +583,16 @@ const Analytics: React.FC<Props> = ({
 
   const displaySprinkling =
     leftAxe === "sprinkling" ? true : rightAxe === "sprinkling" ? true : false;
+
+  const displayTemperature =
+    leftAxe === "temperature"
+      ? true
+      : rightAxe === "temperature"
+      ? true
+      : false;
+
+  const displayHumidity =
+    leftAxe === "humidity" ? true : rightAxe === "humidity" ? true : false;
 
   const changeLeftAxe = (event: any) => {
     setLeftAxe(event.target.value);
@@ -649,7 +675,7 @@ const Analytics: React.FC<Props> = ({
                 id="date-picker-dialog"
                 disableFuture={true}
                 minDate="2021.01.01"
-                shouldDisableDate={disableToday}
+                // shouldDisableDate={disableToday}
                 label="Date picker dialog"
                 format="yyyy-MM-dd"
                 value={date}
@@ -669,7 +695,7 @@ const Analytics: React.FC<Props> = ({
           >
             <CurrentDataItem
               label="Regenval in mm"
-              value={currentAnalyticsData.rainfall}
+              value={Math.round(currentAnalyticsData.rainfall)}
               color="#80A1D4"
               icon={
                 <RainfallIcon
@@ -683,7 +709,7 @@ const Analytics: React.FC<Props> = ({
             />
             <CurrentDataItem
               label="Verdamping in mm"
-              value={currentAnalyticsData.evapotranspiration}
+              value={Math.round(currentAnalyticsData.evapotranspiration)}
               color="#6A7152"
               icon={
                 <CarDefrostRear
@@ -698,7 +724,7 @@ const Analytics: React.FC<Props> = ({
             />
             <CurrentDataItem
               label="Beschikbaar bodemvocht in mm"
-              value={currentAnalyticsData.moisture}
+              value={Math.round(currentAnalyticsData.moisture)}
               color="#f6511d"
               icon={
                 <Vanish
@@ -711,13 +737,44 @@ const Analytics: React.FC<Props> = ({
                 />
               }
             />
+
             <CurrentDataItem
               label="Te beregenen in mm"
-              value={currentAnalyticsData.sprinkling}
+              value={Math.round(currentAnalyticsData.sprinkling)}
               color="#1565c0"
               icon={
                 <IrrigationIcon
                   fill="#1565c0"
+                  className={css`
+                    width: 20px;
+                    height: 20px;
+                  `}
+                />
+              }
+            />
+            <CurrentDataItem
+              label="Temperatuur in °C"
+              value={Math.round(currentAnalyticsData.temperature)}
+              color="#383a3d"
+              icon={
+                <Thermometer
+                  fill="#383a3d"
+                  viewBox="0 0 30 30"
+                  className={css`
+                    width: 20px;
+                    height: 20px;
+                  `}
+                />
+              }
+            />
+            <CurrentDataItem
+              label="Luchtvochtigheid in %"
+              value={currentAnalyticsData.humidity}
+              color="#5a0494"
+              icon={
+                <WaterPercent
+                  fill="#5a0494"
+                  viewBox="0 0 26 26"
                   className={css`
                     width: 20px;
                     height: 20px;
@@ -784,6 +841,7 @@ const Analytics: React.FC<Props> = ({
               >
                 <MenuItem value="rainfall">Regenval</MenuItem>;
                 <MenuItem value="sprinkling">Beregening</MenuItem>;
+                <MenuItem value="humidity">Luchtvochtigheid</MenuItem>;
               </Select>
             </FormControl>
                         
@@ -804,6 +862,7 @@ const Analytics: React.FC<Props> = ({
               >
                 <MenuItem value="desiredMoisture">Droogtestress</MenuItem>;
                 <MenuItem value="moisture">Bodemvocht</MenuItem>;
+                <MenuItem value="temperature">Temperatuur</MenuItem>;
               </Select>
             </FormControl>
             <LegendItem label="Regenval in mm" shape="square" color="#64b5f6" />
@@ -910,6 +969,10 @@ const Analytics: React.FC<Props> = ({
                 <stop offset="5%" stopColor="#ff9800" stopOpacity={0.8} />
                 <stop offset="95%" stopColor="#ffe0b2" stopOpacity={0} />
               </linearGradient>
+              <linearGradient id="temperatureColor" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#ec9185" stopOpacity={0.8} />
+                <stop offset="90%" stopColor="#49c7ee" stopOpacity={0.2} />
+              </linearGradient>
               <radialGradient
                 id="radial"
                 fx="50%"
@@ -968,6 +1031,15 @@ const Analytics: React.FC<Props> = ({
                 stroke="#c12d00"
               />
             ) : null}
+            {displayTemperature ? (
+              <Line
+                dataKey="temperature"
+                xAxisId={2}
+                yAxisId="right"
+                stroke="#383a3d"
+                fill="url(#temperatureColor)"
+              />
+            ) : null}
             {displayRainfall ? (
               <Bar
                 dataKey="rainfall"
@@ -980,6 +1052,28 @@ const Analytics: React.FC<Props> = ({
                       {...{ x, y, width, height }}
                       fill="#64b5f6"
                       opacity={0.8}
+                      d={`m${x},${y! + height!} v-${
+                        height! - 10
+                      } a10,10 270 0 1 10 -10 h${
+                        width! - 20
+                      } a10,10 0 0 1 10 10 v${height! - 10} z`}
+                    />
+                  )
+                }
+              />
+            ) : null}
+            {displayHumidity ? (
+              <Bar
+                dataKey="humidity"
+                xAxisId={0}
+                yAxisId="left"
+                barSize={60}
+                shape={({ x, y, width, height }: RectangleProps) =>
+                  height! < 10 ? null : (
+                    <path
+                      {...{ x, y, width, height }}
+                      fill="#5a0494"
+                      opacity={0.4}
                       d={`m${x},${y! + height!} v-${
                         height! - 10
                       } a10,10 270 0 1 10 -10 h${
