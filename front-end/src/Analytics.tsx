@@ -549,6 +549,33 @@ const Analytics: React.FC<Props> = ({
     }
   };
 
+  const [leftAxe, setLeftAxe] = useState("rainfall");
+  const [rightAxe, setRightAxe] = useState("moisture");
+
+  const displayRainfall =
+    leftAxe === "rainfall" ? true : rightAxe === "rainfall" ? true : false;
+
+  const displayDesiredMoisture =
+    leftAxe === "desiredMoisture"
+      ? true
+      : rightAxe === "desiredMoisture"
+      ? true
+      : false;
+
+  const displayMoisture =
+    leftAxe === "moisture" ? true : rightAxe === "moisture" ? true : false;
+
+  const displaySprinkling =
+    leftAxe === "sprinkling" ? true : rightAxe === "sprinkling" ? true : false;
+
+  const changeLeftAxe = (event: any) => {
+    setLeftAxe(event.target.value);
+  };
+
+  const changeRightAxe = (event: any) => {
+    setRightAxe(event.target.value);
+  };
+
   return (
     <Paper
       elevation={5}
@@ -741,6 +768,44 @@ const Analytics: React.FC<Props> = ({
               display: flex;
             `}
           >
+            {/* Select left Axes Dropdown  */}            
+            <FormControl
+              className={css`
+                margin-left: 0 !important;
+              `}
+            >
+              <InputLabel htmlFor="component-simple">Y-as Links</InputLabel>
+              <Select
+                className={css`
+                  min-width: 180px;
+                `}
+                value={leftAxe}
+                onChange={changeLeftAxe}
+              >
+                <MenuItem value="rainfall">Regenval</MenuItem>;
+                <MenuItem value="sprinkling">Beregening</MenuItem>;
+              </Select>
+            </FormControl>
+                        
+            {/*  Select right Axes Dropdown  */}
+            <FormControl
+              className={css`
+                margin-left: 0 !important;
+                margin-right: 1rem !important;
+              `}
+            >
+              <InputLabel htmlFor="component-simple">Y-as Rechts</InputLabel>
+              <Select
+                className={css`
+                  min-width: 180px;
+                `}
+                value={rightAxe}
+                onChange={changeRightAxe}
+              >
+                <MenuItem value="desiredMoisture">Droogtestress</MenuItem>;
+                <MenuItem value="moisture">Bodemvocht</MenuItem>;
+              </Select>
+            </FormControl>
             <LegendItem label="Regenval in mm" shape="square" color="#64b5f6" />
             <LegendItem
               label="Beregening in mm"
@@ -755,7 +820,7 @@ const Analytics: React.FC<Props> = ({
             <LegendItem
               label="Droogtestress in %"
               shape="circle"
-              color="#00acc1"
+              color="#c12d00"
             />
           </div>
           <div
@@ -774,7 +839,7 @@ const Analytics: React.FC<Props> = ({
               </InputLabel>
               <Select
                 className={css`
-                  min-width: 200px;
+                  min-width: 180px;
                 `}
                 value={
                   cropStatus && cropStatus.value
@@ -834,6 +899,7 @@ const Analytics: React.FC<Props> = ({
             </FormControl>
           </div>
         </div>
+          {/* Chart */}
         <ResponsiveContainer height={200}>
           <ComposedChart
             data={analyticsData}
@@ -885,96 +951,104 @@ const Analytics: React.FC<Props> = ({
               tick={{ fill: "#f6511d", fontSize: 10 }}
               width={30}
             />
-            <Area
-              dataKey="moisture"
-              xAxisId={2}
-              yAxisId="right"
-              stroke="#f6511d"
-              fill="url(#moistureColor)"
-            />
-            <Line
-              dataKey="desiredMoisture"
-              xAxisId={2}
-              yAxisId="left"
-              stroke="#00acc1"
-            />
-            <Bar
-              dataKey="rainfall"
-              xAxisId={0}
-              yAxisId="left"
-              barSize={60}
-              shape={({ x, y, width, height }: RectangleProps) =>
-                height! < 10 ? null : (
-                  <path
-                    {...{ x, y, width, height }}
-                    fill="#64b5f6"
-                    opacity={0.8}
-                    d={`m${x},${y! + height!} v-${
-                      height! - 10
-                    } a10,10 270 0 1 10 -10 h${
-                      width! - 20
-                    } a10,10 0 0 1 10 10 v${height! - 10} z`}
-                  />
-                )
-              }
-            />
-            <Bar
-              dataKey="sprinkling"
-              isAnimationActive={false}
-              xAxisId={1}
-              yAxisId="left"
-              fill="#1565c0"
-              opacity={0.8}
-              barSize={40}
-              label={({
-                value,
-                x,
-                y,
-                width,
-                index,
-              }: LabelProps & { index: number }) => (
-                <g
-                  onClick={async () => {
-                    await updateSprinklingDialog.open(
-                      value as number,
-                      analyticsData ? analyticsData[index] : ""
-                    );
-                  }}
-                >
-                  <circle
-                    cx={x! + width! / 2}
-                    cy={y!}
-                    r={width! / 2 + 8}
-                    fill="url(#radial)"
-                  />
-                  <circle
-                    cx={x! + width! / 2}
-                    cy={y!}
-                    r={width! / 2 + 3}
-                    fill="#ffffff"
-                    stroke="#64b5f6"
-                  />
-                  <circle
-                    cx={x! + width! / 2}
-                    cy={y!}
-                    r={width! / 2}
-                    fill="#ffffff"
-                    stroke="#1565c0"
-                    strokeWidth={2}
-                  />
-                  <text
-                    x={x! + width! / 2}
-                    y={y!}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    fill="#1565c0"
-                    fontSize={10}
+            {displayMoisture ? (
+              <Area
+                dataKey="moisture"
+                xAxisId={2}
+                yAxisId="right"
+                stroke="#f6511d"
+                fill="url(#moistureColor)"
+              />
+            ) : null}
+            {displayDesiredMoisture ? (
+              <Line
+                dataKey="desiredMoisture"
+                xAxisId={2}
+                yAxisId="right"
+                stroke="#c12d00"
+              />
+            ) : null}
+            {displayRainfall ? (
+              <Bar
+                dataKey="rainfall"
+                xAxisId={0}
+                yAxisId="left"
+                barSize={60}
+                shape={({ x, y, width, height }: RectangleProps) =>
+                  height! < 10 ? null : (
+                    <path
+                      {...{ x, y, width, height }}
+                      fill="#64b5f6"
+                      opacity={0.8}
+                      d={`m${x},${y! + height!} v-${
+                        height! - 10
+                      } a10,10 270 0 1 10 -10 h${
+                        width! - 20
+                      } a10,10 0 0 1 10 10 v${height! - 10} z`}
+                    />
+                  )
+                }
+              />
+            ) : null}
+            {displaySprinkling ? (
+              <Bar
+                dataKey="sprinkling"
+                isAnimationActive={false}
+                xAxisId={1}
+                yAxisId="left"
+                fill="#1565c0"
+                opacity={0.8}
+                barSize={40}
+                label={({
+                  value,
+                  x,
+                  y,
+                  width,
+                  index,
+                }: LabelProps & { index: number }) => (
+                  <g
+                    onClick={async () => {
+                      await updateSprinklingDialog.open(
+                        value as number,
+                        analyticsData ? analyticsData[index] : ""
+                      );
+                    }}
                   >
-                    {value} mm
-                  </text>
-                </g>
-              )}
-            />
+                    <circle
+                      cx={x! + width! / 2}
+                      cy={y!}
+                      r={width! / 2 + 8}
+                      fill="url(#radial)"
+                    />
+                    <circle
+                      cx={x! + width! / 2}
+                      cy={y!}
+                      r={width! / 2 + 3}
+                      fill="#ffffff"
+                      stroke="#64b5f6"
+                    />
+                    <circle
+                      cx={x! + width! / 2}
+                      cy={y!}
+                      r={width! / 2}
+                      fill="#ffffff"
+                      stroke="#1565c0"
+                      strokeWidth={2}
+                    />
+                    <text
+                      x={x! + width! / 2}
+                      y={y!}
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      fill="#1565c0"
+                      fontSize={10}
+                    >
+                      {value} mm
+                    </text>
+                  </g>
+                )}
+              />
+            ) : null}
           </ComposedChart>
         </ResponsiveContainer>
       </div>
