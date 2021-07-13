@@ -26,7 +26,13 @@ import {
   MuiPickersUtilsProvider,
   KeyboardDatePicker,
 } from "@material-ui/pickers";
-import { Close, Vanish, CarDefrostRear } from "mdi-material-ui";
+import {
+  Close,
+  Vanish,
+  CarDefrostRear,
+  WaterPercent,
+  Thermometer,
+} from "mdi-material-ui";
 import { DateTime, Duration } from "luxon";
 import produce from "immer";
 import { padStart } from "lodash";
@@ -402,6 +408,7 @@ const Analytics: React.FC<Props> = ({
               ? sprinklingData.quantities.find((q: any) => q.date === i.date)
               : null;
             const sprinkling = quantityForDate ? quantityForDate.quantityMM : 0;
+
             return {
               date: DateTime.fromISO(i.date).toFormat("dd/MM/yyyy"),
               rainfall: i.measuredPrecipitation,
@@ -411,6 +418,8 @@ const Analytics: React.FC<Props> = ({
               evapotranspiration: i.evapotranspiration,
               deficit: i.deficit,
               developmentStage: i.developmentStage,
+              temperature: i.averageTemperature,
+              humidity: i.humidity,
             };
           })
         );
@@ -422,6 +431,7 @@ const Analytics: React.FC<Props> = ({
 
     if (selectedPixel) {
       const [x, y] = selectedPixel;
+
       setLabel(
         `Pixel ${padStart(x.toString(), 3, "0")}${padStart(
           y.toString(),
@@ -432,6 +442,7 @@ const Analytics: React.FC<Props> = ({
       setCropType(getCropType(pixelsData.landUse[x][y]));
       setSoilType(pixelsData.soilMap[x][y]);
       setArea(1);
+
       setAnalyticsData(
         pixelsData.analytics.map((i: any, index: number) => ({
           date: DateTime.fromISO(i.time).toFormat("dd/MM/yyyy"),
@@ -439,7 +450,7 @@ const Analytics: React.FC<Props> = ({
           rainfall: i.measuredPrecipitation[x][y],
           sprinkling: 0,
           moisture: i.availableSoilWater[x][y],
-          desiredMoisture: i.relativeTranspiration[x][y] * 10,
+          desiredMoisture: i.relativeTranspiration[x][y] * 100,
           evapotranspiration: i.evapotranspiration[x][y],
           deficit: i.deficit[x][y],
           developmentStage: i.developmentStage,
@@ -528,26 +539,26 @@ const Analytics: React.FC<Props> = ({
     }
   };
 
-  const disableToday = (newDate: any) => {
-    const fullDate = new Date();
-    const year = fullDate.getFullYear();
-    let month = fullDate.getMonth() + 1;
-    if (month < 10) {
-      month = "0" + month;
-    }
+  // const disableToday = (newDate: any) => {
+  //   const fullDate = new Date();
+  //   const year = fullDate.getFullYear();
+  //   let month = fullDate.getMonth() + 1;
+  //   if (month < 10) {
+  //     month = "0" + month;
+  //   }
 
-    let day = fullDate.getDate();
-    if (day < 10) {
-      day = "0" + day;
-    }
+  //   let day = fullDate.getDate();
+  //   if (day < 10) {
+  //     day = "0" + day;
+  //   }
 
-    const today = year + "-" + month + "-" + day;
-    const dayApp = DateTime.fromMillis(moment(newDate).valueOf()).toISODate();
+  //   const today = year + "-" + month + "-" + day;
+  //   const dayApp = DateTime.fromMillis(moment(newDate).valueOf()).toISODate();
 
-    if (today === dayApp) {
-      return true;
-    }
-  };
+  //   if (today === dayApp) {
+  //     return true;
+  //   }
+  // };
 
   const [leftAxe, setLeftAxe] = useState("rainfall");
   const [rightAxe, setRightAxe] = useState("moisture");
@@ -649,7 +660,7 @@ const Analytics: React.FC<Props> = ({
                 id="date-picker-dialog"
                 disableFuture={true}
                 minDate="2021.01.01"
-                shouldDisableDate={disableToday}
+                // shouldDisableDate={disableToday}
                 label="Date picker dialog"
                 format="yyyy-MM-dd"
                 value={date}
@@ -711,6 +722,7 @@ const Analytics: React.FC<Props> = ({
                 />
               }
             />
+            {/* The value needs to be changed */}
             <CurrentDataItem
               label="Te beregenen in mm"
               value={currentAnalyticsData.sprinkling}
@@ -718,6 +730,34 @@ const Analytics: React.FC<Props> = ({
               icon={
                 <IrrigationIcon
                   fill="#1565c0"
+                  className={css`
+                    width: 20px;
+                    height: 20px;
+                  `}
+                />
+              }
+            />
+            <CurrentDataItem
+              label="Temperatuur"
+              value={currentAnalyticsData.temperature}
+              color="#383a3d"
+              icon={
+                <Thermometer
+                  fill="#383a3d"
+                  className={css`
+                    width: 20px;
+                    height: 20px;
+                  `}
+                />
+              }
+            />
+            <CurrentDataItem
+              label="Luchtvochtigheid"
+              value={currentAnalyticsData.humidity}
+              color="#5a0494"
+              icon={
+                <WaterPercent
+                  fill="#5a0494"
                   className={css`
                     width: 20px;
                     height: 20px;

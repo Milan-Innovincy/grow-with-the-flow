@@ -189,7 +189,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
           });
         const pixelsData = await axiosInstance
           .get(
-            `/pixels?on=${date}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater,relativeTranspiration,developmentStage`
+            `/pixels?on=${date}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater,relativeTranspiration,developmentStage,trafficability,humidity,averageTemperature`
           )
           .then(({ data }) => {
             return data;
@@ -200,7 +200,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
           });
         const plotsAnalytics = await axiosInstance
           .get(
-            `/plot-analytics?on=${date}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater,relativeTranspiration,developmentStage`
+            `/plot-analytics?on=${date}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater,relativeTranspiration,developmentStage,trafficability,humidity,averageTemperature`
           )
           .then(({ data }) => {
             return data;
