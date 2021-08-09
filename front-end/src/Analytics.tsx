@@ -994,6 +994,7 @@ const Analytics: React.FC<Props> = ({
                     : ""
                 }
                 readOnly
+                style={{ width: "250px"}}
               />
             </FormControl>
           </div>
