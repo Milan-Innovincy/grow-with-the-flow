@@ -227,10 +227,12 @@ const LegendItem = ({
   label,
   shape,
   color,
+  borderColor,
 }: {
   label: string;
-  shape: "square" | "circle";
+  shape: "square" | "circle" | "line";
   color: string;
+  borderColor?: string;
 }) => (
   <div
     className={css`
@@ -256,8 +258,20 @@ const LegendItem = ({
           width: 10px;
           height: 10px;
           margin-right: 5px;
+          background-color: ${color};
           border-radius: 50%;
-          border: 2px solid ${color};
+          border: 1px solid ${borderColor};
+        `}
+      />
+    )}
+    {shape === "line" && (
+      <div
+        className={css`
+          width: 10px;
+          height: 0px;
+          margin-right: 5px;
+          border-radius: 2px;
+          border: 1px solid ${color};
         `}
       />
     )}
@@ -270,6 +284,15 @@ const LegendItem = ({
     </small>
   </div>
 );
+
+const paramColor = {
+  rainfall: "#64b5f6",
+  sprinkling: "#1565c0",
+  relativeHumidity: "#5a0494",
+  moisture: "#f6511d",
+  desiredMoisture: "#c12d00",
+  temperature: "#383a3d"
+}
 
 const CurrentDataItem = ({
   label,
@@ -361,7 +384,7 @@ type AnalyticsData = {
   deficit: number;
   developmentStage: number;
   temperature: number;
-  humidity: number;
+  relativeHumidity: number;
 };
 
 const Analytics: React.FC<Props> = ({
@@ -422,7 +445,7 @@ const Analytics: React.FC<Props> = ({
               deficit: i.deficit,
               developmentStage: i.developmentStage,
               temperature: i.averageTemperature,
-              humidity: i.humidity.toFixed(2),
+              relativeHumidity: i.relativeHumidity.toFixed(0),
             };
           })
         );
@@ -458,7 +481,7 @@ const Analytics: React.FC<Props> = ({
           deficit: i.deficit[x][y],
           developmentStage: i.developmentStage,
           temperature: i.averageTemperature[x][y],
-          humidity: i.humidity[x][y].toFixed(2),
+          relativeHumidity: i.relativeHumidity[x][y].toFixed(0),
         }))
       );
     }
@@ -592,7 +615,7 @@ const Analytics: React.FC<Props> = ({
       : false;
 
   const displayHumidity =
-    leftAxe === "humidity" ? true : rightAxe === "humidity" ? true : false;
+    leftAxe === "relativeHumidity" ? true : rightAxe === "relativeHumidity" ? true : false;
 
   const changeLeftAxe = (event: any) => {
     setLeftAxe(event.target.value);
@@ -645,9 +668,12 @@ const Analytics: React.FC<Props> = ({
             color: #2f3d50;
           `}
         >
-          <div>
+          <div className={css`
+           padding-right: 20px;
+          `}>
             <small
               className={css`
+                white-space: nowrap;
                 font-weight: lighter;
                 margin-left: 50px;
               `}
@@ -696,7 +722,7 @@ const Analytics: React.FC<Props> = ({
             <CurrentDataItem
               label="Regenval in mm"
               value={Math.round(currentAnalyticsData.rainfall)}
-              color="#80A1D4"
+              color={paramColor.rainfall}
               icon={
                 <RainfallIcon
                   fill="#80A1D4"
@@ -710,7 +736,7 @@ const Analytics: React.FC<Props> = ({
             <CurrentDataItem
               label="Verdamping in mm"
               value={Math.round(currentAnalyticsData.evapotranspiration)}
-              color="#6A7152"
+              color={paramColor.relativeHumidity}
               icon={
                 <CarDefrostRear
                   fill="#6A7152"
@@ -725,7 +751,7 @@ const Analytics: React.FC<Props> = ({
             <CurrentDataItem
               label="Beschikbaar bodemvocht in mm"
               value={Math.round(currentAnalyticsData.moisture)}
-              color="#f6511d"
+              color={paramColor.moisture}
               icon={
                 <Vanish
                   fill="#f6511d"
@@ -741,7 +767,7 @@ const Analytics: React.FC<Props> = ({
             <CurrentDataItem
               label="Te beregenen in mm"
               value={Math.round(currentAnalyticsData.sprinkling)}
-              color="#1565c0"
+              color={paramColor.sprinkling}
               icon={
                 <IrrigationIcon
                   fill="#1565c0"
@@ -755,7 +781,7 @@ const Analytics: React.FC<Props> = ({
             <CurrentDataItem
               label="Temperatuur in °C"
               value={Math.round(currentAnalyticsData.temperature)}
-              color="#383a3d"
+              color={paramColor.temperature}
               icon={
                 <Thermometer
                   fill="#383a3d"
@@ -769,8 +795,8 @@ const Analytics: React.FC<Props> = ({
             />
             <CurrentDataItem
               label="Luchtvochtigheid in %"
-              value={currentAnalyticsData.humidity}
-              color="#5a0494"
+              value={currentAnalyticsData.relativeHumidity}
+              color={paramColor.relativeHumidity}
               icon={
                 <WaterPercent
                   fill="#5a0494"
@@ -839,9 +865,23 @@ const Analytics: React.FC<Props> = ({
                 value={leftAxe}
                 onChange={changeLeftAxe}
               >
-                <MenuItem value="rainfall">Regenval</MenuItem>;
-                <MenuItem value="sprinkling">Beregening</MenuItem>;
-                <MenuItem value="humidity">Luchtvochtigheid</MenuItem>;
+                <MenuItem value="rainfall"><LegendItem 
+                  label="Regenval in mm" 
+                  shape="square" 
+                  color={paramColor.rainfall} 
+                /></MenuItem>;
+
+                <MenuItem value="sprinkling"><LegendItem
+                  label="Beregening in mm"
+                  shape="square"
+                  color={paramColor.sprinkling}
+                /></MenuItem>;
+
+                <MenuItem value="relativeHumidity"><LegendItem
+                  label="Luchtvochtigheid in %"
+                  shape="square"
+                  color={paramColor.relativeHumidity}
+                /></MenuItem>;
               </Select>
             </FormControl>
                         
@@ -860,27 +900,27 @@ const Analytics: React.FC<Props> = ({
                 value={rightAxe}
                 onChange={changeRightAxe}
               >
-                <MenuItem value="desiredMoisture">Droogtestress</MenuItem>;
-                <MenuItem value="moisture">Bodemvocht</MenuItem>;
-                <MenuItem value="temperature">Temperatuur</MenuItem>;
+
+                <MenuItem value="moisture"><LegendItem
+                  label="Beschikbaar bodemvocht in mm"
+                  shape="circle"
+                  color="#ffd1a0"
+                  borderColor={paramColor.moisture}
+                /></MenuItem>;
+
+                <MenuItem value="desiredMoisture"><LegendItem
+                  label="Droogtestress in %"
+                  shape="line"
+                  color={paramColor.desiredMoisture}
+                /></MenuItem>;
+
+                <MenuItem value="temperature"><LegendItem
+                  label="Temperatuur in °C"
+                  shape="line"
+                  color={paramColor.temperature}
+                /></MenuItem>;
               </Select>
             </FormControl>
-            <LegendItem label="Regenval in mm" shape="square" color="#64b5f6" />
-            <LegendItem
-              label="Beregening in mm"
-              shape="square"
-              color="#1565c0"
-            />
-            <LegendItem
-              label="Beschikbaar bodemvocht in mm"
-              shape="circle"
-              color="#f6511d"
-            />
-            <LegendItem
-              label="Droogtestress in %"
-              shape="circle"
-              color="#c12d00"
-            />
           </div>
           <div
             className={css`
@@ -992,7 +1032,7 @@ const Analytics: React.FC<Props> = ({
             <XAxis
               dataKey="date"
               xAxisId={0}
-              axisLine={{ stroke: "#f6511d" }}
+              axisLine={{ stroke: "#383a3d" }}
               tickLine={false}
               tick={{ fill: "#757575", fontSize: 10 }}
             />
@@ -1000,18 +1040,18 @@ const Analytics: React.FC<Props> = ({
             <XAxis dataKey="date" xAxisId={2} hide />
             <YAxis
               yAxisId="left"
-              padding={{ bottom: 50, top: 0 }}
-              axisLine={{ stroke: "#1e88e5" }}
+              padding={leftAxe == "sprinkling" ? { bottom: 50, top: 0 } : { bottom: 0, top: 0 }}
+              axisLine={{ stroke: paramColor[leftAxe] }}
               tickLine={false}
-              tick={{ fill: "#1e88e5", fontSize: 10 }}
+              tick={{ fill: paramColor[leftAxe], fontSize: 10 }}
               width={30}
             />
             <YAxis
               yAxisId="right"
               orientation="right"
-              axisLine={{ stroke: "#f6511d" }}
+              axisLine={{ stroke: paramColor[rightAxe] }}
               tickLine={false}
-              tick={{ fill: "#f6511d", fontSize: 10 }}
+              tick={{ fill: paramColor[rightAxe], fontSize: 10 }}
               width={30}
             />
             {displayMoisture ? (
@@ -1064,7 +1104,7 @@ const Analytics: React.FC<Props> = ({
             ) : null}
             {displayHumidity ? (
               <Bar
-                dataKey="humidity"
+                dataKey="relativeHumidity"
                 xAxisId={0}
                 yAxisId="left"
                 barSize={60}
