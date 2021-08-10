@@ -401,9 +401,7 @@ const Analytics: React.FC<Props> = ({
   const [area, setArea] = useState<number>(0);
 
   useEffect(() => {
-    const { pixelsData, plotsAnalytics, plotFeedback, plotCropStatus } =
-      farmerData;
-    console.log("data", farmerData);
+    const { pixelsData, plotsAnalytics, plotFeedback, plotCropStatus } = farmerData;
 
     if (selectedPlotId) {
       setLabel(`Plot ${selectedPlotId}`);
