@@ -424,6 +424,13 @@ const MapAndAnalytics = ({ match, history }: Props) => {
       ) : (
         <div
           className={css`
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: #ffffff99;
+            z-index: 1000;
+            height: 100%;
+            width: 100%;
             padding: 24px 0;
             display: flex;
             align-items: center;
