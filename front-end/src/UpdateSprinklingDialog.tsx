@@ -72,7 +72,7 @@ export default class UpdateSprinklingDialog extends Component<Props, State> {
 
   handleSprinklingUpdatesFailure = () => {
     this.setState({
-      loading: true,
+      loading: false,
       open: false,
     });
     EventEmitter.emit("show-snackbar", {
