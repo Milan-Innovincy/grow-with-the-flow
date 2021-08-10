@@ -34,7 +34,6 @@ import {
   Thermometer,
 } from "mdi-material-ui";
 import { DateTime, Duration } from "luxon";
-import produce from "immer";
 import { padStart } from "lodash";
 import EventEmitter from "./lib/EventEmitter";
 import MomentUtils from "@date-io/moment";
@@ -721,7 +720,7 @@ const Analytics: React.FC<Props> = ({
           >
             <CurrentDataItem
               label="Regenval in mm"
-              value={Math.round(currentAnalyticsData.rainfall)}
+              value={Math.round(currentAnalyticsData.rainfall || 0)}
               color={paramColor.rainfall}
               icon={
                 <RainfallIcon
@@ -735,7 +734,7 @@ const Analytics: React.FC<Props> = ({
             />
             <CurrentDataItem
               label="Verdamping in mm"
-              value={Math.round(currentAnalyticsData.evapotranspiration)}
+              value={Math.round(currentAnalyticsData.evapotranspiration || 0)}
               color={paramColor.relativeHumidity}
               icon={
                 <CarDefrostRear
@@ -750,7 +749,7 @@ const Analytics: React.FC<Props> = ({
             />
             <CurrentDataItem
               label="Beschikbaar bodemvocht in mm"
-              value={Math.round(currentAnalyticsData.moisture)}
+              value={Math.round(currentAnalyticsData.moisture || 0)}
               color={paramColor.moisture}
               icon={
                 <Vanish
@@ -766,7 +765,7 @@ const Analytics: React.FC<Props> = ({
 
             <CurrentDataItem
               label="Te beregenen in mm"
-              value={Math.round(currentAnalyticsData.sprinkling)}
+              value={Math.round(currentAnalyticsData.sprinkling || 0)}
               color={paramColor.sprinkling}
               icon={
                 <IrrigationIcon
@@ -780,7 +779,7 @@ const Analytics: React.FC<Props> = ({
             />
             <CurrentDataItem
               label="Temperatuur in °C"
-              value={Math.round(currentAnalyticsData.temperature)}
+              value={Math.round(currentAnalyticsData.temperature || 0)}
               color={paramColor.temperature}
               icon={
                 <Thermometer
@@ -795,7 +794,7 @@ const Analytics: React.FC<Props> = ({
             />
             <CurrentDataItem
               label="Luchtvochtigheid in %"
-              value={currentAnalyticsData.relativeHumidity}
+              value={currentAnalyticsData.relativeHumidity || 0}
               color={paramColor.relativeHumidity}
               icon={
                 <WaterPercent
@@ -1041,11 +1040,26 @@ const Analytics: React.FC<Props> = ({
             <XAxis dataKey="date" xAxisId={2} hide />
             <YAxis
               yAxisId="left"
-              padding={leftAxe == "sprinkling" ? { bottom: 50, top: 0 } : { bottom: 0, top: 0 }}
+              padding={{ bottom: 0, top: 0 }}
               axisLine={{ stroke: paramColor[leftAxe] }}
               tickLine={false}
               tick={{ fill: paramColor[leftAxe], fontSize: 10 }}
               width={30}
+              domain={[0, (()=>{
+                if(leftAxe === 'relativeHumidity'){
+                  return 100;
+                }
+                if(leftAxe === 'rainfall'){
+                  let maxValue = 0;
+                  analyticsData.forEach(data => {
+                    if(data.rainfall && data.rainfall > maxValue){
+                      maxValue = data.rainfall
+                    }
+                  })
+                  return maxValue < 2 ? 2 : 'auto';
+                }
+                return 'auto'
+              })()]}
             />
             <YAxis
               yAxisId="right"
@@ -1054,6 +1068,7 @@ const Analytics: React.FC<Props> = ({
               tickLine={false}
               tick={{ fill: paramColor[rightAxe], fontSize: 10 }}
               width={30}
+              domain={[0, rightAxe === 'desiredMoisture' ? 100 : 'auto']}
             />
             {displayMoisture ? (
               <Area
@@ -1142,6 +1157,7 @@ const Analytics: React.FC<Props> = ({
                   index,
                 }: LabelProps & { index: number }) => (
                   <g
+                    className={css`cursor: pointer;`}
                     onClick={async () => {
                       await updateSprinklingDialog.open(
                         value as number,
@@ -1151,20 +1167,20 @@ const Analytics: React.FC<Props> = ({
                   >
                     <circle
                       cx={x! + width! / 2}
-                      cy={y!}
+                      cy={value ? y! : '140px'}
                       r={width! / 2 + 8}
                       fill="url(#radial)"
                     />
                     <circle
                       cx={x! + width! / 2}
-                      cy={y!}
+                      cy={value ? y! : '140px'}
                       r={width! / 2 + 3}
                       fill="#ffffff"
                       stroke="#64b5f6"
                     />
                     <circle
                       cx={x! + width! / 2}
-                      cy={y!}
+                      cy={value ? y! : '140px'}
                       r={width! / 2}
                       fill="#ffffff"
                       stroke="#1565c0"
@@ -1172,13 +1188,13 @@ const Analytics: React.FC<Props> = ({
                     />
                     <text
                       x={x! + width! / 2}
-                      y={y!}
+                      y={value ? y! : '140px'}
                       textAnchor="middle"
                       dominantBaseline="middle"
                       fill="#1565c0"
                       fontSize={10}
                     >
-                      {value} mm
+                      {value ? `${value} mm` : `...`}
                     </text>
                   </g>
                 )}
