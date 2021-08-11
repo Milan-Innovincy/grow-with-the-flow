@@ -52,6 +52,7 @@ const parameters: object = {
 type Props = {
   navigate: (path: string) => void;
   farmerData: FarmerData;
+  getPixelsData: () => void;
   farmerGeoData: any;
   date: string;
   selectedPlotId?: string;
@@ -115,6 +116,7 @@ const MapView = ({
   date,
   farmerData,
   farmerGeoData,
+  getPixelsData,
   selectedPlotId,
   selectedPixel,
 }: Props) => {
@@ -124,7 +126,7 @@ const MapView = ({
   const [legendColors, setlegendColors] = useState(
     getLegendColors(selectedParameter)
   );
-  const [pixelSelection, setPixelSelection] = useState(false);
+  const [pixelSelection, setPixelSelection] = useState(selectedPixel && true);
   const [zoom, setZoom] = useState(14);
   const [initialLoad, setInitialLoad] = useState(true);
   const [base64, setBase64] = useState("");
@@ -141,7 +143,7 @@ const MapView = ({
   let pixelLatStep: number = 0;
   let pixelLngStep: number = 0;
 
-  if (farmerData) {
+  if (farmerData.pixelsData) {
     const [pixelsInLng, pixelsInLat] = farmerData.pixelsData.dimensions;
 
     lng1 = farmerData.pixelsData.boundingBox[0];
@@ -219,8 +221,8 @@ const MapView = ({
 
   const [mapCenter, setMapCenter] = useState(getCenter());
 
-  const [minValue, setMinValue] = useState();
-  const [maxValue, setMaxValue] = useState();
+  const [minValue, setMinValue] = useState(null);
+  const [maxValue, setMaxValue] = useState(null);
 
   useEffect(() => {
     const mapCenter = getCenter();
@@ -229,7 +231,7 @@ const MapView = ({
 
   useEffect(() => {
     if (
-      farmerData &&
+      farmerData && farmerData.pixelsData && 
       farmerData.pixelsData.analytics.find((a: any) => a.time === date)
     ) {
       const minValue =
@@ -264,7 +266,7 @@ const MapView = ({
     } else {
       setMinValue(null);
       setMaxValue(null);
-      setBase64(null);
+      setBase64("");
     }
   }, [selectedParameter, date, selectedPixel, selectedPlotId, farmerData]);
 
@@ -290,10 +292,6 @@ const MapView = ({
   }
 
   let leafletElement = undefined;
-
-  const legendStyle = {
-    background: legendColors[0],
-  };
 
   if (!farmerData && farmerGeoData) {
     return (
@@ -351,7 +349,7 @@ const MapView = ({
             border-radius: 0 0 17px 17px !important;
           }
         `}
-        ref={(map: any) => (leafletElement = map && map!.leafletElement)}
+        //ref={(map: any) => (leafletElement = map && map!.leafletElement)}
         onclick={(e: any) => {
           if (pixelSelection) {
             const { lat, lng } = e.latlng;
@@ -380,11 +378,15 @@ const MapView = ({
           ]}
           opacity={pixelSelection ? 0.5 : 0}
         />
-        <GeoJSON
-          data={gridGeoJSON as GeoJSON.FeatureCollection}
-          weight={1}
-          color={pixelSelection && zoom >= 13 ? "#e0e0e0" : "transparent"}
-        />
+        {
+          farmerData.pixelsData && 
+          <GeoJSON
+            data={gridGeoJSON as GeoJSON.FeatureCollection}
+            weight={1}
+            color={pixelSelection && zoom >= 13 ? "#e0e0e0" : "transparent"}
+          />
+        }
+        
         {pixelPolygon}
         <GeoJSONFillable
           data={farmerData.plotsGeoJSON}
@@ -449,7 +451,12 @@ const MapView = ({
           </Select>
         </div>
         <Fab
-          onClick={() => setPixelSelection(!pixelSelection)}
+          onClick={() => {
+            if(farmerData.pixelsData === undefined){
+              getPixelsData()
+            }
+            setPixelSelection(!pixelSelection)
+          }}
           size="medium"
           disableFocusRipple={true}
         >

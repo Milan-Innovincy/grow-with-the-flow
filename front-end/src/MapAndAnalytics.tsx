@@ -132,6 +132,68 @@ const MapAndAnalytics = ({ match, history }: Props) => {
     await updatePlotFeedback();
   };
 
+  const fetchPixelsData = async () => {
+    const handleError = () => {
+      setIsFetchingFarmerData(false);
+      EventEmitter.emit(
+        "open-text-popup",
+        <LoadingError date={new Date(date ? date : "")} />
+      );
+      window.stop();
+    };
+
+    const prefix = "https://storage.googleapis.com/grow-with-the-flow.appspot.com";
+
+    const landUse = await axios
+          .get(`${prefix}/gwtf-land-use.json`)
+          .then(({ data }) => {
+            return data;
+          })
+          .catch((error: Error) => {
+            console.error(error.message);
+            handleError();
+          });
+    const soilMap = await axios
+      .get(`${prefix}/gwtf-soil-map.json`)
+      .then(({ data }) => {
+        return data;
+      })
+      .catch((error: Error) => {
+        console.error(error.message);
+        handleError();
+      });
+
+    const pixelsData = await axiosInstance
+      .get(
+        `/pixels?on=${date}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater,relativeTranspiration,developmentStage,trafficability,relativeHumidity,averageTemperature`
+      )
+      .then(({ data }) => {
+        return data;
+      })
+      .catch((error: Error) => {
+        console.error(error.message);
+        handleError();
+      });
+
+      if (
+        landUse &&
+        soilMap &&
+        pixelsData
+      ) {
+        pixelsData.landUse = landUse;
+        pixelsData.soilMap = soilMap;
+      }
+
+      return pixelsData;
+  }
+
+  const initPixelsData = async () => {
+    setIsFetchingFarmerData(true)
+    let pixelsData = await fetchPixelsData()
+    setFarmerData({...farmerData, pixelsData});
+    setIsFetchingFarmerData(false)
+  }
+
   useEffect(() => {
     setIsFetchingFarmerData(true);
     (async () => {
@@ -147,8 +209,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
           );
           window.stop();
         };
-        const prefix =
-          "https://storage.googleapis.com/grow-with-the-flow.appspot.com";
+        
         const plotsGeoJSON = await axiosInstance
           .get(`/plots`)
           .then(({ data }) => {
@@ -169,35 +230,38 @@ const MapAndAnalytics = ({ match, history }: Props) => {
           setFarmerGeoData(farmerGeoData);
         }
 
-        const landUse = await axios
-          .get(`${prefix}/gwtf-land-use.json`)
-          .then(({ data }) => {
-            return data;
-          })
-          .catch((error: Error) => {
-            console.error(error.message);
-            handleError();
-          });
-        const soilMap = await axios
-          .get(`${prefix}/gwtf-soil-map.json`)
-          .then(({ data }) => {
-            return data;
-          })
-          .catch((error: Error) => {
-            console.error(error.message);
-            handleError();
-          });
-        const pixelsData = await axiosInstance
-          .get(
-            `/pixels?on=${date}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater,relativeTranspiration,developmentStage,trafficability,relativeHumidity,averageTemperature`
-          )
-          .then(({ data }) => {
-            return data;
-          })
-          .catch((error: Error) => {
-            console.error(error.message);
-            handleError();
-          });
+        // const landUse = await axios
+        //   .get(`${prefix}/gwtf-land-use.json`)
+        //   .then(({ data }) => {
+        //     return data;
+        //   })
+        //   .catch((error: Error) => {
+        //     console.error(error.message);
+        //     handleError();
+        //   });
+        // const soilMap = await axios
+        //   .get(`${prefix}/gwtf-soil-map.json`)
+        //   .then(({ data }) => {
+        //     return data;
+        //   })
+        //   .catch((error: Error) => {
+        //     console.error(error.message);
+        //     handleError();
+        //   });
+        // const pixelsData = await axiosInstance
+        //   .get(
+        //     `/pixels?on=${date}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater,relativeTranspiration,developmentStage,trafficability,relativeHumidity,averageTemperature`
+        //   )
+        //   .then(({ data }) => {
+        //     return data;
+        //   })
+        //   .catch((error: Error) => {
+        //     console.error(error.message);
+        //     handleError();
+        //   });
+
+        const pixelsData = selectionType === 'pixel' ? await fetchPixelsData() : undefined;
+
         const plotsAnalytics = await axiosInstance
           .get(
             `/plot-analytics?on=${date}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater,relativeTranspiration,developmentStage,trafficability,relativeHumidity,averageTemperature`
@@ -211,15 +275,9 @@ const MapAndAnalytics = ({ match, history }: Props) => {
           });
 
         if (
-          landUse &&
-          soilMap &&
-          pixelsData &&
           plotsGeoJSON &&
           plotsAnalytics
         ) {
-          pixelsData.landUse = landUse;
-          pixelsData.soilMap = soilMap;
-
           plotsGeoJSON.features = plotsGeoJSON.features.filter(
             (feature: any) => feature.properties.plotId
           );
@@ -233,7 +291,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
           };
 
           EventEmitter.on("sprinkling-update", handleSprinklingUpdate);
-
+          
           getPlotFeedback(farmerData);
         }
       }
@@ -389,6 +447,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
           <MapView
             navigate={navigate}
             farmerData={farmerData}
+            getPixelsData={initPixelsData}
             farmerGeoData={farmerGeoData}
             date={date}
             selectedPlotId={selectedPlotId}
