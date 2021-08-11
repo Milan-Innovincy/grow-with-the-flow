@@ -11,15 +11,31 @@ import {
   TableBody,
   Typography,
   TableSortLabel,
+  IconButton,
+  Tooltip
 } from "@material-ui/core";
+
 import { css } from "@emotion/css";
 import { ApplicationContext } from "./ApplicationContext";
 import { FarmerData } from "./MapAndAnalytics";
+import DateView from "./DateView";
+import SmsIcon from "@material-ui/icons/Sms";
+import AddCommentIcon from '@material-ui/icons/AddComment';
+import ArrowBackIcon from '@material-ui/icons/ArrowBack';
+import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
+import OpacityIcon from '@material-ui/icons/Opacity';
+import EcoIcon from '@material-ui/icons/Eco';
+import EditIcon from '@material-ui/icons/Edit';
+import { DateTime } from "luxon";
+import UpdateNameDialog from "./UpdatePlotNameDialog";
+import UpdateDescriptionDialog from "./UpdatePlotDescriptionDialog";
 
 type Props = {
   farmerData: FarmerData;
   date: string;
   navigate: (path: string) => void;
+  selectedPlotId: string | undefined;
+  selectedPixel: number[] | undefined;
 };
 
 type ColumnNames =
@@ -27,9 +43,13 @@ type ColumnNames =
   | "deficit"
   | "relativeTranspiration"
   | "evapotranspiration"
-  | "sprinkling";
+  | "sprinkling"
+  | "relativeHumidity"
+  | "temperature"
+  | "lastUpdated"
+  | "name";
 
-const PlotListDialog = ({ farmerData, date, navigate }: Props) => {
+const PlotListDialog = ({ farmerData, date, navigate, selectedPlotId, selectedPixel }: Props) => {
   const contextValue = useContext(ApplicationContext);
   const isManager =
     contextValue.keycloak.tokenParsed.user_type === "WATERBOARD_MANAGER";
@@ -48,6 +68,59 @@ const PlotListDialog = ({ farmerData, date, navigate }: Props) => {
       setOrderBy(undefined);
     }
   };
+
+  const handleDateViewClick = () => {
+    document
+      .querySelector(
+        ".MuiFormControl-root.MuiTextField-root.MuiFormControl-marginNormal button"
+      )
+      .click();
+  };
+
+  const handleDatePrevClicked = () => {
+    let newDate = DateTime.fromISO(date).minus({days: 1}).toISODate();
+
+    if (selectedPlotId) {
+      navigate(
+        `/map/${newDate}/plot/${selectedPlotId}`
+      );
+    }
+
+    if (selectedPixel) {
+      navigate(
+        `/map/${newDate}/pixel/${selectedPixel.join("-")}`
+      );
+    }
+
+    if (!selectedPlotId && !selectedPixel){
+      navigate(
+        `/map/${newDate}`
+      );
+    }
+  }
+
+  const handleDateNextClicked = () => {
+    let newDate = DateTime.fromISO(date).plus({days: 1}).toISODate();
+
+    if (selectedPlotId) {
+      navigate(
+        `/map/${newDate}/plot/${selectedPlotId}`
+      );
+    }
+
+    if (selectedPixel) {
+      navigate(
+        `/map/${newDate}/pixel/${selectedPixel.join("-")}`
+      );
+    }
+
+    if (!selectedPlotId && !selectedPixel){
+      navigate(
+        `/map/${newDate}`
+      );
+    }
+  }
+
 
   useEffect(() => {
     const data = farmerData.plotsGeoJSON.features.map((feature) => {
@@ -108,18 +181,86 @@ const PlotListDialog = ({ farmerData, date, navigate }: Props) => {
     }
   }, [farmerData.plotsGeoJSON.features, orderBy, order]);
 
+  let updateNameDialog: UpdateNameDialog;
+  let updateDescriptionDialog: UpdateDescriptionDialog;
+
   return (
     <ApplicationContext.Consumer>
       {({ showModal, toggleShowModal }) => (
         <Dialog open={showModal} onClose={toggleShowModal} fullScreen>
+          <DialogActions
+            className={css`
+              background: #2f3d50;
+              color: #ffffff;
+            `}
+          >
+            <Button 
+              className={css`
+                padding: 6px 0 !important;
+                min-width: 34px !important;
+              `}
+              variant={'contained'} 
+              onClick={handleDatePrevClicked}
+            >
+              <ArrowBackIcon/>
+            </Button>
+            <div
+              onClick={handleDateViewClick}
+              className={css`
+                cursor: pointer;
+                transform: translateY(24px);
+                margin-right: 10px;
+                display: inline-block;
+              `}
+            >
+              <DateView date={new Date(date)} />
+            </div>
+            <Button 
+              className={css`
+                padding: 6px 0 !important;
+                min-width: 34px !important;
+              `}
+              variant={'contained'} 
+              onClick={handleDateNextClicked} 
+              disabled={date === DateTime.fromJSDate(new Date()).toISODate()}
+            >
+              <ArrowForwardIcon/>
+            </Button>
+            <Typography style={{display: "inline-block", textAlign: "center", flexGrow: 1}} variant="h6">Perceeloverzicht</Typography>
+            <Button variant={'contained'} onClick={toggleShowModal} startIcon={<ArrowBackIcon/>}>Terug</Button>
+          </DialogActions>
           <DialogContent>
-            <Typography variant="h6">Perceeloverzicht {date}</Typography>
-            <Table>
+            <Table className={css`
+              .edit-icon {
+                position: absolute;
+                top: 0;
+                right: 0;
+                display: none;
+                color: #b2d6d4;
+              }
+
+              .edit-cell {
+                position: relative;
+              }
+
+              .edit-cell:hover .edit-icon {
+                display: block;
+              }
+            `}>
               <TableHead>
                 <TableRow>
                   <TableCell>ID</TableCell>
                   {isManager && <TableCell>Boer</TableCell>}
                   <TableCell>Gewas</TableCell>
+                  <TableCell>
+                    <TableSortLabel
+                      active={orderBy === "name"}
+                      direction={order}
+                      onClick={() => sortColumn("name")}
+                    >
+                      Perceel Naam
+                    </TableSortLabel>
+                  </TableCell>
                   <TableCell>
                     <TableSortLabel
                       active={orderBy === "availableSoilWater"}
@@ -167,6 +308,36 @@ const PlotListDialog = ({ farmerData, date, navigate }: Props) => {
                       Beregening (mm)
                     </TableSortLabel>
                   </TableCell>
+                  <TableCell>
+                    <TableSortLabel
+                      active={orderBy === "relativeHumidity"}
+                      direction={order}
+                      onClick={() => sortColumn("relativeHumidity")}
+                    >
+                      Luchtvochtigheid (%)
+                    </TableSortLabel>
+                  </TableCell>
+                  <TableCell>
+                    <TableSortLabel
+                      active={orderBy === "temperature"}
+                      direction={order}
+                      onClick={() => sortColumn("temperature")}
+                    >
+                      Temperatuur (°C)
+                    </TableSortLabel>
+                  </TableCell>
+                  <TableCell>
+                    <TableSortLabel
+                      active={orderBy === "lastUpdated"}
+                      direction={order}
+                      onClick={() => sortColumn("lastUpdated")}
+                    >
+                      Laatst Gewijzigd
+                    </TableSortLabel>
+                  </TableCell>
+                  <TableCell>
+                    Commentaar
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -182,45 +353,111 @@ const PlotListDialog = ({ farmerData, date, navigate }: Props) => {
                     `}
                   >
                     <TableCell>
-                      {data.properties && data.properties.plotId}
+                      {data.properties && `${data.properties.plotId}`}
                     </TableCell>
                     {isManager && (
                       <TableCell>
-                        {data.properties && data.properties.farmerName}
+                        {data.properties && `${data.properties.farmerName}`}
                       </TableCell>
                     )}
                     <TableCell>
-                      {data.properties && data.properties.cropTypes}
+                      {data.properties && `${data.properties.cropTypes}`}
+                    </TableCell>
+                    <TableCell className={'edit-cell'}>
+                      {data.properties && `${data.properties.name}`}
+                      <EditIcon className={'edit-icon'} 
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          await updateNameDialog.open(
+                            data.properties && data.properties.name ? data.properties.name as string : "",
+                            data.properties && data.properties.plotId && data.properties.plotId as string
+                          );
+                        }}
+                      />
                     </TableCell>
                     <TableCell>
                       {data.properties &&
-                        Math.round(data.analytics.availableSoilWater)}
+                        `${Math.round(data.analytics.availableSoilWater)}`}
                     </TableCell>
                     <TableCell>
-                      {data.properties && Math.round(data.analytics.deficit)}
+                      {data.properties && `${Math.round(data.analytics.deficit)}`}
                     </TableCell>
                     <TableCell>
-                      {Math.round(
-                        data.properties &&
-                          data.analytics.relativeTranspiration * 100
-                      )}
+                      {data.properties && 
+                        `${Math.round(data.analytics.relativeTranspiration * 100)}`}
                       %
                     </TableCell>
                     <TableCell>
                       {data.properties &&
-                        Math.round(data.analytics.evapotranspiration)}
+                        `${Math.round(data.analytics.evapotranspiration)}`}
                     </TableCell>
                     <TableCell>
-                      {data.properties && data.analytics.sprinkling}
+                      {data.properties && `${data.analytics.sprinkling}`}
+                    </TableCell>
+                    <TableCell>
+                      {data.properties && `${Math.round(data.analytics.relativeHumidity || 0)}`}
+                    </TableCell>
+                    <TableCell>
+                      {data.properties && `${Math.round(data.analytics.averageTemperature || 0)}`}
+                    </TableCell>
+                    <TableCell style={{whiteSpace: 'nowrap'}}>
+                      <Tooltip title={"Beregening: 5mm"}>
+                        <div>
+                          <OpacityIcon className={css`
+                            color: #1565c0;     
+                            font-size: 14px !important;
+                            transform: translateY(2px)
+                          `}/>{"2021-08-08"}
+                        </div>
+                      </Tooltip>
+                      <Tooltip title={"Gewasstatus: Geen ontwikkeling (0.0)"}>
+                        <div>
+                          <EcoIcon  className={css`
+                            color: #489c33;
+                            font-size: 14px !important;
+                            transform: translateY(2px)
+                          `}/>{"2021-08-08"}
+                          </div>
+                          </Tooltip>
+                    </TableCell>
+                    <TableCell align={'center'}>
+                      <IconButton
+                        className={css`position: relative;`}
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          await updateDescriptionDialog.open(
+                            data.properties && data.properties.description ? data.properties.description : "",
+                            data.properties && data.properties.plotId && data.properties.plotId as string
+                          );
+                        }}
+                      >
+                        { data.properties && data.properties.description && data.properties.description !== "" ?
+                          <SmsIcon 
+                          className={css`
+                            color: #b2d6d4;
+                          `}
+                          />
+                          :
+                          <AddCommentIcon 
+                            className={css`
+                              color: #e2e2e2;
+                              transform: rotateY(180deg);
+                            `}
+                          />
+                        }
+                      </IconButton>
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           </DialogContent>
-          <DialogActions>
-            <Button onClick={toggleShowModal}>Annuleren</Button>
-          </DialogActions>
+          <UpdateNameDialog
+            ref={(d) => (updateNameDialog = d!)}
+          />
+          <UpdateDescriptionDialog
+            ref={(d) => (updateDescriptionDialog = d!)}
+          />
         </Dialog>
       )}
     </ApplicationContext.Consumer>
@@ -228,3 +465,4 @@ const PlotListDialog = ({ farmerData, date, navigate }: Props) => {
 };
 
 export default PlotListDialog;
+

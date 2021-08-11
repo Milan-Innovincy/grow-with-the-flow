@@ -8,69 +8,65 @@ import {
   CircularProgress,
 } from "@material-ui/core";
 import { css } from "@emotion/css";
-import { DateTime } from "luxon";
 import EventEmitter from "./lib/EventEmitter";
 
 type State = {
   open: boolean;
   loading: boolean;
-  value: number;
-  date: string;
+  value: string;
+  original: string;
+  plotId: string | undefined;
 };
 
 type Props = {
-  selectedPlotId: string | undefined;
-  farmerData: any;
 };
 
-export default class UpdateSprinklingDialog extends Component<Props, State> {
+export default class UpdateDescriptionDialog extends Component<Props, State> {
   state: State = {
     open: false,
     loading: false,
-    value: 0,
-    date: "",
+    value: "",
+    original: "",
+    plotId: undefined,
   };
 
-  resolve?: (value?: number | PromiseLike<number> | undefined) => void =
+  resolve?: (value?: string | PromiseLike<string>) => void =
     undefined;
 
-  open = (value: number, data: any) => {
-    const { date }: { date: string } = data;
+  open = (value: string, plotId: string) => {
     this.setState({
       open: true,
-      date: DateTime.fromFormat(date, "dd/MM/yyyy").toFormat("yyyy-MM-dd"),
       value: value,
+      original: value,
+      plotId: plotId,
     });
-    return new Promise<number | undefined>((resolve, reject) => {
+    return new Promise<string | undefined>((resolve, reject) => {
       this.resolve = resolve;
     });
   };
 
-  handleSprinklingSubmitted = (value: number) => {
+  handleSubmitted = (value: string) => {
     const payload = {
       value,
-      date: this.state.date,
-      selectedPlotId: this.props.selectedPlotId,
-      farmerData: this.props.farmerData,
+      selectedPlotId: this.state.plotId,
     };
 
-    EventEmitter.emit("sprinkling-update", payload);
+    EventEmitter.emit("plot-description-update", payload);
     this.setState({ loading: true });
   };
 
-  handleSprinklingUpdatedSuccess = () => {
+  handleUpdateSuccess = () => {
     this.setState({
       loading: false,
       open: false,
-      value: 0,
-      date: "",
+      value: "",
     });
     EventEmitter.emit("show-snackbar", {
       snackbarMessage: "Waarde is opgeslagen.",
     });
   };
 
-  handleSprinklingUpdatesFailure = () => {
+  handleUpdateFailure = () => {
     this.setState({
       loading: false,
       open: false,
@@ -82,32 +78,29 @@ export default class UpdateSprinklingDialog extends Component<Props, State> {
 
   componentDidMount() {
     EventEmitter.on(
-      "sprinkling-updated-success",
-      this.handleSprinklingUpdatedSuccess
+      "plot-description-updated-success",
+      this.handleUpdateSuccess
     );
     EventEmitter.on(
-      "sprinkling-updated-failure",
-      this.handleSprinklingUpdatesFailure
+      "plot-description-updated-failure",
+      this.handleUpdateFailure
     );
   }
 
   render() {
-    const { open, loading, value } = this.state;
+    const { open, loading, value, original } = this.state;
     return (
       <Dialog open={open} onClose={() => this.setState({ open: false })}>
-        <DialogContent>
+        <DialogContent className={css`width: 540px;`}>
           <TextField
-            type="number"
+            type="text"
             autoFocus
             fullWidth
-            label="Beregening in mm"
+            multiline
+            label="Perceel Commentaar"
             value={value}
-            inputProps={{
-              min: 0,
-              max: 600,
-            }}
             onChange={(e) =>
-              this.setState({ value: parseInt(e.target.value, 10) })
+              this.setState({ value: e.target.value })
             }
           />
         </DialogContent>
@@ -121,10 +114,10 @@ export default class UpdateSprinklingDialog extends Component<Props, State> {
             <Button
               color="primary"
               onClick={() => {
-                this.handleSprinklingSubmitted(value);
+                this.handleSubmitted(value);
                 this.resolve!(value);
               }}
-              disabled={loading}
+              disabled={loading || value === original}
               className={css`
                 pointer-events: auto;
               `}

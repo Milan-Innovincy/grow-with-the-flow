@@ -437,7 +437,7 @@ const Analytics: React.FC<Props> = ({
               rainfall: i.measuredPrecipitation,
               sprinkling,
               moisture: i.availableSoilWater,
-              desiredMoisture: i.relativeTranspiration * 100,
+              desiredMoisture: i.relativeTranspiration * 100.00,
               evapotranspiration: i.evapotranspiration,
               deficit: i.deficit,
               developmentStage: i.developmentStage,
@@ -717,7 +717,7 @@ const Analytics: React.FC<Props> = ({
             `}
           >
             <CurrentDataItem
-              label="Regenval in mm"
+              label="Regenval (mm)"
               value={Math.round(currentAnalyticsData.rainfall || 0)}
               color={paramColor.rainfall}
               icon={
@@ -731,7 +731,7 @@ const Analytics: React.FC<Props> = ({
               }
             />
             <CurrentDataItem
-              label="Verdamping in mm"
+              label="Verdamping (mm)"
               value={Math.round(currentAnalyticsData.evapotranspiration || 0)}
               color={paramColor.relativeHumidity}
               icon={
@@ -746,7 +746,7 @@ const Analytics: React.FC<Props> = ({
               }
             />
             <CurrentDataItem
-              label="Beschikbaar bodemvocht in mm"
+              label="Beschikbaar bodemvocht (mm)"
               value={Math.round(currentAnalyticsData.moisture || 0)}
               color={paramColor.moisture}
               icon={
@@ -762,7 +762,7 @@ const Analytics: React.FC<Props> = ({
             />
 
             <CurrentDataItem
-              label="Te beregenen in mm"
+              label="Te beregenen (mm)"
               value={Math.round(currentAnalyticsData.sprinkling || 0)}
               color={paramColor.sprinkling}
               icon={
@@ -776,7 +776,7 @@ const Analytics: React.FC<Props> = ({
               }
             />
             <CurrentDataItem
-              label="Temperatuur in °C"
+              label="Temperatuur (°C)"
               value={Math.round(currentAnalyticsData.temperature || 0)}
               color={paramColor.temperature}
               icon={
@@ -791,7 +791,7 @@ const Analytics: React.FC<Props> = ({
               }
             />
             <CurrentDataItem
-              label="Luchtvochtigheid in %"
+              label="Luchtvochtigheid (%)"
               value={currentAnalyticsData.relativeHumidity || 0}
               color={paramColor.relativeHumidity}
               icon={
@@ -819,6 +819,8 @@ const Analytics: React.FC<Props> = ({
               farmerData={farmerData}
               date={DateTime.fromJSDate(date).toISODate()}
               navigate={navigate}
+              selectedPlotId={selectedPlotId}
+              selectedPixel={selectedPixel}
             />
           </div>
         )}
@@ -1008,8 +1010,12 @@ const Analytics: React.FC<Props> = ({
                 <stop offset="95%" stopColor="#ffe0b2" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="temperatureColor" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#ec9185" stopOpacity={0.8} />
-                <stop offset="90%" stopColor="#49c7ee" stopOpacity={0.2} />
+                <stop offset="5%" stopColor="#dc9cf0" stopOpacity={0.8} />
+                <stop offset="95%" stopColor="#4946e8" stopOpacity={0} />
+              </linearGradient>
+              <linearGradient id="desiredMoistureColor" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#e80707" stopOpacity={0.8} />
+                <stop offset="95%" stopColor="#ffb2b2" stopOpacity={0} />
               </linearGradient>
               <radialGradient
                 id="radial"
@@ -1054,7 +1060,7 @@ const Analytics: React.FC<Props> = ({
                       maxValue = data.rainfall
                     }
                   })
-                  return maxValue < 2 ? 2 : 'auto';
+                  return maxValue < 6 ? 6 : 'auto';
                 }
                 return 'auto'
               })()]}
@@ -1083,6 +1089,7 @@ const Analytics: React.FC<Props> = ({
                 xAxisId={2}
                 yAxisId="right"
                 stroke="#c12d00"
+                fill="url(#desiredMoistureColor)"
               />
             ) : null}
             {displayTemperature ? (

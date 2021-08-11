@@ -21,6 +21,7 @@ const DateView = ({ date }: { date: Date }) => {
           position: relative;
           font-weight: bold;
           font-size: 20px;
+          color: #2f3d50;
         `}
       >
         <CalendarBlank

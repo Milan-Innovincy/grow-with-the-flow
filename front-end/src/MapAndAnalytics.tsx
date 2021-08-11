@@ -291,12 +291,27 @@ const MapAndAnalytics = ({ match, history }: Props) => {
           };
 
           EventEmitter.on("sprinkling-update", handleSprinklingUpdate);
+
+          EventEmitter.on("plot-name-update", handleNameUpdate);
+          EventEmitter.on("plot-description-update", handleDescriptionUpdate);
           
           getPlotFeedback(farmerData);
         }
       }
     })();
   }, [contextValue.authenticated, contextValue.keycloak, date]);
+
+  const handleNameUpdate = (payload: any) => {
+    console.log(payload)
+    EventEmitter.emit("plot-name-updated-success");
+    //EventEmitter.emit("plot-name-updated-failure");
+  }
+
+  const handleDescriptionUpdate = (payload: any) => {
+    console.log(payload)
+    EventEmitter.emit("plot-description-updated-success");
+    //EventEmitter.emit("plot-description-updated-failure");
+  }
 
   const handleSprinklingUpdate = (payload: any) => {
     const { date, selectedPlotId, value } = payload;
