@@ -622,6 +622,51 @@ const Analytics: React.FC<Props> = ({
     setRightAxe(event.target.value);
   };
 
+  const axesOptions = [
+    {
+      value: "rainfall",
+      label: "Regenval in mm",
+      shape: "square",
+      color: paramColor.rainfall,
+      borderColor: undefined,
+    },
+    {
+      value: "sprinkling",
+      label: "Beregening in mm",
+      shape: "square",
+      color: paramColor.sprinkling,
+      borderColor: undefined,
+    },
+    {
+      value: "relativeHumidity",
+      label: "Luchtvochtigheid in %",
+      shape: "square",
+      color: paramColor.relativeHumidity,
+      borderColor: undefined,
+    },
+    {
+      value: "moisture",
+      label: "Beschikbaar bodemvocht in mm",
+      shape: "circle",
+      color: "#ffd1a0",
+      borderColor: paramColor.moisture,
+    },
+    {
+      value: "desiredMoisture",
+      label: "Droogtestress in %",
+      shape: "line",
+      color: paramColor.desiredMoisture,
+      borderColor: undefined,
+    },
+    {
+      value: "temperature",
+      label: "Temperatuur in °C",
+      shape: "line",
+      color: paramColor.temperature,
+      borderColor: undefined,
+    },
+  ]
+
   return (
     <Paper
       elevation={5}
@@ -864,23 +909,14 @@ const Analytics: React.FC<Props> = ({
                 value={leftAxe}
                 onChange={changeLeftAxe}
               >
-                <MenuItem value="rainfall"><LegendItem 
-                  label="Regenval in mm" 
-                  shape="square" 
-                  color={paramColor.rainfall} 
-                /></MenuItem>;
-
-                <MenuItem value="sprinkling"><LegendItem
-                  label="Beregening in mm"
-                  shape="square"
-                  color={paramColor.sprinkling}
-                /></MenuItem>;
-
-                <MenuItem value="relativeHumidity"><LegendItem
-                  label="Luchtvochtigheid in %"
-                  shape="square"
-                  color={paramColor.relativeHumidity}
-                /></MenuItem>;
+                {axesOptions.filter((i) => rightAxe !== i.value).map((item) => 
+                  <MenuItem value={item.value}><LegendItem 
+                    label={item.label} 
+                    shape={item.shape}
+                    color={item.color} 
+                    borderColor={item.borderColor}
+                  /></MenuItem>
+                )}
               </Select>
             </FormControl>
                         
@@ -899,25 +935,14 @@ const Analytics: React.FC<Props> = ({
                 value={rightAxe}
                 onChange={changeRightAxe}
               >
-
-                <MenuItem value="moisture"><LegendItem
-                  label="Beschikbaar bodemvocht in mm"
-                  shape="circle"
-                  color="#ffd1a0"
-                  borderColor={paramColor.moisture}
-                /></MenuItem>;
-
-                <MenuItem value="desiredMoisture"><LegendItem
-                  label="Droogtestress in %"
-                  shape="line"
-                  color={paramColor.desiredMoisture}
-                /></MenuItem>;
-
-                <MenuItem value="temperature"><LegendItem
-                  label="Temperatuur in °C"
-                  shape="line"
-                  color={paramColor.temperature}
-                /></MenuItem>;
+                {axesOptions.filter((i) => leftAxe !== i.value).map((item) => 
+                  <MenuItem value={item.value}><LegendItem 
+                    label={item.label} 
+                    shape={item.shape}
+                    color={item.color} 
+                    borderColor={item.borderColor}
+                  /></MenuItem>
+                )}
               </Select>
             </FormControl>
           </div>
@@ -1050,7 +1075,7 @@ const Analytics: React.FC<Props> = ({
               tick={{ fill: paramColor[leftAxe], fontSize: 10 }}
               width={30}
               domain={[0, (()=>{
-                if(leftAxe === 'relativeHumidity'){
+                if(leftAxe === 'relativeHumidity' || leftAxe === 'desiredMoisture'){
                   return 100;
                 }
                 if(leftAxe === 'rainfall'){
@@ -1072,13 +1097,27 @@ const Analytics: React.FC<Props> = ({
               tickLine={false}
               tick={{ fill: paramColor[rightAxe], fontSize: 10 }}
               width={30}
-              domain={[0, rightAxe === 'desiredMoisture' ? 100 : 'auto']}
+              domain={[0, (()=>{
+                if(rightAxe === 'relativeHumidity' || rightAxe === 'desiredMoisture'){
+                  return 100;
+                }
+                if(rightAxe === 'rainfall'){
+                  let maxValue = 0;
+                  analyticsData.forEach(data => {
+                    if(data.rainfall && data.rainfall > maxValue){
+                      maxValue = data.rainfall
+                    }
+                  })
+                  return maxValue < 6 ? 6 : 'auto';
+                }
+                return 'auto'
+              })()]}
             />
             {displayMoisture ? (
               <Area
                 dataKey="moisture"
-                xAxisId={2}
-                yAxisId="right"
+                xAxisId={leftAxe === "moisture" ? 0 : 2}
+                yAxisId={leftAxe === "moisture" ? "left" : "right"}
                 stroke="#f6511d"
                 fill="url(#moistureColor)"
               />
@@ -1086,8 +1125,8 @@ const Analytics: React.FC<Props> = ({
             {displayDesiredMoisture ? (
               <Line
                 dataKey="desiredMoisture"
-                xAxisId={2}
-                yAxisId="right"
+                xAxisId={leftAxe === "desiredMoisture" ? 0 : 2}
+                yAxisId={leftAxe === "desiredMoisture" ? "left" : "right"}
                 stroke="#c12d00"
                 fill="url(#desiredMoistureColor)"
               />
@@ -1095,8 +1134,8 @@ const Analytics: React.FC<Props> = ({
             {displayTemperature ? (
               <Line
                 dataKey="temperature"
-                xAxisId={2}
-                yAxisId="right"
+                xAxisId={leftAxe === "temperature" ? 0 : 2}
+                yAxisId={leftAxe === "temperature" ? "left" : "right"}
                 stroke="#383a3d"
                 fill="url(#temperatureColor)"
               />
@@ -1104,8 +1143,8 @@ const Analytics: React.FC<Props> = ({
             {displayRainfall ? (
               <Bar
                 dataKey="rainfall"
-                xAxisId={0}
-                yAxisId="left"
+                xAxisId={leftAxe === "rainfall" ? 0 : 2}
+                yAxisId={leftAxe === "rainfall" ? "left" : "right"}
                 barSize={60}
                 shape={({ x, y, width, height }: RectangleProps) =>
                   height! < 10 ? null : (
@@ -1126,8 +1165,8 @@ const Analytics: React.FC<Props> = ({
             {displayHumidity ? (
               <Bar
                 dataKey="relativeHumidity"
-                xAxisId={0}
-                yAxisId="left"
+                xAxisId={leftAxe === "relativeHumidity" ? 0 : 2}
+                yAxisId={leftAxe === "relativeHumidity" ? "left" : "right"}
                 barSize={60}
                 shape={({ x, y, width, height }: RectangleProps) =>
                   height! < 10 ? null : (
@@ -1150,7 +1189,7 @@ const Analytics: React.FC<Props> = ({
                 dataKey="sprinkling"
                 isAnimationActive={false}
                 xAxisId={1}
-                yAxisId="left"
+                yAxisId={leftAxe === "sprinkling" ? "left" : "right"}
                 fill="#1565c0"
                 opacity={0.8}
                 barSize={40}
