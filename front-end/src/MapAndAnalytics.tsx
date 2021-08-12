@@ -451,6 +451,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
         height: 100%;
         display: flex;
         flex-direction: column;
+        position: relative;
       `}
     >
       <div
@@ -502,7 +503,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
       {isFetchingFarmerData &&
         <div
           className={css`
-            position: fixed;
+            position: absolute;
             top: 0;
             left: 0;
             background: #ffffff99;

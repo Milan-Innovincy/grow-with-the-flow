@@ -231,7 +231,7 @@ const PlotListDialog = ({ farmerData, date, navigate, selectedPlotId, selectedPi
             <Typography style={{display: "inline-block", textAlign: "center", flexGrow: 1}} variant="h6">Perceeloverzicht</Typography>
             <Button variant={'contained'} onClick={toggleShowModal} startIcon={<ArrowBackIcon/>}>Terug</Button>
           </DialogActions>
-          <DialogContent className={css`padding: 8px 0 !important`}>
+          <DialogContent className={css`padding: 8px 0 !important; position: relative;`}>
             <Table className={css`
               .edit-icon {
                 position: absolute;
@@ -333,13 +333,7 @@ const PlotListDialog = ({ farmerData, date, navigate, selectedPlotId, selectedPi
                     </TableSortLabel>
                   </TableCell>
                   <TableCell>
-                    <TableSortLabel
-                      active={orderBy === "lastUpdated"}
-                      direction={order}
-                      onClick={() => sortColumn("lastUpdated")}
-                    >
-                      Laatst Gewijzigd
-                    </TableSortLabel>
+                    Laatst Gewijzigd
                   </TableCell>
                   <TableCell>
                     Commentaar
