@@ -12,7 +12,8 @@ import {
   Typography,
   TableSortLabel,
   IconButton,
-  Tooltip
+  Tooltip,
+  CircularProgress
 } from "@material-ui/core";
 
 import { css } from "@emotion/css";
@@ -36,6 +37,7 @@ type Props = {
   navigate: (path: string) => void;
   selectedPlotId: string | undefined;
   selectedPixel: number[] | undefined;
+  isFetchingData: boolean;
 };
 
 type ColumnNames =
@@ -49,7 +51,7 @@ type ColumnNames =
   | "lastUpdated"
   | "name";
 
-const PlotListDialog = ({ farmerData, date, navigate, selectedPlotId, selectedPixel }: Props) => {
+const PlotListDialog = ({ farmerData, date, navigate, selectedPlotId, selectedPixel, isFetchingData }: Props) => {
   const contextValue = useContext(ApplicationContext);
   const isManager =
     contextValue.keycloak.tokenParsed.user_type === "WATERBOARD_MANAGER";
@@ -229,27 +231,31 @@ const PlotListDialog = ({ farmerData, date, navigate, selectedPlotId, selectedPi
             <Typography style={{display: "inline-block", textAlign: "center", flexGrow: 1}} variant="h6">Perceeloverzicht</Typography>
             <Button variant={'contained'} onClick={toggleShowModal} startIcon={<ArrowBackIcon/>}>Terug</Button>
           </DialogActions>
-          <DialogContent>
+          <DialogContent className={css`padding: 8px 0 !important`}>
             <Table className={css`
               .edit-icon {
                 position: absolute;
-                top: 0;
-                right: 0;
+                top: 50%;
                 display: none;
                 color: #b2d6d4;
+                transform: translateY(-50%);
               }
-
+              
               .edit-cell {
                 position: relative;
               }
-
+              
               .edit-cell:hover .edit-icon {
-                display: block;
+                display: inline;
+              }
+
+              tbody tr:hover {
+                background-color: #f3f5f5
               }
             `}>
               <TableHead>
                 <TableRow>
-                  <TableCell>ID</TableCell>
+                  {/* <TableCell>ID</TableCell> */}
                   {isManager && <TableCell>Boer</TableCell>}
                   <TableCell>Gewas</TableCell>
                   <TableCell>
@@ -261,7 +267,7 @@ const PlotListDialog = ({ farmerData, date, navigate, selectedPlotId, selectedPi
                       Perceel Naam
                     </TableSortLabel>
                   </TableCell>
-                  <TableCell>
+                  <TableCell align="center">
                     <TableSortLabel
                       active={orderBy === "availableSoilWater"}
                       direction={order}
@@ -270,7 +276,7 @@ const PlotListDialog = ({ farmerData, date, navigate, selectedPlotId, selectedPi
                       Vochtgehalte (mm)
                     </TableSortLabel>
                   </TableCell>
-                  <TableCell>
+                  <TableCell align="center">
                     <TableSortLabel
                       active={orderBy === "deficit"}
                       direction={order}
@@ -279,7 +285,7 @@ const PlotListDialog = ({ farmerData, date, navigate, selectedPlotId, selectedPi
                       Watertekort (mm)
                     </TableSortLabel>
                   </TableCell>
-                  <TableCell>
+                  <TableCell align="center">
                     <TableSortLabel
                       active={orderBy === "relativeTranspiration"}
                       direction={order}
@@ -288,7 +294,7 @@ const PlotListDialog = ({ farmerData, date, navigate, selectedPlotId, selectedPi
                       Droogtestress (%)
                     </TableSortLabel>
                   </TableCell>
-                  <TableCell>
+                  <TableCell align="center">
                     {" "}
                     <TableSortLabel
                       active={orderBy === "evapotranspiration"}
@@ -298,7 +304,7 @@ const PlotListDialog = ({ farmerData, date, navigate, selectedPlotId, selectedPi
                       Verdamping (mm)
                     </TableSortLabel>
                   </TableCell>
-                  <TableCell>
+                  <TableCell align="center">
                     {" "}
                     <TableSortLabel
                       active={orderBy === "sprinkling"}
@@ -308,7 +314,7 @@ const PlotListDialog = ({ farmerData, date, navigate, selectedPlotId, selectedPi
                       Beregening (mm)
                     </TableSortLabel>
                   </TableCell>
-                  <TableCell>
+                  <TableCell align="center">
                     <TableSortLabel
                       active={orderBy === "relativeHumidity"}
                       direction={order}
@@ -317,7 +323,7 @@ const PlotListDialog = ({ farmerData, date, navigate, selectedPlotId, selectedPi
                       Luchtvochtigheid (%)
                     </TableSortLabel>
                   </TableCell>
-                  <TableCell>
+                  <TableCell align="center">
                     <TableSortLabel
                       active={orderBy === "temperature"}
                       direction={order}
@@ -352,9 +358,9 @@ const PlotListDialog = ({ farmerData, date, navigate, selectedPlotId, selectedPi
                       cursor: pointer;
                     `}
                   >
-                    <TableCell>
+                    {/* <TableCell>
                       {data.properties && `${data.properties.plotId}`}
-                    </TableCell>
+                    </TableCell> */}
                     {isManager && (
                       <TableCell>
                         {data.properties && `${data.properties.farmerName}`}
@@ -365,7 +371,9 @@ const PlotListDialog = ({ farmerData, date, navigate, selectedPlotId, selectedPi
                     </TableCell>
                     <TableCell className={'edit-cell'}>
                       {data.properties && `${data.properties.name}`}
-                      <EditIcon className={'edit-icon'} 
+                      <IconButton
+                        size="small"
+                        className={'edit-icon'} 
                         onClick={async (e) => {
                           e.stopPropagation();
                           await updateNameDialog.open(
@@ -373,31 +381,34 @@ const PlotListDialog = ({ farmerData, date, navigate, selectedPlotId, selectedPi
                             data.properties && data.properties.plotId && data.properties.plotId as string
                           );
                         }}
-                      />
+                      >
+                        <EditIcon/>
+                      </IconButton>
+                      
                     </TableCell>
-                    <TableCell>
+                    <TableCell align="center">
                       {data.properties &&
                         `${Math.round(data.analytics.availableSoilWater)}`}
                     </TableCell>
-                    <TableCell>
+                    <TableCell align="center">
                       {data.properties && `${Math.round(data.analytics.deficit)}`}
                     </TableCell>
-                    <TableCell>
+                    <TableCell align="center">
                       {data.properties && 
                         `${Math.round(data.analytics.relativeTranspiration * 100)}`}
                       %
                     </TableCell>
-                    <TableCell>
+                    <TableCell align="center">
                       {data.properties &&
                         `${Math.round(data.analytics.evapotranspiration)}`}
                     </TableCell>
-                    <TableCell>
+                    <TableCell align="center">
                       {data.properties && `${data.analytics.sprinkling}`}
                     </TableCell>
-                    <TableCell>
+                    <TableCell align="center">
                       {data.properties && `${Math.round(data.analytics.relativeHumidity || 0)}`}
                     </TableCell>
-                    <TableCell>
+                    <TableCell align="center">
                       {data.properties && `${Math.round(data.analytics.averageTemperature || 0)}`}
                     </TableCell>
                     <TableCell style={{whiteSpace: 'nowrap'}}>
@@ -451,6 +462,25 @@ const PlotListDialog = ({ farmerData, date, navigate, selectedPlotId, selectedPi
                 ))}
               </TableBody>
             </Table>
+            {isFetchingData && 
+              <div
+              className={css`
+                position: absolute;
+                top: 0;
+                left: 0;
+                background: #ffffff99;
+                z-index: 9000;
+                height: 100%;
+                width: 100%;
+                padding: 24px 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              `}
+            >
+              <CircularProgress />
+            </div>
+            }
           </DialogContent>
           <UpdateNameDialog
             ref={(d) => (updateNameDialog = d!)}

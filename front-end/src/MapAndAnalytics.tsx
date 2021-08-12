@@ -106,8 +106,8 @@ export type FarmerGeoData = {
 };
 
 const MapAndAnalytics = ({ match, history }: Props) => {
-  const [farmerData, setFarmerData] = useState<FarmerData>(null);
-  const [farmerGeoData, setFarmerGeoData] = useState<FarmerGeoData>(null);
+  const [farmerData, setFarmerData] = useState<FarmerData | undefined>(undefined);
+  const [farmerGeoData, setFarmerGeoData] = useState<FarmerGeoData | undefined>(undefined);
   const contextValue = useContext(ApplicationContext);
   const [isFetchingFarmerData, setIsFetchingFarmerData] = useState(false);
 
@@ -190,7 +190,8 @@ const MapAndAnalytics = ({ match, history }: Props) => {
   const initPixelsData = async () => {
     setIsFetchingFarmerData(true)
     let pixelsData = await fetchPixelsData()
-    setFarmerData({...farmerData, pixelsData});
+    setFarmerData({...farmerData!, pixelsData});
+    EventEmitter.emit("farmer-data-updated");
     setIsFetchingFarmerData(false)
   }
 
@@ -366,12 +367,12 @@ const MapAndAnalytics = ({ match, history }: Props) => {
       plotCropStatus: data[0],
       plotFeedback: data[1],
     });
-    EventEmitter.emit("plotfeedback-updated");
+    EventEmitter.emit("farmer-data-updated");
     setIsFetchingFarmerData(false);
   };
 
   const updatePlotFeedback = async () => {
-    const { plotsAnalytics } = farmerData;
+    const { plotsAnalytics } = farmerData!;
     const datesInTimeRange = plotsAnalytics[Object.keys(plotsAnalytics)[0]].map(
       (a: any) => a.date
     );
@@ -399,11 +400,11 @@ const MapAndAnalytics = ({ match, history }: Props) => {
 
     const data = results.map((res) => res.data);
     setFarmerData({
-      ...farmerData,
+      ...farmerData!,
       plotCropStatus: data[0],
       plotFeedback: data[1],
     });
-    EventEmitter.emit("plotfeedback-updated");
+    EventEmitter.emit("farmer-data-updated");
     setIsFetchingFarmerData(false);
   };
 
@@ -470,7 +471,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
           />
         )}
       </div>
-      {farmerData && !isFetchingFarmerData ? (
+      {farmerData && 
         <Paper
           elevation={5}
           className={css`
@@ -486,23 +487,26 @@ const MapAndAnalytics = ({ match, history }: Props) => {
               navigate={navigate}
               selectedPixel={selectedPixel}
               selectedPlotId={selectedPlotId}
+              isFetchingData={isFetchingFarmerData}
             />
           ) : (
             <OverallSummary
               date={new Date(date)}
               farmerData={farmerData}
               navigate={navigate}
+              isFetchingData={isFetchingFarmerData}
             />
           )}
         </Paper>
-      ) : (
+      }
+      {isFetchingFarmerData &&
         <div
           className={css`
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             background: #ffffff99;
-            z-index: 1000;
+            z-index: 9000;
             height: 100%;
             width: 100%;
             padding: 24px 0;
@@ -513,7 +517,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
         >
           <CircularProgress />
         </div>
-      )}
+      }
     </div>
   );
 };

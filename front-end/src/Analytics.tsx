@@ -362,6 +362,7 @@ type Props = {
   date: Date;
   selectedPlotId?: string;
   selectedPixel?: Array<number>;
+  isFetchingData: boolean;
 };
 
 type CropStatus = {
@@ -392,6 +393,7 @@ const Analytics: React.FC<Props> = ({
   date,
   selectedPlotId,
   selectedPixel,
+  isFetchingData
 }) => {
   const [cropStatus, setCropStatus] = useState<CropStatusValue>();
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData[]>([]);
@@ -560,6 +562,14 @@ const Analytics: React.FC<Props> = ({
         `/map/${DateTime.fromMillis(
           moment(newDate).valueOf()
         ).toISODate()}/pixel/${selectedPixel.join("-")}`
+      );
+    }
+
+    if (!selectedPlotId && !selectedPixel){
+      navigate(
+        `/map/${DateTime.fromMillis(
+          moment(newDate).valueOf()
+        ).toISODate()}`
       );
     }
   };
@@ -860,15 +870,16 @@ const Analytics: React.FC<Props> = ({
               label="Hectare"
               text={soilType}
             />
-            <PlotListDialog
-              farmerData={farmerData}
-              date={DateTime.fromJSDate(date).toISODate()}
-              navigate={navigate}
-              selectedPlotId={selectedPlotId}
-              selectedPixel={selectedPixel}
-            />
           </div>
         )}
+        <PlotListDialog
+          farmerData={farmerData}
+          date={DateTime.fromJSDate(date).toISODate()}
+          navigate={navigate}
+          selectedPlotId={selectedPlotId}
+          selectedPixel={selectedPixel}
+          isFetchingData={isFetchingData}
+        />
       </div>
       <div
         className={css`

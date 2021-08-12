@@ -17,9 +17,10 @@ type Props = {
   farmerData: any;
   date: Date;
   navigate: (path: string) => void;
+  isFetchingData: boolean;
 };
 
-const OverallSummary = ({ farmerData, date, navigate }: Props) => {
+const OverallSummary = ({ farmerData, date, navigate, isFetchingData }: Props) => {
   const handleDateViewClick = () => {
     document
       .querySelector(
@@ -94,6 +95,9 @@ const OverallSummary = ({ farmerData, date, navigate }: Props) => {
           farmerData={farmerData}
           date={DateTime.fromJSDate(date).toISODate()}
           navigate={navigate}
+          selectedPlotId={undefined}
+          selectedPixel={undefined}
+          isFetchingData={isFetchingData}
         />
       </div>
     </div>
