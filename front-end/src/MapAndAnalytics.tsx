@@ -316,7 +316,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
   
     axiosInstance
       .put(
-        `/plot-feedback/update?plotId=${selectedPlotId}`,
+        `/plots/id/${selectedPlotId}`,
         {
           name: value
         }
@@ -335,7 +335,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
   
     axiosInstance
       .put(
-        `/plot-feedback/update?plotId=${selectedPlotId}`,
+        `/plots/id/${selectedPlotId}`,
         {
           description: value
         }

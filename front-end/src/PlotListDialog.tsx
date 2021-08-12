@@ -30,6 +30,7 @@ import EditIcon from '@material-ui/icons/Edit';
 import { DateTime } from "luxon";
 import UpdateNameDialog from "./UpdatePlotNameDialog";
 import UpdateDescriptionDialog from "./UpdatePlotDescriptionDialog";
+import Snackbar from "./Snackbar";
 
 type Props = {
   farmerData: FarmerData;
@@ -364,7 +365,7 @@ const PlotListDialog = ({ farmerData, date, navigate, selectedPlotId, selectedPi
                       {data.properties && `${data.properties.cropTypes}`}
                     </TableCell>
                     <TableCell className={'edit-cell'}>
-                      {data.properties && `${data.properties.name}`}
+                      {data.properties && `${data.properties.name || ""}`}
                       <IconButton
                         size="small"
                         className={'edit-icon'} 
@@ -381,29 +382,32 @@ const PlotListDialog = ({ farmerData, date, navigate, selectedPlotId, selectedPi
                       
                     </TableCell>
                     <TableCell align="center">
-                      {data.properties &&
+                      {data.properties && data.analytics.availableSoilWater &&
                         `${Math.round(data.analytics.availableSoilWater)}`}
                     </TableCell>
                     <TableCell align="center">
-                      {data.properties && `${Math.round(data.analytics.deficit)}`}
+                      {data.properties && data.analytics.deficit && 
+                      `${Math.round(data.analytics.deficit)}`}
                     </TableCell>
                     <TableCell align="center">
-                      {data.properties && 
+                      {data.properties && data.analytics.relativeTranspiration &&
                         `${Math.round(data.analytics.relativeTranspiration * 100)}`}
-                      %
                     </TableCell>
                     <TableCell align="center">
-                      {data.properties &&
+                      {data.properties && data.analytics.evapotranspiration &&
                         `${Math.round(data.analytics.evapotranspiration)}`}
                     </TableCell>
                     <TableCell align="center">
-                      {data.properties && `${data.analytics.sprinkling}`}
+                      {data.properties && data.analytics.sprinkling &&
+                      `${data.analytics.sprinkling}`}
                     </TableCell>
                     <TableCell align="center">
-                      {data.properties && `${Math.round(data.analytics.relativeHumidity || 0)}`}
+                      {data.properties && data.analytics.relativeHumidity &&
+                      `${Math.round(data.analytics.relativeHumidity)}`}
                     </TableCell>
                     <TableCell align="center">
-                      {data.properties && `${Math.round(data.analytics.averageTemperature || 0)}`}
+                      {data.properties && data.analytics.averageTemperature &&
+                      `${Math.round(data.analytics.averageTemperature)}`}
                     </TableCell>
                     <TableCell style={{whiteSpace: 'nowrap'}}>
                       <Tooltip title={"Beregening: 5mm"}>
@@ -482,6 +486,7 @@ const PlotListDialog = ({ farmerData, date, navigate, selectedPlotId, selectedPi
           <UpdateDescriptionDialog
             ref={(d) => (updateDescriptionDialog = d!)}
           />
+          <Snackbar />
         </Dialog>
       )}
     </ApplicationContext.Consumer>
