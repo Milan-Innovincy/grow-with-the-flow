@@ -8,6 +8,7 @@ import { DateTime } from "luxon";
 import MomentUtils from "@date-io/moment";
 import moment from "moment";
 import "moment/locale/nl";
+import { TextField } from "@material-ui/core"
 
 type Props = {
   date: any;
@@ -20,8 +21,13 @@ export default class LoadingError extends React.Component<Props, {}> {
     ).toISODate()}`;
   };
 
+  
   render() {
     const { date } = this.props;
+
+    const textFieldComponent = (props: any) => {
+      return <TextField {...props} disabled={true} />
+    }
 
     return (
       <div>
@@ -40,6 +46,7 @@ export default class LoadingError extends React.Component<Props, {}> {
             KeyboardButtonProps={{
               "aria-label": "change date",
             }}
+            TextFieldComponent={textFieldComponent}
           />
         </MuiPickersUtilsProvider>
       </div>

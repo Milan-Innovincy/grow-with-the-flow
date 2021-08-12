@@ -11,7 +11,7 @@ import Analytics from "./Analytics";
 import OverallSummary from "./OverallSummary";
 import LoadingError from "./components/LoadingError";
 import { ApplicationContext } from "./ApplicationContext";
-
+import _ from "lodash";
 import axiosInstance from "./lib/axios";
 
 type Props = RouteComponentProps<{
@@ -147,6 +147,9 @@ const MapAndAnalytics = ({ match, history }: Props) => {
     const landUse = await axios
           .get(`${prefix}/gwtf-land-use.json`)
           .then(({ data }) => {
+            if (data === {}) {
+              handleError();
+            }
             return data;
           })
           .catch((error: Error) => {
@@ -168,6 +171,9 @@ const MapAndAnalytics = ({ match, history }: Props) => {
         `/pixels?on=${date}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater,relativeTranspiration,developmentStage,trafficability,relativeHumidity,averageTemperature`
       )
       .then(({ data }) => {
+        if (_.isEmpty(data)) {
+          handleError();
+        } else
         return data;
       })
       .catch((error: Error) => {
@@ -268,6 +274,9 @@ const MapAndAnalytics = ({ match, history }: Props) => {
             `/plot-analytics?on=${date}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater,relativeTranspiration,developmentStage,trafficability,relativeHumidity,averageTemperature`
           )
           .then(({ data }) => {
+            if (_.isEmpty(data)) {
+              handleError();
+            } else
             return data;
           })
           .catch((error: Error) => {
@@ -303,15 +312,41 @@ const MapAndAnalytics = ({ match, history }: Props) => {
   }, [contextValue.authenticated, contextValue.keycloak, date]);
 
   const handleNameUpdate = (payload: any) => {
-    console.log(payload)
-    EventEmitter.emit("plot-name-updated-success");
-    //EventEmitter.emit("plot-name-updated-failure");
+    const {selectedPlotId, value} = payload;
+  
+    axiosInstance
+      .put(
+        `/plot-feedback/update?plotId=${selectedPlotId}`,
+        {
+          name: value
+        }
+      )
+      .then(({ data }) => {
+        EventEmitter.emit("plot-name-updated-success");
+      })
+      .catch((error: Error) => {
+        EventEmitter.emit("plot-name-updated-failure");
+        console.error(error);
+      });
   }
 
   const handleDescriptionUpdate = (payload: any) => {
-    console.log(payload)
-    EventEmitter.emit("plot-description-updated-success");
-    //EventEmitter.emit("plot-description-updated-failure");
+    const {selectedPlotId, value} = payload;
+  
+    axiosInstance
+      .put(
+        `/plot-feedback/update?plotId=${selectedPlotId}`,
+        {
+          description: value
+        }
+      )
+      .then(({ data }) => {
+        EventEmitter.emit("plot-description-updated-success");
+      })
+      .catch((error: Error) => {
+        EventEmitter.emit("plot-description-updated-failure");
+        console.error(error);
+      });
   }
 
   const handleSprinklingUpdate = (payload: any) => {

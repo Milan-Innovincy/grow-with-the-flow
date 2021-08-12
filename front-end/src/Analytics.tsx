@@ -921,7 +921,7 @@ const Analytics: React.FC<Props> = ({
                 onChange={changeLeftAxe}
               >
                 {axesOptions.filter((i) => rightAxe !== i.value).map((item) => 
-                  <MenuItem value={item.value}><LegendItem 
+                  <MenuItem key={item.value} value={item.value}><LegendItem 
                     label={item.label} 
                     shape={item.shape}
                     color={item.color} 
@@ -947,7 +947,7 @@ const Analytics: React.FC<Props> = ({
                 onChange={changeRightAxe}
               >
                 {axesOptions.filter((i) => leftAxe !== i.value).map((item) => 
-                  <MenuItem value={item.value}><LegendItem 
+                  <MenuItem key={item.value} value={item.value}><LegendItem 
                     label={item.label} 
                     shape={item.shape}
                     color={item.color} 
