@@ -21,6 +21,7 @@ import {
   FormControl,
   Select,
   Input,
+  Button
 } from "@material-ui/core";
 import {
   MuiPickersUtilsProvider,
@@ -53,6 +54,8 @@ import { ReactComponent as RainfallIcon } from "./icons/rainfall.svg";
 import { ReactComponent as IrrigationIcon } from "./icons/irrigation.svg";
 import PlotListDialog from "./PlotListDialog";
 import { FarmerData } from "./MapAndAnalytics";
+import ArrowBackIcon from '@material-ui/icons/ArrowBack';
+import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
 
 const cropTypes = ["mais", "aardappelen", "gras"];
 const cropStatusOptions: CropStatus = {
@@ -78,7 +81,7 @@ const cropStatusOptions: CropStatus = {
   ],
 };
 
-const getCropType = (cropType: string) => {
+export const getCropType = (cropType: string) => {
   if (cropType.startsWith("Grasland")) {
     return "gras";
   }
@@ -152,7 +155,7 @@ const formatCropStatus = (
   );
 };
 
-const developmentStateToLabel = (
+export const developmentStateToLabel = (
   developmentState: number,
   cropType: string
 ) => {
@@ -168,6 +171,9 @@ const developmentStateToLabel = (
       return developmentState < cropStatusValue.value;
     }
   );
+  if(nextStageIndex === -1 && developmentState > 0){
+    return cropStatusOptions[cropType][cropStatusOptions[cropType].length - 1];
+  }
   return cropStatusOptions[cropType][nextStageIndex - 1];
 };
 
@@ -529,6 +535,50 @@ const Analytics: React.FC<Props> = ({
       .click();
   };
 
+  const handleDatePrevClicked = () => {
+    let newDate = DateTime.fromJSDate(date).minus({days: 1}).toISODate();
+
+    if (selectedPlotId) {
+      navigate(
+        `/map/${newDate}/plot/${selectedPlotId}`
+      );
+    }
+
+    if (selectedPixel) {
+      navigate(
+        `/map/${newDate}/pixel/${selectedPixel.join("-")}`
+      );
+    }
+
+    if (!selectedPlotId && !selectedPixel){
+      navigate(
+        `/map/${newDate}`
+      );
+    }
+  }
+
+  const handleDateNextClicked = () => {
+    let newDate = DateTime.fromJSDate(date).plus({days: 1}).toISODate();
+
+    if (selectedPlotId) {
+      navigate(
+        `/map/${newDate}/plot/${selectedPlotId}`
+      );
+    }
+
+    if (selectedPixel) {
+      navigate(
+        `/map/${newDate}/pixel/${selectedPixel.join("-")}`
+      );
+    }
+
+    if (!selectedPlotId && !selectedPixel){
+      navigate(
+        `/map/${newDate}`
+      );
+    }
+  }
+
   const changeCropStatus = (event: any) => {
     setCropStatus(event.target.value);
     const formattedDate = DateTime.fromJSDate(new Date(date)).toFormat(
@@ -723,23 +773,56 @@ const Analytics: React.FC<Props> = ({
           <div className={css`
            padding-right: 20px;
           `}>
+            <div className={css`
+              display: flex;
+              transform: translateY(8px);
+              height: 36px;
+            `}>
+              <Button 
+                className={css`
+                  padding: 6px 0 !important;
+                  min-width: 34px !important;
+                `}
+                onClick={handleDatePrevClicked}
+              >
+                <ArrowBackIcon/>
+              </Button>
+              <div
+                onClick={handleDateViewClick}
+                className={css`
+                  cursor: pointer;
+                  transform: translateY(14px);
+                  margin-right: 10px;
+                  display: inline-block;
+                `}
+              >
+                <DateView date={new Date(date)} />
+              </div>
+              <Button 
+                className={css`
+                  padding: 6px 0 !important;
+                  min-width: 34px !important;
+                `}
+                onClick={handleDateNextClicked} 
+                disabled={DateTime.fromJSDate(date).toISODate() === DateTime.fromJSDate(new Date()).toISODate()}
+              >
+                <ArrowForwardIcon/>
+              </Button>
+            </div>
+
             <small
               className={css`
                 white-space: nowrap;
                 font-weight: lighter;
                 margin-left: 50px;
+                position: absolute;
+                top: 10px;
+                left: 12px
               `}
             >
               {label}
             </small>
-            <div
-              onClick={handleDateViewClick}
-              className={css`
-                cursor: pointer;
-              `}
-            >
-              <DateView date={date} />
-            </div>
+
             <MuiPickersUtilsProvider
               libInstance={moment}
               utils={MomentUtils}
