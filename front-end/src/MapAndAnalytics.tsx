@@ -42,6 +42,7 @@ export type FarmerData = {
     statuses: {
       "crop-status": string;
       date: string;
+      updatedAt: string;
     }[];
   }[];
   plotFeedback: {
@@ -49,6 +50,7 @@ export type FarmerData = {
     quantities: {
       date: string;
       quantityMM: number;
+      updatedAt: string;
     }[];
   }[];
   plotsAnalytics: {
@@ -301,7 +303,6 @@ const MapAndAnalytics = ({ match, history }: Props) => {
           };
 
           EventEmitter.on("sprinkling-update", handleSprinklingUpdate);
-
           EventEmitter.on("plot-name-update", handleNameUpdate);
           EventEmitter.on("plot-description-update", handleDescriptionUpdate);
           
@@ -323,6 +324,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
       )
       .then(({ data }) => {
         EventEmitter.emit("plot-name-updated-success");
+        EventEmitter.emit("sprinkling-updated-success");
       })
       .catch((error: Error) => {
         EventEmitter.emit("plot-name-updated-failure");
@@ -342,6 +344,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
       )
       .then(({ data }) => {
         EventEmitter.emit("plot-description-updated-success");
+        EventEmitter.emit("sprinkling-updated-success");
       })
       .catch((error: Error) => {
         EventEmitter.emit("plot-description-updated-failure");

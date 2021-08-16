@@ -32,6 +32,8 @@ import UpdateNameDialog from "./UpdatePlotNameDialog";
 import UpdateDescriptionDialog from "./UpdatePlotDescriptionDialog";
 import Snackbar from "./Snackbar";
 
+import {getCropType, developmentStateToLabel} from "./Analytics"
+
 type Props = {
   farmerData: FarmerData;
   date: string;
@@ -127,7 +129,39 @@ const PlotListDialog = ({ farmerData, date, navigate, selectedPlotId, selectedPi
 
   useEffect(() => {
     const data = farmerData.plotsGeoJSON.features.map((feature) => {
-      let sprinkling = 0;
+
+      /**
+         * Get last updated values
+         */
+       let lastUpdated: any = {
+        plotFeedback: undefined,
+        plotCropStatus: undefined
+      }
+      
+      if (
+        feature.properties.plotId &&
+        farmerData.plotsAnalytics[feature.properties.plotId]
+      ) {
+        let quantity = farmerData.plotFeedback
+          .find((feedback) => feedback.plotId === feature.properties.plotId);
+
+        if (quantity && quantity!.quantities.length > 0){
+          lastUpdated.plotFeedback = quantity.quantities.sort((a, b) => { return a > b ? 1 : a < b ? -1 : 0; })![0];
+        }
+
+        let status = farmerData.plotCropStatus
+          .find((feedback) => feedback.plotId === feature.properties.plotId);
+
+        if (status && status.statuses!.length > 0){
+          lastUpdated.plotCropStatus = status.statuses.sort((a, b) => { return a > b ? 1 : a < b ? -1 : 0; })![0];
+        } 
+        
+      }
+
+      let sprinkling = undefined;
+      /**
+       * Get sprinkling data
+       */
       if (
         feature.properties.plotId &&
         farmerData.plotsAnalytics[feature.properties.plotId]
@@ -150,7 +184,6 @@ const PlotListDialog = ({ farmerData, date, navigate, selectedPlotId, selectedPi
                 .quantities.find((quantity) => quantity.date === date)
                 .quantityMM
             : 0;
-
         return {
           properties: feature.properties,
           analytics: {
@@ -158,6 +191,7 @@ const PlotListDialog = ({ farmerData, date, navigate, selectedPlotId, selectedPi
               analyticsIndex
             ],
             sprinkling: sprinkling,
+            lastUpdated: lastUpdated,
           },
         };
       } else {
@@ -165,6 +199,7 @@ const PlotListDialog = ({ farmerData, date, navigate, selectedPlotId, selectedPi
           properties: feature.properties,
           analytics: {
             sprinkling: sprinkling,
+            lastUpdated: lastUpdated,
           },
         };
       }
@@ -410,24 +445,33 @@ const PlotListDialog = ({ farmerData, date, navigate, selectedPlotId, selectedPi
                       `${Math.round(data.analytics.averageTemperature)}`}
                     </TableCell>
                     <TableCell style={{whiteSpace: 'nowrap'}}>
-                      <Tooltip title={"Beregening: 5mm"}>
+                      {data.analytics.lastUpdated.plotFeedback && 
+                      <Tooltip title={`Beregening: ${data.analytics.lastUpdated.plotFeedback.quantityMM}mm`}>
                         <div>
                           <OpacityIcon className={css`
                             color: #1565c0;     
                             font-size: 14px !important;
                             transform: translateY(2px)
-                          `}/>{"2021-08-08"}
+                          `}/>{data.analytics.lastUpdated.plotFeedback.date}
                         </div>
-                      </Tooltip>
-                      <Tooltip title={"Gewasstatus: Geen ontwikkeling (0.0)"}>
+                      </Tooltip>}
+                      {data.analytics.lastUpdated.plotCropStatus && 
+                      <Tooltip title={`Gewasstatus: ${developmentStateToLabel(
+                        data.analytics.lastUpdated.plotCropStatus['crop-status'],
+                        getCropType(data.properties.cropTypes)
+                      ) &&
+                      developmentStateToLabel(
+                        data.analytics.lastUpdated.plotCropStatus['crop-status'],
+                        getCropType(data.properties.cropTypes)
+                      )!.label} (${data.analytics.lastUpdated.plotCropStatus['crop-status']})`}>
                         <div>
                           <EcoIcon  className={css`
                             color: #489c33;
                             font-size: 14px !important;
                             transform: translateY(2px)
-                          `}/>{"2021-08-08"}
+                          `}/>{data.analytics.lastUpdated.plotCropStatus.date}
                           </div>
-                          </Tooltip>
+                          </Tooltip>}
                     </TableCell>
                     <TableCell align={'center'}>
                       <IconButton

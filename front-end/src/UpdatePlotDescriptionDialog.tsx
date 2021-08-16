@@ -97,7 +97,7 @@ export default class UpdateDescriptionDialog extends Component<Props, State> {
             autoFocus
             fullWidth
             multiline
-            label="Perceel Commentaar"
+            label="Commentaar"
             value={value}
             onChange={(e) =>
               this.setState({ value: e.target.value })
