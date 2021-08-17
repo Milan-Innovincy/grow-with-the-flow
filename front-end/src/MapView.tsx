@@ -457,8 +457,8 @@ const MapView = ({
                 let color = f(todayValue[0].relativeTranspiration).rgba();
                 if(todayValue) {
                   chloropleth = {
-                    fillColor: `rgba(${color[0]},${color[1]},${color[2]},0.8)`,
-                    color: `rgba(${color[0]},${color[1]},${color[2]},0.8)`,
+                    fillColor: `rgba(${color[0]},${color[1]},${color[2]},0.5)`,
+                    color: `rgba(${color[0]},${color[1]},${color[2]},${feature.properties.plotId === selectedPlotId ? 1 : 0.5})`,
                     weight: feature.properties.plotId === selectedPlotId ? 2 : 1
                   }
                 }
