@@ -299,7 +299,7 @@ const PlotListDialog = ({ farmerData, date, navigate, selectedPlotId, selectedPi
             <Typography style={{display: "inline-block", textAlign: "center", flexGrow: 1}} variant="h6">Perceeloverzicht</Typography>
             <Button variant={'contained'} onClick={toggleShowModal} startIcon={<ArrowBackIcon/>}>Terug</Button>
           </DialogActions>
-          <DialogContent className={css`padding: 8px 0 !important; position: relative;`}>
+          <DialogContent className={css`padding: 0 !important; position: relative;`}>
             <Table className={css`
               .edit-icon {
                 position: absolute;
@@ -321,7 +321,13 @@ const PlotListDialog = ({ farmerData, date, navigate, selectedPlotId, selectedPi
                 background-color: #f3f5f5
               }
             `}>
-              <TableHead>
+              <TableHead className={css`
+                    position: sticky;
+                    top: 0;
+                    background: white;
+                    z-index: 2;
+                    box-shadow: 0px 2px 5px -1px rgb(0 0 0 / 20%), 0px -5px 8px 0px rgb(0 0 0 / 14%), 0px -1px 14px 0px rgb(0 0 0 / 12%);
+              `}>
                 <TableRow>
                   {/* <TableCell>ID</TableCell> */}
                   {isManager && <TableCell>
@@ -472,15 +478,15 @@ const PlotListDialog = ({ farmerData, date, navigate, selectedPlotId, selectedPi
                       `${Math.round(data.analytics.deficit)}`}
                     </TableCell>
                     <TableCell align="center" className={css`
-                      ${Math.round(data.analytics.relativeTranspiration * 100) > 0 && `
+                      ${Math.round(data.analytics.relativeTranspiration * 100) >= 50 && `
                         position: relative;
                         ::before {
                           content: '';
                           position: absolute;
                           top: 50%;
                           left: 50%;
-                          height: 60px;
-                          width: 60px;
+                          height: 40px;
+                          width: 40px;
                           transform: translate(-50%, -50%);
                           border: 2px solid #ff817b; 
                           max-height: 100%;
