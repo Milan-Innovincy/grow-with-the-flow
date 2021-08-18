@@ -195,6 +195,7 @@ const SelectedSumData = ({
   circleContent,
   label,
   prefix,
+  suffix,
   text,
   unit,
   isCircleValue,
@@ -202,6 +203,7 @@ const SelectedSumData = ({
   circleContent: ReactNode;
   label: string;
   prefix?: string;
+  suffix?: string;
   text: string;
   unit?: string;
   isCircleValue?: boolean;
@@ -212,15 +214,15 @@ const SelectedSumData = ({
       flex-grow: 1;
       align-items: center;
       text-transform: uppercase;
-      margin-left: 40px;
+      margin-left: 20px;
     `}
   >
     <div
       className={css`
         border: 1px solid #d2eded;
         border-radius: 50%;
-        width: ${isCircleValue? "50px" : "40px"};
-        height: ${isCircleValue? "50px" : "40px"};
+        width: ${isCircleValue? "56px" : "40px"};
+        height: ${isCircleValue? "56px" : "40px"};
         display: flex;
         align-items: center;
         justify-content: center;
@@ -280,6 +282,16 @@ const SelectedSumData = ({
           text-transform: none;
         `}>{unit}</small>}
       </div>
+      }
+      {suffix &&
+        <small
+          className={css`
+            color: #bcbcbc;
+            text-transform: none;
+          `}
+        >
+        {suffix}
+      </small>
       }
     </div>
   </div>
@@ -890,8 +902,7 @@ const Analytics: React.FC<Props> = ({
           top: -24px;
           background-color: #fff !important;
           color: #2f3d50 !important;
-          box-shadow: 0px 3px 5px -1px #2f3d50, 0px -1px 10px 0px #2f3d50,
-            0px 1px 18px 0px #2f3d50 !important;
+          box-shadow: 0px 3px 5px -1px rgb(0 0 0 / 20%), 0px 5px 8px 0px rgb(0 0 0 / 14%), 0px 1px 14px 0px rgb(0 0 0 / 12%);
         `}
       >
         <Close />
@@ -902,7 +913,7 @@ const Analytics: React.FC<Props> = ({
           align-items: flex-start;
           justify-content: space-between;
           height: 60px;
-          padding: 30px 20px 0 20px;
+          padding: 20px 20px 10px 20px;
         `}
       >
         <div
@@ -917,7 +928,6 @@ const Analytics: React.FC<Props> = ({
           `}>
             <div className={css`
               display: flex;
-              height: 36px;
             `}>
               <Button 
                 className={css`
@@ -932,7 +942,7 @@ const Analytics: React.FC<Props> = ({
                 onClick={handleDateViewClick}
                 className={css`
                   cursor: pointer;
-                  transform: translateY(14px);
+                  transform: translateY(24px);
                   margin-right: 10px;
                   display: inline-block;
                 `}
@@ -995,14 +1005,14 @@ const Analytics: React.FC<Props> = ({
           exclusive
           onChange={handleAnalyticsDisplayTypeChange}
           orientation="vertical"
-          style={{transform: "translateY(-18px)"}}
+          style={{transform: "translateY(-10px)"}}
         >
-          <ToggleButton value="daily" aria-label="daily" style={{padding: "5px"}}>
-            <Tooltip title={"Een dag"}>
+          <ToggleButton value="daily" aria-label="daily" style={{padding: "5px", borderRadius: "18px 18px 0 0"}}>
+            <Tooltip title={"Enkele dag"}>
                 <TodayIcon/>
             </Tooltip>
           </ToggleButton>
-          <ToggleButton value="weekly" aria-label="weekly" style={{padding: "5px"}}>
+          <ToggleButton value="weekly" aria-label="weekly" style={{padding: "5px", borderRadius: "0 0 18px 18px"}}>
             <Tooltip title={"Tien dagen"}>
                 <DateRangeIcon/>
             </Tooltip>
@@ -1176,9 +1186,16 @@ const Analytics: React.FC<Props> = ({
               text={cropType}
             />
             <SelectedSumData
-              circleContent={Math.round(area)}
-              label="Hectare"
-              text={soilType}
+              circleContent={<><strong>{Math.round(area)}</strong><small style={{textTransform: "none", marginLeft: "2px"}}>{"ha"}</small></>}
+              label={label}
+              text={(() => {
+                let thisPlot = farmerData.plotsGeoJSON.features.filter((x) => x.properties.plotId === selectedPlotId)
+                if(thisPlot.length > 0){
+                  return `${thisPlot[0].properties.name || thisPlot[0].properties.farmerName}`
+                }
+                return "";
+              })()}
+              suffix={soilType}
             />
           </div>
         )}
@@ -1200,28 +1217,16 @@ const Analytics: React.FC<Props> = ({
         <div
           className={css`
             display: flex;
-            justify-content: space-between;
-            padding: 10px 20px;
-          `}
-        ></div>
-        <div
-          className={css`
-            display: flex;
-            justify-content: space-between;
             padding: 0 20px;
           `}
         >
           <div
             className={css`
               display: flex;
+              flex-grow: 1;
             `}
           >
-            {/* Select left Axes Dropdown  */}            
-            <FormControl
-              className={css`
-                margin-left: 0 !important;
-              `}
-            >
+            <FormControl>
               <InputLabel htmlFor="component-simple">Y-as Links</InputLabel>
               <Select
                 className={css`
@@ -1383,7 +1388,7 @@ const Analytics: React.FC<Props> = ({
             <XAxis
               dataKey="date"
               xAxisId={0}
-              axisLine={{ stroke: "#383a3d" }}
+              axisLine={{ stroke: "#dddddd" }}
               tickLine={false}
               tick={{ fill: "#757575", fontSize: 10 }}
             />
@@ -1569,11 +1574,13 @@ const Analytics: React.FC<Props> = ({
           </ComposedChart>
         </ResponsiveContainer>
       </div>
-      <div className={css`
+      {/* <div className={css`
         width: 100%;
         background: #fcfcfc;
         padding: 5px 30px;
         display: flex;
+        box-shadow: 0px 3px 5px -1px rgb(0 0 0 / 20%), 0px 5px 8px 0px rgb(0 0 0 / 14%), 0px 1px 14px 0px rgb(0 0 0 / 12%);
+        color: "#747474";
       `}>
         {(selectedPlotId || selectedPixel )&& 
           <small className={css`
@@ -1594,7 +1601,7 @@ const Analytics: React.FC<Props> = ({
             })()}
           </small>
         }
-      </div>
+      </div> */}
       <UpdateSprinklingDialog
         selectedPlotId={selectedPlotId}
         farmerData={farmerData}
