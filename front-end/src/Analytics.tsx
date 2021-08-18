@@ -1008,7 +1008,7 @@ const Analytics: React.FC<Props> = ({
             </Tooltip>
           </ToggleButton>
         </ToggleButtonGroup>
-        {currentAnalyticsData && (
+        {currentAnalyticsData && currentAnalyticsData[analyticsDisplayType] && (
           <div
             className={css`
               display: flex;
@@ -1320,6 +1320,7 @@ const Analytics: React.FC<Props> = ({
                 id="component-simple"
                 value={
                   currentAnalyticsData &&
+                  currentAnalyticsData[analyticsDisplayType] &&
                   developmentStateToLabel(
                     currentAnalyticsData[analyticsDisplayType].developmentStage,
                     cropType
