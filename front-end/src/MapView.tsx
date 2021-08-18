@@ -15,7 +15,7 @@ import { FarmerData } from "./MapAndAnalytics";
 
 const { GeoJSONFillable, Patterns } = require("react-leaflet-geojson-patterns");
 
-const parameters: object = {
+const parameters: any = {
   measuredPrecipitation: {
     slug: "measuredPrecipitation",
     label: "Neerslag",
@@ -51,14 +51,45 @@ const parameters: object = {
   },
 };
 
-const plotsChloropleth = {
-  slug: "relativeTranspiration",
-  label: "Droogtestres",
-  colors: {
-    min: "#107520",
-    max: "#ff5658",
+const parametersPlot: any = {
+
+  relativeTranspiration: {
+    slug: "relativeTranspiration",
+    label: "Droogtestres",
+    colors: {
+      min: "#107520",
+      max: "#ff5658",
+    },
   },
+
+  trafficability: {
+    slug: "trafficability",
+    label: "Begaanbaarheid",
+    colors: {
+      min: "#ff5658",
+      max: "#008dff",
+    },
+  },
+  
+  availableSoilWater: {
+    slug: "availableSoilWater",
+    label: "Beschikbaar vochtgehalte",
+    colors: {
+      min: "#f321c9",
+      max: "#008dff",
+    },
+  },
+
 }
+
+// const plotsChloropleth = {
+//   slug: "relativeTranspiration",
+//   label: "Droogtestres",
+//   colors: {
+//     min: "#107520",
+//     max: "#ff5658",
+//   },
+// }
 
 type Props = {
   navigate: (path: string) => void;
@@ -83,7 +114,7 @@ let createPixelMap = (
   const height = grid.length;
   const width = grid[0].length;
   const f = chroma
-    .scale([parameters[parameter].colors.min, parameters[parameter].colors.max])
+    .scale([parameters[parameter].colors.min, parameters[parameter].colors.max]).mode('lab')
     .domain([minValue, maxValue]);
 
   const png = new PNG({
@@ -116,15 +147,15 @@ let createPixelMap = (
 
 const getLegendColors = (parameter: string) => {
   const f = chroma
-    .scale([parameters[parameter].colors.min, parameters[parameter].colors.max])
+    .scale([parameters[parameter].colors.min, parameters[parameter].colors.max]).mode('lab')
     .domain([0, 500]);
 
   return [f(0).rgba(), f(250).rgba(), f(500).rgba()];
 };
 
-const getPlotLegendColors = () => {
+const getPlotLegendColors = (parameter: string) => {
   const f = chroma
-    .scale([plotsChloropleth.colors.min, plotsChloropleth.colors.max])
+    .scale([parametersPlot[parameter].colors.min, parametersPlot[parameter].colors.max]).mode('lab')
     .domain([0, 500]);
 
   return [f(0).rgba(), f(250).rgba(), f(500).rgba()];
@@ -143,8 +174,11 @@ const MapView = ({
   const [selectedParameter, setSelectedParameter] = useState(
     "measuredPrecipitation"
   );
+  const [selectedPlotParameter, setSelectedPlotParameter] = useState(
+    "relativeTranspiration"
+  );
   const [legendColors, setlegendColors] = useState(
-    getPlotLegendColors()
+    getLegendColors("measuredPrecipitation")
   );
   const [pixelSelection, setPixelSelection] = useState(selectedPixel && true);
   const [chloroplethSelection, setChloroplethSelection] = useState(false);
@@ -206,6 +240,10 @@ const MapView = ({
 
   const handleSelectedParameterChange = (event: any) => {
     setSelectedParameter(event.target.value);
+  };
+
+  const handleSelectedPlotParameterChange = (event: any) => {
+    setSelectedPlotParameter(event.target.value);
   };
 
   const getCenter = () => {
@@ -271,7 +309,7 @@ const MapView = ({
           ? 0
           : farmerData.pixelsData.analytics[0][selectedParameter]
               .flat()
-              .reduce((prev, current) => Math.max(prev, current));
+              .reduce((prev: any, current: any) => Math.max(prev, current));
       setMinValue(minValue);
       setMaxValue(maxValue);
       setBase64(
@@ -292,7 +330,7 @@ const MapView = ({
         : Object.values(farmerData.plotsAnalytics)
             .flat()
             .filter((x) => x.date === date)
-            .reduce((prev, current) => Math.min(prev, current.relativeTranspiration), 0);
+            .reduce((prev, current: any) => Math.min(prev, current[selectedPlotParameter]), 0);
 
       const maxValue =
         Object.values(farmerData.plotsAnalytics).flat()
@@ -301,18 +339,18 @@ const MapView = ({
         : Object.values(farmerData.plotsAnalytics)
             .flat()
             .filter((x) => x.date === date)
-            .reduce((prev, current) => Math.max(prev, current.relativeTranspiration), 0);
+            .reduce((prev, current: any) => Math.max(prev, current[selectedPlotParameter]), 0);
       
       setMinValue(minValue);
       setMaxValue(maxValue);
-      setlegendColors(getPlotLegendColors())
+      setlegendColors(getPlotLegendColors(selectedPlotParameter))
       setBase64("");
     } else {
       setMinValue(null);
       setMaxValue(null);
       setBase64("");
     }
-  }, [selectedParameter, date, selectedPixel, selectedPlotId, farmerData, pixelSelection, chloroplethSelection]);
+  }, [selectedParameter, selectedPlotParameter, date, selectedPixel, selectedPlotId, farmerData, pixelSelection, chloroplethSelection]);
 
   let pixelPolygon = undefined;
   if (selectedPixel) {
@@ -448,18 +486,20 @@ const MapView = ({
 
             if(chloroplethSelection && !pixelSelection){
               const f = chroma
-              .scale([plotsChloropleth.colors.min, plotsChloropleth.colors.max])
+              .scale([parametersPlot[selectedPlotParameter].colors.min, parametersPlot[selectedPlotParameter].colors.max]).mode('lab')
               .domain([minValue as number, maxValue as number]);
 
               let chloropleth = {}
               if(farmerData.plotsAnalytics.hasOwnProperty(feature.properties.plotId)){
                 let todayValue = farmerData.plotsAnalytics[feature.properties.plotId].filter((x) => x.date === date);
-                let color = f(todayValue[0].relativeTranspiration).rgba();
-                if(todayValue) {
-                  chloropleth = {
-                    fillColor: `rgba(${color[0]},${color[1]},${color[2]},0.5)`,
-                    color: `rgba(${color[0]},${color[1]},${color[2]},${feature.properties.plotId === selectedPlotId ? 1 : 0.5})`,
-                    weight: feature.properties.plotId === selectedPlotId ? 2 : 1
+                if(todayValue.length > 0 && todayValue[0].hasOwnProperty("relativeTranspiration")){
+                  let color = f(todayValue[0].relativeTranspiration).rgba();
+                  if(todayValue) {
+                    chloropleth = {
+                      fillColor: `rgba(${color[0]},${color[1]},${color[2]},0.5)`,
+                      color: `rgba(${color[0]},${color[1]},${color[2]},${feature.properties.plotId === selectedPlotId ? 1 : 0.5})`,
+                      weight: feature.properties.plotId === selectedPlotId ? 2 : 1
+                    }
                   }
                 }
               }
@@ -523,16 +563,43 @@ const MapView = ({
           </Select>
         </div>
         :
-        <Tooltip title={chloroplethSelection ? "Hide chloropleth" : "Show chloropleth"}>
-          <Fab
-            onClick={() => setChloroplethSelection(!chloroplethSelection)}
-            size="medium"
-            disableFocusRipple={true}
-            style={{marginRight: "15px"}}
-          >
-            {chloroplethSelection ? <InvertColorsOff /> : <InvertColors />}
-          </Fab>
-        </Tooltip>
+        <>
+          {chloroplethSelection &&
+            <div
+              className={css`
+                display: flex;
+                align-items: center;
+                height: 48px;
+                margin-right: 15px;
+                padding: 0px 15px;
+                background-color: #d5d5d5;
+                border-radius: 4px;
+              `}
+            >
+              <Select
+                value={selectedPlotParameter}
+                onChange={handleSelectedPlotParameterChange}
+                autoWidth={true}
+              >
+                {Object.keys(parametersPlot).map((parameterName: string) => (
+                  <MenuItem key={parameterName} value={parameterName}>
+                    {parametersPlot[parameterName].label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </div>  
+          }
+          <Tooltip title={chloroplethSelection ? "Hide chloropleth" : "Show chloropleth"}>
+            <Fab
+              onClick={() => setChloroplethSelection(!chloroplethSelection)}
+              size="medium"
+              disableFocusRipple={true}
+              style={{marginRight: "15px"}}
+            >
+              {chloroplethSelection ? <InvertColorsOff /> : <InvertColors />}
+            </Fab>
+          </Tooltip>
+        </>
         }
         <Tooltip title={pixelSelection ? "Hide grid" : "Show grid"}>
           <Fab
@@ -550,7 +617,7 @@ const MapView = ({
         </Tooltip>
       </div>
 
-      {pixelSelection || chloroplethSelection &&
+      {(pixelSelection || chloroplethSelection) &&
         <Box
           className={css`
             display: flex;

@@ -21,7 +21,8 @@ import {
   FormControl,
   Select,
   Input,
-  Button
+  Button,
+  makeStyles,
 } from "@material-ui/core";
 import {
   MuiPickersUtilsProvider,
@@ -56,6 +57,9 @@ import PlotListDialog from "./PlotListDialog";
 import { FarmerData } from "./MapAndAnalytics";
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
+
+import PickerToolbar from "@material-ui/pickers/_shared/PickerToolbar";
+import ToolbarButton from "@material-ui/pickers/_shared/ToolbarButton";
 
 const cropTypes = ["mais", "aardappelen", "gras"];
 const cropStatusOptions: CropStatus = {
@@ -412,7 +416,7 @@ const Analytics: React.FC<Props> = ({
     const { pixelsData, plotsAnalytics, plotFeedback, plotCropStatus } = farmerData;
 
     if (selectedPlotId) {
-      setLabel(`Plot ${selectedPlotId}`);
+      setLabel(`Plot: ${selectedPlotId}`);
       const [sprinklingData] = plotFeedback.filter(
         (feedback: any) => feedback.plotId === selectedPlotId
       );
@@ -464,7 +468,7 @@ const Analytics: React.FC<Props> = ({
       const [x, y] = selectedPixel;
 
       setLabel(
-        `Pixel ${padStart(x.toString(), 3, "0")}${padStart(
+        `Pixel: ${padStart(x.toString(), 3, "0")},${padStart(
           y.toString(),
           3,
           "0"
@@ -727,6 +731,50 @@ const Analytics: React.FC<Props> = ({
     },
   ]
 
+ const useStyles = makeStyles({
+    toolbar: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "flex-start"
+    }
+  });
+  
+  const CustomToolbar = function (props: any) {
+  
+    const { date,
+      isLandscape,
+      openView,
+      setOpenView,
+      title} = props;
+  
+    const handleChangeViewClick = (view: any) => (e: any) => {
+  
+      setOpenView(view);
+  
+    }
+  
+    const classes = useStyles();
+  
+    return (
+      <PickerToolbar className={classes.toolbar} title={title} isLandscape={isLandscape}>
+        <ToolbarButton
+          onClick={handleChangeViewClick("year")}
+          variant="h6"
+          label={date.format("YYYY")}
+          selected={openView === "year"}
+        />
+        <ToolbarButton
+          onClick={handleChangeViewClick("date")}
+          variant="h4"
+          selected={openView === "date"}
+          label={date.format("DD MMMM")}
+        />
+      </PickerToolbar>
+    );
+  
+  }
+  
+
   return (
     <Paper
       elevation={5}
@@ -810,7 +858,7 @@ const Analytics: React.FC<Props> = ({
               </Button>
             </div>
 
-            <small
+            {/* <small
               className={css`
                 white-space: nowrap;
                 font-weight: lighter;
@@ -821,7 +869,7 @@ const Analytics: React.FC<Props> = ({
               `}
             >
               {label}
-            </small>
+            </small> */}
 
             <MuiPickersUtilsProvider
               libInstance={moment}
@@ -844,6 +892,7 @@ const Analytics: React.FC<Props> = ({
                 KeyboardButtonProps={{
                   "aria-label": "change date",
                 }}
+                ToolbarComponent={CustomToolbar}
               />
             </MuiPickersUtilsProvider>
           </div>
@@ -1340,6 +1389,34 @@ const Analytics: React.FC<Props> = ({
             ) : null}
           </ComposedChart>
         </ResponsiveContainer>
+      </div>
+      <div className={css`
+        width: 100%;
+        background: #e0e0e0;
+        padding: 5px 30px;
+        display: flex;
+      `}>
+        {selectedPlotId &&
+          <small className={css`
+          white-space: nowrap;
+          font-weight: lighter;
+          flex-grow: 1;
+        `}>
+            {(() => {
+              let thisPlot = farmerData.plotsGeoJSON.features.filter((x) => x.properties.plotId === selectedPlotId)
+              if(thisPlot.length > 0){
+                return `Naam: ${thisPlot[0].properties.name || thisPlot[0].properties.farmerName}`
+              }
+            })()}
+          </small>
+        }
+        {(selectedPlotId || selectedPixel )&& 
+          <small className={css`
+          white-space: nowrap;
+          font-weight: lighter;
+          padding-right: 60px;
+        `}>{label}</small>
+        }
       </div>
       <UpdateSprinklingDialog
         selectedPlotId={selectedPlotId}
