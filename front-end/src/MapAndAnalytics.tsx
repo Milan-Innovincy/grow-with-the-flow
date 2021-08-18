@@ -123,27 +123,36 @@ const MapAndAnalytics = ({ match, history }: Props) => {
       "sprinkling-updated-success",
       updateFarmerDataOnSprinklingUpdate
     );
-    return () =>
+    EventEmitter.on(
+      "plot-details-updated-success",
+      updatePlotDetails
+    );
+    return () => {
       EventEmitter.removeListener(
         "sprinkling-updated-success",
         updateFarmerDataOnSprinklingUpdate
       );
+      EventEmitter.removeListener(
+        "plot-details-updated-success",
+        updatePlotDetails
+      );
+    }
   }, [farmerData]);
 
   const updateFarmerDataOnSprinklingUpdate = async () => {
     await updatePlotFeedback();
   };
 
-  const fetchPixelsData = async () => {
-    const handleError = () => {
-      setIsFetchingFarmerData(false);
-      EventEmitter.emit(
-        "open-text-popup",
-        <LoadingError date={new Date(date ? date : "")} />
-      );
-      window.stop();
-    };
+  const handleError = () => {
+    setIsFetchingFarmerData(false);
+    EventEmitter.emit(
+      "open-text-popup",
+      <LoadingError date={new Date(date ? date : "")} />
+    );
+    window.stop();
+  };
 
+  const fetchPixelsData = async () => {
     const prefix = "https://storage.googleapis.com/grow-with-the-flow.appspot.com";
 
     const landUse = await axios
@@ -210,14 +219,6 @@ const MapAndAnalytics = ({ match, history }: Props) => {
         contextValue.keycloak && contextValue.keycloak.token;
 
       if (isAuthenticated) {
-        const handleError = () => {
-          setIsFetchingFarmerData(false);
-          EventEmitter.emit(
-            "open-text-popup",
-            <LoadingError date={new Date(date ? date : "")} />
-          );
-          window.stop();
-        };
         
         const plotsGeoJSON = await axiosInstance
           .get(`/plots`)
@@ -238,36 +239,6 @@ const MapAndAnalytics = ({ match, history }: Props) => {
           };
           setFarmerGeoData(farmerGeoData);
         }
-
-        // const landUse = await axios
-        //   .get(`${prefix}/gwtf-land-use.json`)
-        //   .then(({ data }) => {
-        //     return data;
-        //   })
-        //   .catch((error: Error) => {
-        //     console.error(error.message);
-        //     handleError();
-        //   });
-        // const soilMap = await axios
-        //   .get(`${prefix}/gwtf-soil-map.json`)
-        //   .then(({ data }) => {
-        //     return data;
-        //   })
-        //   .catch((error: Error) => {
-        //     console.error(error.message);
-        //     handleError();
-        //   });
-        // const pixelsData = await axiosInstance
-        //   .get(
-        //     `/pixels?on=${date}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater,relativeTranspiration,developmentStage,trafficability,relativeHumidity,averageTemperature`
-        //   )
-        //   .then(({ data }) => {
-        //     return data;
-        //   })
-        //   .catch((error: Error) => {
-        //     console.error(error.message);
-        //     handleError();
-        //   });
 
         const pixelsData = selectionType === 'pixel' ? await fetchPixelsData() : undefined;
 
@@ -324,7 +295,8 @@ const MapAndAnalytics = ({ match, history }: Props) => {
       )
       .then(({ data }) => {
         EventEmitter.emit("plot-name-updated-success");
-        EventEmitter.emit("sprinkling-updated-success");
+        //Update data to reflect change
+        EventEmitter.emit("plot-details-updated-success");
       })
       .catch((error: Error) => {
         EventEmitter.emit("plot-name-updated-failure");
@@ -344,7 +316,8 @@ const MapAndAnalytics = ({ match, history }: Props) => {
       )
       .then(({ data }) => {
         EventEmitter.emit("plot-description-updated-success");
-        EventEmitter.emit("sprinkling-updated-success");
+        //Update data to reflect change
+        EventEmitter.emit("plot-details-updated-success");
       })
       .catch((error: Error) => {
         EventEmitter.emit("plot-description-updated-failure");
@@ -396,6 +369,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
 
     const results = await Promise.all(promises).catch((error: Error) => {
       // TODO: Properly handle error
+      handleError();
       throw new Error(error.message);
     });
 
@@ -408,6 +382,33 @@ const MapAndAnalytics = ({ match, history }: Props) => {
     EventEmitter.emit("farmer-data-updated");
     setIsFetchingFarmerData(false);
   };
+
+  const updatePlotDetails = async () => {
+    const plotsGeoJSON = await axiosInstance
+      .get(`/plots`)
+      .then(({ data }) => {
+        return data;
+      })
+      .catch((error: Error) => {
+        console.error(error.message);
+        handleError();
+      });
+
+    if (plotsGeoJSON) {
+      plotsGeoJSON.features = plotsGeoJSON.features.filter(
+        (feature: any) => feature.properties.plotId
+      );
+      const farmerGeoData = {
+        plotsGeoJSON,
+      };
+      setFarmerGeoData(farmerGeoData);
+
+      setFarmerData({
+        ...farmerData!,
+        plotsGeoJSON
+      });
+    }
+  }
 
   const updatePlotFeedback = async () => {
     const { plotsAnalytics } = farmerData!;
@@ -433,6 +434,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
 
     const results = await Promise.all(promises).catch((error: Error) => {
       // TODO: Properly handle error
+      handleError();
       throw new Error(error.message);
     });
 

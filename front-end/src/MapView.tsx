@@ -4,16 +4,18 @@ import { Map, Polygon, TileLayer, ImageOverlay, GeoJSON } from "react-leaflet";
 import { range } from "lodash";
 import { featureCollection, lineString, center } from "@turf/turf";
 import { css } from "@emotion/css";
-import { Fab, Select, MenuItem, Box } from "@material-ui/core";
+import { Fab, Select, MenuItem, Box, Tooltip } from "@material-ui/core";
 import { Grid, GridOff } from "mdi-material-ui";
+import { InvertColors, InvertColorsOff} from "@material-ui/icons"
 import { sortBy } from "lodash";
 import { PNG } from "pngjs";
 import chroma from "chroma-js";
 import CoordinateCalculator from "./CoordinateCalculator";
 import { FarmerData } from "./MapAndAnalytics";
+
 const { GeoJSONFillable, Patterns } = require("react-leaflet-geojson-patterns");
 
-const parameters: object = {
+const parameters: any = {
   measuredPrecipitation: {
     slug: "measuredPrecipitation",
     label: "Neerslag",
@@ -49,6 +51,46 @@ const parameters: object = {
   },
 };
 
+const parametersPlot: any = {
+
+  relativeTranspiration: {
+    slug: "relativeTranspiration",
+    label: "Droogtestres",
+    colors: {
+      min: "#107520",
+      max: "#ff5658",
+    },
+  },
+
+  trafficability: {
+    slug: "trafficability",
+    label: "Begaanbaarheid",
+    colors: {
+      min: "#ff5658",
+      max: "#008dff",
+    },
+  },
+  
+  availableSoilWater: {
+    slug: "availableSoilWater",
+    label: "Beschikbaar vochtgehalte",
+    colors: {
+      min: "#f321c9",
+      max: "#008dff",
+    },
+  },
+
+}
+
+// const plotsChloropleth = {
+//   slug: "relativeTranspiration",
+//   label: "Droogtestres",
+//   colors: {
+//     min: "#107520",
+//     max: "#ff5658",
+//   },
+// }
+
 type Props = {
   navigate: (path: string) => void;
   farmerData: FarmerData;
@@ -72,7 +114,7 @@ let createPixelMap = (
   const height = grid.length;
   const width = grid[0].length;
   const f = chroma
-    .scale([parameters[parameter].colors.min, parameters[parameter].colors.max])
+    .scale([parameters[parameter].colors.min, parameters[parameter].colors.max]).mode('lab')
     .domain([minValue, maxValue]);
 
   const png = new PNG({
@@ -105,11 +147,20 @@ let createPixelMap = (
 
 const getLegendColors = (parameter: string) => {
   const f = chroma
-    .scale([parameters[parameter].colors.min, parameters[parameter].colors.max])
+    .scale([parameters[parameter].colors.min, parameters[parameter].colors.max]).mode('lab')
     .domain([0, 500]);
 
   return [f(0).rgba(), f(250).rgba(), f(500).rgba()];
 };
+
+const getPlotLegendColors = (parameter: string) => {
+  const f = chroma
+    .scale([parametersPlot[parameter].colors.min, parametersPlot[parameter].colors.max]).mode('lab')
+    .domain([0, 500]);
+
+  return [f(0).rgba(), f(250).rgba(), f(500).rgba()];
+};
+
 
 const MapView = ({
   navigate,
@@ -123,10 +174,14 @@ const MapView = ({
   const [selectedParameter, setSelectedParameter] = useState(
     "measuredPrecipitation"
   );
+  const [selectedPlotParameter, setSelectedPlotParameter] = useState(
+    "relativeTranspiration"
+  );
   const [legendColors, setlegendColors] = useState(
-    getLegendColors(selectedParameter)
+    getLegendColors("measuredPrecipitation")
   );
   const [pixelSelection, setPixelSelection] = useState(selectedPixel && true);
+  const [chloroplethSelection, setChloroplethSelection] = useState(false);
   const [zoom, setZoom] = useState(14);
   const [initialLoad, setInitialLoad] = useState(true);
   const [base64, setBase64] = useState("");
@@ -187,6 +242,10 @@ const MapView = ({
     setSelectedParameter(event.target.value);
   };
 
+  const handleSelectedPlotParameterChange = (event: any) => {
+    setSelectedPlotParameter(event.target.value);
+  };
+
   const getCenter = () => {
     if (selectedPlotId) {
       const feature = farmerGeoData.plotsGeoJSON.features.find(
@@ -221,8 +280,8 @@ const MapView = ({
 
   const [mapCenter, setMapCenter] = useState(getCenter());
 
-  const [minValue, setMinValue] = useState(null);
-  const [maxValue, setMaxValue] = useState(null);
+  const [minValue, setMinValue] = useState<number | null>(null);
+  const [maxValue, setMaxValue] = useState<number | null>(null);
 
   useEffect(() => {
     const mapCenter = getCenter();
@@ -231,7 +290,7 @@ const MapView = ({
 
   useEffect(() => {
     if (
-      farmerData && farmerData.pixelsData && 
+      farmerData && farmerData.pixelsData && pixelSelection &&
       farmerData.pixelsData.analytics.find((a: any) => a.time === date)
     ) {
       const minValue =
@@ -250,7 +309,7 @@ const MapView = ({
           ? 0
           : farmerData.pixelsData.analytics[0][selectedParameter]
               .flat()
-              .reduce((prev, current) => Math.max(prev, current));
+              .reduce((prev: any, current: any) => Math.max(prev, current));
       setMinValue(minValue);
       setMaxValue(maxValue);
       setBase64(
@@ -263,12 +322,35 @@ const MapView = ({
         )
       );
       setlegendColors(getLegendColors(selectedParameter));
+    } else if(farmerData && farmerData.plotsAnalytics && chloroplethSelection) {
+      const minValue =
+        Object.values(farmerData.plotsAnalytics).flat()
+        .filter((x) => x.date === date).length === 0
+        ? 0
+        : Object.values(farmerData.plotsAnalytics)
+            .flat()
+            .filter((x) => x.date === date)
+            .reduce((prev, current: any) => Math.min(prev, current[selectedPlotParameter]), 0);
+
+      const maxValue =
+        Object.values(farmerData.plotsAnalytics).flat()
+        .filter((x) => x.date === date).length === 0
+        ? 0
+        : Object.values(farmerData.plotsAnalytics)
+            .flat()
+            .filter((x) => x.date === date)
+            .reduce((prev, current: any) => Math.max(prev, current[selectedPlotParameter]), 0);
+      
+      setMinValue(minValue);
+      setMaxValue(maxValue);
+      setlegendColors(getPlotLegendColors(selectedPlotParameter))
+      setBase64("");
     } else {
       setMinValue(null);
       setMaxValue(null);
       setBase64("");
     }
-  }, [selectedParameter, date, selectedPixel, selectedPlotId, farmerData]);
+  }, [selectedParameter, selectedPlotParameter, date, selectedPixel, selectedPlotId, farmerData, pixelSelection, chloroplethSelection]);
 
   let pixelPolygon = undefined;
   if (selectedPixel) {
@@ -401,21 +483,49 @@ const MapView = ({
                     weight: 1,
                     color: "#64b5f6",
                   };
-            return {
-              fillPattern: Patterns.StripePattern({
-                color: "#00acc1",
-                weight: 3,
-                spaceColor: "#80deea",
-                spaceOpacity: 1,
-                key: "stripe",
-              }),
-              ...selectionStyle,
-            };
+
+            if(chloroplethSelection && !pixelSelection){
+              const f = chroma
+              .scale([parametersPlot[selectedPlotParameter].colors.min, parametersPlot[selectedPlotParameter].colors.max]).mode('lab')
+              .domain([minValue as number, maxValue as number]);
+
+              let chloropleth = {}
+              if(farmerData.plotsAnalytics.hasOwnProperty(feature.properties.plotId)){
+                let todayValue = farmerData.plotsAnalytics[feature.properties.plotId].filter((x) => x.date === date);
+                if(todayValue.length > 0 && todayValue[0].hasOwnProperty("relativeTranspiration")){
+                  let color = f(todayValue[0].relativeTranspiration).rgba();
+                  if(todayValue) {
+                    chloropleth = {
+                      fillColor: `rgba(${color[0]},${color[1]},${color[2]},0.5)`,
+                      color: `rgba(${color[0]},${color[1]},${color[2]},${feature.properties.plotId === selectedPlotId ? 1 : 0.5})`,
+                      weight: feature.properties.plotId === selectedPlotId ? 2 : 1
+                    }
+                  }
+                }
+              }
+              return {
+                ...chloropleth,
+                fillPattern: undefined,
+              }
+              
+            } else {
+              return {
+                fillPattern: Patterns.StripePattern({
+                  color: "#00acc1",
+                  weight: 3,
+                  spaceColor: "#80deea",
+                  spaceOpacity: 1,
+                  key: "stripe",
+                }),
+                ...selectionStyle,
+              };
+            }
           }}
           onClick={(e: any) =>
             navigate(`/map/${date}/plot/${e.layer.feature.properties.plotId}`)
           }
         />
+        
       </Map>
       <div
         className={css`
@@ -426,6 +536,7 @@ const MapView = ({
           right: 24px;
         `}
       >
+        {pixelSelection ?
         <div
           className={css`
             display: flex;
@@ -437,6 +548,7 @@ const MapView = ({
             border-radius: 4px;
           `}
         >
+          
           <Select
             className={css``}
             value={selectedParameter}
@@ -450,21 +562,62 @@ const MapView = ({
             ))}
           </Select>
         </div>
-        <Fab
-          onClick={() => {
-            if(farmerData.pixelsData === undefined){
-              getPixelsData()
-            }
-            setPixelSelection(!pixelSelection)
-          }}
-          size="medium"
-          disableFocusRipple={true}
-        >
-          {pixelSelection ? <GridOff /> : <Grid />}
-        </Fab>
+        :
+        <>
+          {chloroplethSelection &&
+            <div
+              className={css`
+                display: flex;
+                align-items: center;
+                height: 48px;
+                margin-right: 15px;
+                padding: 0px 15px;
+                background-color: #d5d5d5;
+                border-radius: 4px;
+              `}
+            >
+              <Select
+                value={selectedPlotParameter}
+                onChange={handleSelectedPlotParameterChange}
+                autoWidth={true}
+              >
+                {Object.keys(parametersPlot).map((parameterName: string) => (
+                  <MenuItem key={parameterName} value={parameterName}>
+                    {parametersPlot[parameterName].label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </div>  
+          }
+          <Tooltip title={chloroplethSelection ? "Hide chloropleth" : "Show chloropleth"}>
+            <Fab
+              onClick={() => setChloroplethSelection(!chloroplethSelection)}
+              size="medium"
+              disableFocusRipple={true}
+              style={{marginRight: "15px"}}
+            >
+              {chloroplethSelection ? <InvertColorsOff /> : <InvertColors />}
+            </Fab>
+          </Tooltip>
+        </>
+        }
+        <Tooltip title={pixelSelection ? "Hide grid" : "Show grid"}>
+          <Fab
+            onClick={() => {
+              if(farmerData.pixelsData === undefined){
+                getPixelsData()
+              }
+              setPixelSelection(!pixelSelection)
+            }}
+            size="medium"
+            disableFocusRipple={true}
+          >
+            {pixelSelection ? <GridOff /> : <Grid />}
+          </Fab>
+        </Tooltip>
       </div>
 
-      {pixelSelection ? (
+      {(pixelSelection || chloroplethSelection) &&
         <Box
           className={css`
             display: flex;
@@ -543,7 +696,7 @@ const MapView = ({
             )
           </small>
         </Box>
-      ) : null}
+      }
     </>
   );
 };

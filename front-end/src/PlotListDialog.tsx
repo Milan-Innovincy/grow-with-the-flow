@@ -52,7 +52,9 @@ type ColumnNames =
   | "relativeHumidity"
   | "temperature"
   | "lastUpdated"
-  | "name";
+  | "name"
+  | "farmerName"
+  | "cropTypes";
 
 const PlotListDialog = ({ farmerData, date, navigate, selectedPlotId, selectedPixel, isFetchingData }: Props) => {
   const contextValue = useContext(ApplicationContext);
@@ -142,18 +144,19 @@ const PlotListDialog = ({ farmerData, date, navigate, selectedPlotId, selectedPi
         feature.properties.plotId &&
         farmerData.plotsAnalytics[feature.properties.plotId]
       ) {
+        //Sort values by date so ensure we take most recent 
         let quantity = farmerData.plotFeedback
           .find((feedback) => feedback.plotId === feature.properties.plotId);
 
         if (quantity && quantity!.quantities.length > 0){
-          lastUpdated.plotFeedback = quantity.quantities.sort((a, b) => { return a > b ? 1 : a < b ? -1 : 0; })![0];
+          lastUpdated.plotFeedback = quantity.quantities.sort((a, b) => { return b.date.localeCompare(a.date) })![0];
         }
 
         let status = farmerData.plotCropStatus
           .find((feedback) => feedback.plotId === feature.properties.plotId);
 
         if (status && status.statuses!.length > 0){
-          lastUpdated.plotCropStatus = status.statuses.sort((a, b) => { return a > b ? 1 : a < b ? -1 : 0; })![0];
+          lastUpdated.plotCropStatus = status.statuses.sort((a, b) => { return b.date.localeCompare(a.date) })![0];
         } 
         
       }
@@ -207,11 +210,40 @@ const PlotListDialog = ({ farmerData, date, navigate, selectedPlotId, selectedPi
     if (orderBy && order) {
       setTableData([
         ...data.sort((a, b) => {
-          if (order === "asc") {
-            return a.analytics[orderBy] - b.analytics[orderBy];
-          } else {
-            return b.analytics[orderBy] - a.analytics[orderBy];
+          /**
+           * Order strings for farmerName, name, cropType
+           */
+          if(orderBy === "farmerName" || orderBy === "name" || orderBy === "cropTypes") {
+            if (order === "desc") {
+              if(a.analytics.hasOwnProperty(orderBy) && a.analytics[orderBy]){
+                return a.analytics[orderBy].localeCompare(b.analytics[orderBy]);
+              } 
+              else if (a.properties.hasOwnProperty(orderBy) && a.properties[orderBy]) {
+                return a.properties[orderBy].localeCompare(b.properties[orderBy]);
+              }
+            } 
+            
+            else {
+              if(b.analytics.hasOwnProperty(orderBy) && b.analytics[orderBy]){
+                return b.analytics[orderBy].localeCompare(a.analytics[orderBy]);
+              } 
+              if (b.properties.hasOwnProperty(orderBy) && b.properties[orderBy]) {
+                return b.properties[orderBy].localeCompare(a.properties[orderBy]);
+              }
+            }
+          } 
+          /**
+           * Order number values
+           */
+          else {
+            if (order === "asc") {
+              return a.analytics[orderBy] - b.analytics[orderBy];
+            } else {
+              return b.analytics[orderBy] - a.analytics[orderBy];
+            }
           }
+
+          
         }),
       ]);
     } else {
@@ -292,8 +324,24 @@ const PlotListDialog = ({ farmerData, date, navigate, selectedPlotId, selectedPi
               <TableHead>
                 <TableRow>
                   {/* <TableCell>ID</TableCell> */}
-                  {isManager && <TableCell>Boer</TableCell>}
-                  <TableCell>Gewas</TableCell>
+                  {isManager && <TableCell>
+                    <TableSortLabel
+                      active={orderBy === "farmerName"}
+                      direction={order}
+                      onClick={() => sortColumn("farmerName")}
+                    >
+                      Boer
+                    </TableSortLabel>
+                  </TableCell>}
+                  <TableCell>
+                    <TableSortLabel
+                      active={orderBy === "cropTypes"}
+                      direction={order}
+                      onClick={() => sortColumn("cropTypes")}
+                    >
+                      Gewas
+                    </TableSortLabel>
+                  </TableCell>
                   <TableCell>
                     <TableSortLabel
                       active={orderBy === "name"}
@@ -341,16 +389,6 @@ const PlotListDialog = ({ farmerData, date, navigate, selectedPlotId, selectedPi
                     </TableSortLabel>
                   </TableCell>
                   <TableCell align="center">
-                    {" "}
-                    <TableSortLabel
-                      active={orderBy === "sprinkling"}
-                      direction={order}
-                      onClick={() => sortColumn("sprinkling")}
-                    >
-                      Beregening (mm)
-                    </TableSortLabel>
-                  </TableCell>
-                  <TableCell align="center">
                     <TableSortLabel
                       active={orderBy === "relativeHumidity"}
                       direction={order}
@@ -366,6 +404,15 @@ const PlotListDialog = ({ farmerData, date, navigate, selectedPlotId, selectedPi
                       onClick={() => sortColumn("temperature")}
                     >
                       Temperatuur (°C)
+                    </TableSortLabel>
+                  </TableCell>
+                  <TableCell align="center">
+                    <TableSortLabel
+                      active={orderBy === "sprinkling"}
+                      direction={order}
+                      onClick={() => sortColumn("sprinkling")}
+                    >
+                      Beregening (mm)
                     </TableSortLabel>
                   </TableCell>
                   <TableCell>
@@ -424,7 +471,22 @@ const PlotListDialog = ({ farmerData, date, navigate, selectedPlotId, selectedPi
                       {data.properties && data.analytics.deficit && 
                       `${Math.round(data.analytics.deficit)}`}
                     </TableCell>
-                    <TableCell align="center">
+                    <TableCell align="center" className={css`
+                      ${Math.round(data.analytics.relativeTranspiration * 100) > 0 && `
+                        position: relative;
+                        ::before {
+                          content: '';
+                          position: absolute;
+                          top: 50%;
+                          left: 50%;
+                          height: 60px;
+                          width: 60px;
+                          transform: translate(-50%, -50%);
+                          border: 2px solid #ff817b; 
+                          max-height: 100%;
+                          border-radius: 100%;
+                        }
+                      `}`}>
                       {data.properties && data.analytics.relativeTranspiration &&
                         `${Math.round(data.analytics.relativeTranspiration * 100)}`}
                     </TableCell>
@@ -433,16 +495,16 @@ const PlotListDialog = ({ farmerData, date, navigate, selectedPlotId, selectedPi
                         `${Math.round(data.analytics.evapotranspiration)}`}
                     </TableCell>
                     <TableCell align="center">
-                      {data.properties && data.analytics.sprinkling &&
-                      `${data.analytics.sprinkling}`}
-                    </TableCell>
-                    <TableCell align="center">
                       {data.properties && data.analytics.relativeHumidity &&
                       `${Math.round(data.analytics.relativeHumidity)}`}
                     </TableCell>
                     <TableCell align="center">
                       {data.properties && data.analytics.averageTemperature &&
                       `${Math.round(data.analytics.averageTemperature)}`}
+                    </TableCell>
+                    <TableCell align="center">
+                      {data.properties && data.analytics.sprinkling &&
+                      `${data.analytics.sprinkling}`}
                     </TableCell>
                     <TableCell style={{whiteSpace: 'nowrap'}}>
                       {data.analytics.lastUpdated.plotFeedback && 

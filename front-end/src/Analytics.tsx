@@ -21,8 +21,14 @@ import {
   FormControl,
   Select,
   Input,
-  Button
+  Button,
+  makeStyles,
+  Tooltip,
 } from "@material-ui/core";
+import {
+  ToggleButton,
+  ToggleButtonGroup,
+} from "@material-ui/lab"
 import {
   MuiPickersUtilsProvider,
   KeyboardDatePicker,
@@ -56,6 +62,12 @@ import PlotListDialog from "./PlotListDialog";
 import { FarmerData } from "./MapAndAnalytics";
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
+import TodayIcon from '@material-ui/icons/Today';
+import DateRangeIcon from '@material-ui/icons/DateRange';
+import PickerToolbar from "@material-ui/pickers/_shared/PickerToolbar";
+import ToolbarButton from "@material-ui/pickers/_shared/ToolbarButton";
+
+import _ from "lodash";
 
 const cropTypes = ["mais", "aardappelen", "gras"];
 const cropStatusOptions: CropStatus = {
@@ -182,15 +194,22 @@ let updateSprinklingDialog: UpdateSprinklingDialog;
 const SelectedSumData = ({
   circleContent,
   label,
+  prefix,
   text,
+  unit,
+  isCircleValue,
 }: {
   circleContent: ReactNode;
   label: string;
+  prefix?: string;
   text: string;
+  unit?: string;
+  isCircleValue?: boolean;
 }) => (
   <div
     className={css`
       display: flex;
+      flex-grow: 1;
       align-items: center;
       text-transform: uppercase;
       margin-left: 40px;
@@ -200,15 +219,35 @@ const SelectedSumData = ({
       className={css`
         border: 1px solid #d2eded;
         border-radius: 50%;
-        width: 40px;
-        height: 40px;
+        width: ${isCircleValue? "50px" : "40px"};
+        height: ${isCircleValue? "50px" : "40px"};
         display: flex;
         align-items: center;
         justify-content: center;
         margin-right: 10px;
+        position: relative;
       `}
     >
-      {circleContent}
+      {isCircleValue ? 
+        <div className={css`
+          position: absolute;
+          top: 0;
+          left: 0;
+          transform: translate(-50%, -30%) scale(0.8);
+          height: 30px;
+          width: 30px;
+          border-radius: 100%;
+          background: white;
+        `}>{circleContent}</div>
+      : circleContent}
+      {isCircleValue && //oDisplay value in circle here
+        <div>
+        <strong>{text}</strong>
+          {unit && <small className={css`
+            text-transform: none;
+          `}>{unit}</small>}
+        </div>
+      }
     </div>
     <div
       className={css`
@@ -216,6 +255,16 @@ const SelectedSumData = ({
         flex-direction: column;
       `}
     >
+      {prefix &&
+        <small
+          className={css`
+            color: #bcbcbc;
+            text-transform: none;
+          `}
+        >
+        {prefix}
+      </small>
+      }
       <small
         className={css`
           color: #bcbcbc;
@@ -223,7 +272,15 @@ const SelectedSumData = ({
       >
         {label}
       </small>
-      <strong>{text}</strong>
+      
+      {!isCircleValue && //only display value when not in circle
+      <div>
+        <strong>{text}</strong>
+        {unit && <small className={css`
+          text-transform: none;
+        `}>{unit}</small>}
+      </div>
+      }
     </div>
   </div>
 );
@@ -407,12 +464,13 @@ const Analytics: React.FC<Props> = ({
   const [cropType, setCropType] = useState<string>("");
   const [soilType, setSoilType] = useState<string>("");
   const [area, setArea] = useState<number>(0);
+  const [analyticsDisplayType, setAnalyticsDisplayType] = useState<"daily" | "weekly">("daily")
 
   useEffect(() => {
     const { pixelsData, plotsAnalytics, plotFeedback, plotCropStatus } = farmerData;
 
     if (selectedPlotId) {
-      setLabel(`Plot ${selectedPlotId}`);
+      setLabel(`Plot: ${selectedPlotId}`);
       const [sprinklingData] = plotFeedback.filter(
         (feedback: any) => feedback.plotId === selectedPlotId
       );
@@ -464,7 +522,7 @@ const Analytics: React.FC<Props> = ({
       const [x, y] = selectedPixel;
 
       setLabel(
-        `Pixel ${padStart(x.toString(), 3, "0")}${padStart(
+        `Pixel: ${padStart(x.toString(), 3, "0")},${padStart(
           y.toString(),
           3,
           "0"
@@ -491,9 +549,44 @@ const Analytics: React.FC<Props> = ({
       );
     }
   }, [selectedPlotId, selectedPixel, farmerData, farmerData.plotCropStatus]);
-  const currentAnalyticsData = analyticsData.find(
-    (i) => i.date === DateTime.fromJSDate(date).toFormat("dd/MM/yyyy")
-  );
+  interface Analytics {
+    daily: AnalyticsData;
+    weekly: AnalyticsData;
+  }
+  const currentAnalyticsData: Analytics = analyticsData.length > 0 ? {} : undefined;
+
+  if(analyticsData.length > 0){
+    currentAnalyticsData.daily = analyticsData.find(
+      (i) => i.date === DateTime.fromJSDate(date).toFormat("dd/MM/yyyy")
+    )!;
+
+    currentAnalyticsData.weekly = (() => {
+      let outObj: any = {};
+      analyticsData.forEach((day: any) => {
+        Object.keys(day).forEach((key) => {
+          if(day[key] !== undefined && day[key] !== null){
+            if(outObj.hasOwnProperty(key)){
+              outObj[key].push(Number(day[key]))
+            } else {
+              outObj[key] = [Number(day[key])]
+            }
+          }
+        })
+      })
+      //clean up data
+      Object.keys(outObj).forEach((key) => {
+        //Average
+        if(key === "moisture" || key === "temperature" || key === "relativeHumidity"){
+          outObj[key] = _.mean(outObj[key])
+        }
+        //Sum
+        else {
+          outObj[key] = _.sum(outObj[key])
+        }
+      })
+      return outObj
+    })();
+  }
 
   setTimeout(() => {
     const nodes = document.querySelectorAll(
@@ -727,6 +820,55 @@ const Analytics: React.FC<Props> = ({
     },
   ]
 
+ const useStyles = makeStyles({
+    toolbar: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "flex-start"
+    }
+  });
+  
+  const CustomToolbar = function (props: any) {
+  
+    const { date,
+      isLandscape,
+      openView,
+      setOpenView,
+      title} = props;
+  
+    const handleChangeViewClick = (view: any) => (e: any) => {
+  
+      setOpenView(view);
+  
+    }
+  
+    const classes = useStyles();
+  
+    return (
+      <PickerToolbar className={classes.toolbar} title={title} isLandscape={isLandscape}>
+        <ToolbarButton
+          onClick={handleChangeViewClick("year")}
+          variant="h6"
+          label={date.format("YYYY")}
+          selected={openView === "year"}
+        />
+        <ToolbarButton
+          onClick={handleChangeViewClick("date")}
+          variant="h4"
+          selected={openView === "date"}
+          label={date.format("DD MMMM")}
+        />
+      </PickerToolbar>
+    );
+  
+  }
+  
+  const handleAnalyticsDisplayTypeChange = (event: any, type: any) => {
+    if(type){
+      setAnalyticsDisplayType(type);
+    }
+  };
+
   return (
     <Paper
       elevation={5}
@@ -775,7 +917,6 @@ const Analytics: React.FC<Props> = ({
           `}>
             <div className={css`
               display: flex;
-              transform: translateY(8px);
               height: 36px;
             `}>
               <Button 
@@ -810,7 +951,7 @@ const Analytics: React.FC<Props> = ({
               </Button>
             </div>
 
-            <small
+            {/* <small
               className={css`
                 white-space: nowrap;
                 font-weight: lighter;
@@ -821,7 +962,7 @@ const Analytics: React.FC<Props> = ({
               `}
             >
               {label}
-            </small>
+            </small> */}
 
             <MuiPickersUtilsProvider
               libInstance={moment}
@@ -844,37 +985,57 @@ const Analytics: React.FC<Props> = ({
                 KeyboardButtonProps={{
                   "aria-label": "change date",
                 }}
+                ToolbarComponent={CustomToolbar}
               />
             </MuiPickersUtilsProvider>
           </div>
         </div>
+        <ToggleButtonGroup
+          value={analyticsDisplayType}
+          exclusive
+          onChange={handleAnalyticsDisplayTypeChange}
+          orientation="vertical"
+          style={{transform: "translateY(-18px)"}}
+        >
+          <ToggleButton value="daily" aria-label="daily" style={{padding: "5px"}}>
+            <Tooltip title={"Een dag"}>
+                <TodayIcon/>
+            </Tooltip>
+          </ToggleButton>
+          <ToggleButton value="weekly" aria-label="weekly" style={{padding: "5px"}}>
+            <Tooltip title={"Tien dagen"}>
+                <DateRangeIcon/>
+            </Tooltip>
+          </ToggleButton>
+        </ToggleButtonGroup>
         {currentAnalyticsData && (
           <div
             className={css`
               display: flex;
+              flex-grow: 1;
             `}
           >
-            <CurrentDataItem
+            {/* <CurrentDataItem
               label="Regenval (mm)"
               value={Math.round(currentAnalyticsData.rainfall || 0)}
               color={paramColor.rainfall}
               icon={
                 <RainfallIcon
-                  fill="#80A1D4"
+                  fill="#65b5f5"
                   className={css`
                     width: 20px;
                     height: 20px;
                   `}
                 />
               }
-            />
-            <CurrentDataItem
+            /> */}
+            {/* <CurrentDataItem
               label="Verdamping (mm)"
               value={Math.round(currentAnalyticsData.evapotranspiration || 0)}
               color={paramColor.relativeHumidity}
               icon={
                 <CarDefrostRear
-                  fill="#6A7152"
+                  fill="#65b5f5"
                   className={css`
                     width: 18px !important;
                     height: 18px !important;
@@ -882,8 +1043,8 @@ const Analytics: React.FC<Props> = ({
                   `}
                 />
               }
-            />
-            <CurrentDataItem
+            /> */}
+            {/* <CurrentDataItem
               label="Beschikbaar bodemvocht (mm)"
               value={Math.round(currentAnalyticsData.moisture || 0)}
               color={paramColor.moisture}
@@ -897,9 +1058,9 @@ const Analytics: React.FC<Props> = ({
                   `}
                 />
               }
-            />
+            /> */}
 
-            <CurrentDataItem
+            {/* <CurrentDataItem
               label="Te beregenen (mm)"
               value={Math.round(currentAnalyticsData.sprinkling || 0)}
               color={paramColor.sprinkling}
@@ -912,8 +1073,8 @@ const Analytics: React.FC<Props> = ({
                   `}
                 />
               }
-            />
-            <CurrentDataItem
+            /> */}
+            {/* <CurrentDataItem
               label="Temperatuur (°C)"
               value={Math.round(currentAnalyticsData.temperature || 0)}
               color={paramColor.temperature}
@@ -927,8 +1088,8 @@ const Analytics: React.FC<Props> = ({
                   `}
                 />
               }
-            />
-            <CurrentDataItem
+            /> */}
+            {/* <CurrentDataItem
               label="Luchtvochtigheid (%)"
               value={currentAnalyticsData.relativeHumidity || 0}
               color={paramColor.relativeHumidity}
@@ -942,6 +1103,72 @@ const Analytics: React.FC<Props> = ({
                   `}
                 />
               }
+            /> */}
+            <SelectedSumData
+              circleContent={<RainfallIcon
+                viewBox="0 0 630 630"
+                style={{width: "34px", height: "34px", paddingLeft: "6px", paddingTop: "6px", fill: "#65b5f5"}}
+              />}
+              label="Regenval"
+              text={`${Math.round(currentAnalyticsData[analyticsDisplayType].rainfall || 0)}`}
+              unit={"mm"}
+              prefix={analyticsDisplayType === "weekly" ? "Totale" : undefined}
+              isCircleValue
+            />
+            <SelectedSumData
+              circleContent={<CarDefrostRear
+                viewBox="0 0 40 40"
+                style={{width: "34px", height: "34px", paddingLeft: "14px", paddingTop: "12px", fill: "#f1b8de", transform: "rotate(180deg)  translate(2px, 4px)"}}
+              />}
+              label="Verdamping"
+              text={`${Math.round(currentAnalyticsData[analyticsDisplayType].evapotranspiration || 0)}`}
+              unit={"mm"}
+              prefix={analyticsDisplayType === "weekly" ? "Totale" : undefined}
+              isCircleValue
+            />
+            <SelectedSumData
+              circleContent={<Vanish
+                viewBox="0 0 30 30"
+                style={{width: "34px", height: "34px", paddingLeft: "6px", paddingTop: "6px", fill: "#ffa139"}}
+              />}
+              label="Bodemvocht"
+              text={`${Math.round(currentAnalyticsData[analyticsDisplayType].moisture || 0)}`}
+              unit={"mm"}
+              prefix={analyticsDisplayType === "weekly" ? "Gemiddelde" : undefined}
+              isCircleValue
+            />
+            <SelectedSumData
+              circleContent={<IrrigationIcon
+                viewBox="0 0 30 30"
+                style={{width: "34px", height: "34px", paddingRight: "2px", paddingBottom: "4px", fill: "#1565c0"}}
+              />}
+              label="Beregenen"
+              text={`${Math.round(currentAnalyticsData[analyticsDisplayType].sprinkling || 0)}`}
+              unit={"mm"}
+              prefix={analyticsDisplayType === "weekly" ? "Totale" : undefined}
+              isCircleValue
+            />
+            <SelectedSumData
+              circleContent={<Thermometer
+                viewBox="0 0 30 30"
+                style={{width: "34px", height: "34px", paddingLeft: "8px", paddingTop: "4px", fill: "#ff6a6a"}}
+              />}
+              label="Temperatuur"
+              text={`${Math.round(currentAnalyticsData[analyticsDisplayType].temperature || 0)}`}
+              unit={"°C"}
+              prefix={analyticsDisplayType === "weekly" ? "Gemiddelde" : undefined}
+              isCircleValue
+            />
+            <SelectedSumData
+              circleContent={<WaterPercent
+                viewBox="0 0 26 26"
+                style={{width: "34px", height: "34px", paddingLeft: "4px", fill: "#bb84e0"}}
+              />}
+              label="Luchtvochtigheid"
+              text={`${Math.round(currentAnalyticsData[analyticsDisplayType].relativeHumidity || 0)}`}
+              unit={"%"}
+              prefix={analyticsDisplayType === "weekly" ? "Gemiddelde" : undefined}
+              isCircleValue
             />
             <SelectedSumData
               circleContent={getCropTypeIcon(cropType)}
@@ -1094,15 +1321,15 @@ const Analytics: React.FC<Props> = ({
                 value={
                   currentAnalyticsData &&
                   developmentStateToLabel(
-                    currentAnalyticsData.developmentStage,
+                    currentAnalyticsData[analyticsDisplayType].developmentStage,
                     cropType
                   )
                     ? `${
                         developmentStateToLabel(
-                          currentAnalyticsData.developmentStage,
+                          currentAnalyticsData[analyticsDisplayType].developmentStage,
                           cropType
                         ).label
-                      } ${currentAnalyticsData.developmentStage.toLocaleString(
+                      } ${currentAnalyticsData[analyticsDisplayType].developmentStage.toLocaleString(
                         undefined,
                         {
                           minimumFractionDigits: 2,
@@ -1340,6 +1567,32 @@ const Analytics: React.FC<Props> = ({
             ) : null}
           </ComposedChart>
         </ResponsiveContainer>
+      </div>
+      <div className={css`
+        width: 100%;
+        background: #fcfcfc;
+        padding: 5px 30px;
+        display: flex;
+      `}>
+        {(selectedPlotId || selectedPixel )&& 
+          <small className={css`
+          white-space: nowrap;
+        `}>{label}</small>
+        }
+        {selectedPlotId &&
+          <small className={css`
+          white-space: nowrap;
+          padding-right: 60px;
+          margin-left: 20px;
+        `}>
+            {(() => {
+              let thisPlot = farmerData.plotsGeoJSON.features.filter((x) => x.properties.plotId === selectedPlotId)
+              if(thisPlot.length > 0){
+                return `Naam: ${thisPlot[0].properties.name || thisPlot[0].properties.farmerName}`
+              }
+            })()}
+          </small>
+        }
       </div>
       <UpdateSprinklingDialog
         selectedPlotId={selectedPlotId}
