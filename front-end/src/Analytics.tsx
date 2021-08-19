@@ -1005,7 +1005,7 @@ const Analytics: React.FC<Props> = ({
           exclusive
           onChange={handleAnalyticsDisplayTypeChange}
           orientation="vertical"
-          style={{transform: "translateY(-10px)"}}
+          style={{transform: "translateY(-10px)", marginRight: "10px"}}
         >
           <ToggleButton value="daily" aria-label="daily" style={{padding: "5px", borderRadius: "18px 18px 0 0"}}>
             <Tooltip title={"Enkele dag"}>
