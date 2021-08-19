@@ -258,6 +258,8 @@ const SelectedSumData = ({
       className={css`
         display: flex;
         flex-direction: column;
+        min-height: 40px;
+        justify-content: center;
       `}
     >
       {prefix &&
