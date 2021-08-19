@@ -19,35 +19,23 @@ const parameters: any = {
   measuredPrecipitation: {
     slug: "measuredPrecipitation",
     label: "Neerslag",
-    colors: {
-      min: "rgba(230, 244, 255, 0.01)",
-      max: "#008dff",
-    },
+    colors:["rgba(230, 244, 255, 0.01)", "#008dff"]
   },
 
   availableSoilWater: {
     slug: "availableSoilWater",
     label: "Beschikbaar vochtgehalte",
-    colors: {
-      min: "#fde3fd",
-      max: "#f321c9",
-    },
+    colors: ["#fde3fd", "#f321c9"]
   },
   relativeTranspiration: {
     slug: "relativeTranspiration",
     label: "Waterstressfactor",
-    colors: {
-      min: "#107520",
-      max: "#fcad03",
-    },
+    colors: ["#107520", "#fcad03"]
   },
   evapotranspiration: {
     slug: "evapotranspiration",
     label: "Verdamping in mm",
-    colors: {
-      min: "#BECED1",
-      max: "#6a7152",
-    },
+    colors: ["#BECED1", "#6a7152"]
   },
 };
 
@@ -56,28 +44,19 @@ const parametersPlot: any = {
   relativeTranspiration: {
     slug: "relativeTranspiration",
     label: "Droogtestress",
-    colors: {
-      min: "#107520",
-      max: "#ff5658",
-    },
+    colors: ["#107520", "#fcad03", "#ff5658"]
   },
 
   trafficability: {
     slug: "trafficability",
     label: "Berijdbaarheid",
-    colors: {
-      min: "#ff5658",
-      max: "#008dff",
-    },
+    colors: ["#ff5658", "#fcad03", "#107520"]
   },
   
   availableSoilWater: {
     slug: "availableSoilWater",
     label: "Beschikbaar vochtgehalte",
-    colors: {
-      min: "#fcad03",
-      max: "#008dff",
-    },
+    colors: ["#ff5658", "#fcad03", "#008dff"]
   },
 
 }
@@ -114,7 +93,7 @@ let createPixelMap = (
   const height = grid.length;
   const width = grid[0].length;
   const f = chroma
-    .scale([parameters[parameter].colors.min, parameters[parameter].colors.max]).mode('lab')
+    .scale(parameters[parameter].colors).mode('lab')
     .domain([minValue, maxValue]);
 
   const png = new PNG({
@@ -147,7 +126,7 @@ let createPixelMap = (
 
 const getLegendColors = (parameter: string) => {
   const f = chroma
-    .scale([parameters[parameter].colors.min, parameters[parameter].colors.max]).mode('lab')
+    .scale(parameters[parameter].colors).mode('lab')
     .domain([0, 500]);
 
   return [f(0).rgba(), f(250).rgba(), f(500).rgba()];
@@ -155,7 +134,7 @@ const getLegendColors = (parameter: string) => {
 
 const getPlotLegendColors = (parameter: string) => {
   const f = chroma
-    .scale([parametersPlot[parameter].colors.min, parametersPlot[parameter].colors.max]).mode('lab')
+    .scale(parametersPlot[parameter].colors).mode('lab')
     .domain([0, 500]);
 
   return [f(0).rgba(), f(250).rgba(), f(500).rgba()];
@@ -486,7 +465,7 @@ const MapView = ({
 
             if(chloroplethSelection && !pixelSelection){
               const f = chroma
-              .scale([parametersPlot[selectedPlotParameter].colors.min, parametersPlot[selectedPlotParameter].colors.max]).mode('lab')
+              .scale(parametersPlot[selectedPlotParameter].colors).mode('lab')
               .domain([minValue as number, maxValue as number]);
 
               let chloropleth = {}
@@ -497,16 +476,16 @@ const MapView = ({
                   console.log(color)
                   if(todayValue) {
                     chloropleth = {
-                      fillColor: `rgba(${color[0]},${color[1]},${color[2]},0.8)`,
-                      color: `rgba(${color[0]},${color[1]},${color[2]},${feature.properties.plotId === selectedPlotId ? 1 : 0.8})`,
-                      weight: feature.properties.plotId === selectedPlotId ? 2 : 1
+                      fillColor: `rgba(${color[0]},${color[1]},${color[2]},0.6)`,
+                      color: feature.properties.plotId === selectedPlotId ? `rgba(${color[0]},${color[1]},${color[2]},1)` :`rgba(${color[0]},${color[1]},${color[2]},0.6)`,
+                      weight: feature.properties.plotId === selectedPlotId ? 2 : 1,
                     }
                   }
                 }
               }
               return {
-                ...chloropleth,
                 fillPattern: undefined,
+                ...chloropleth,
               }
               
             } else {
