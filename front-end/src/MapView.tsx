@@ -64,7 +64,7 @@ const parametersPlot: any = {
 
   trafficability: {
     slug: "trafficability",
-    label: "Begaanbaarheid",
+    label: "Berijdbaarheid",
     colors: {
       min: "#ff5658",
       max: "#008dff",
@@ -75,7 +75,7 @@ const parametersPlot: any = {
     slug: "availableSoilWater",
     label: "Beschikbaar vochtgehalte",
     colors: {
-      min: "#f321c9",
+      min: "#fcad03",
       max: "#008dff",
     },
   },
@@ -491,13 +491,14 @@ const MapView = ({
 
               let chloropleth = {}
               if(farmerData.plotsAnalytics.hasOwnProperty(feature.properties.plotId)){
-                let todayValue = farmerData.plotsAnalytics[feature.properties.plotId].filter((x) => x.date === date);
-                if(todayValue.length > 0 && todayValue[0].hasOwnProperty("relativeTranspiration")){
-                  let color = f(todayValue[0].relativeTranspiration).rgba();
+                let todayValue: any = farmerData.plotsAnalytics[feature.properties.plotId].find((x) => x.date === date);
+                if(todayValue && todayValue.hasOwnProperty(selectedPlotParameter)){
+                  let color = f(todayValue[selectedPlotParameter] || 0).rgba();
+                  console.log(color)
                   if(todayValue) {
                     chloropleth = {
-                      fillColor: `rgba(${color[0]},${color[1]},${color[2]},0.5)`,
-                      color: `rgba(${color[0]},${color[1]},${color[2]},${feature.properties.plotId === selectedPlotId ? 1 : 0.5})`,
+                      fillColor: `rgba(${color[0]},${color[1]},${color[2]},0.8)`,
+                      color: `rgba(${color[0]},${color[1]},${color[2]},${feature.properties.plotId === selectedPlotId ? 1 : 0.8})`,
                       weight: feature.properties.plotId === selectedPlotId ? 2 : 1
                     }
                   }

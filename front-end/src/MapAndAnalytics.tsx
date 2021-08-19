@@ -360,10 +360,10 @@ const MapAndAnalytics = ({ match, history }: Props) => {
 
     const promises = [
       axiosInstance.get(
-        `/plot-feedback/crop-status?from=${dateFrom}&to=${dateTo}`
+        `/plot-feedback/crop-status?from=${dateFrom}&to=${dateTo}&withLastUpdateBeforeStartOfRange=true`
       ),
       axiosInstance.get(
-        `/plot-feedback/irrigation?from=${dateFrom}&to=${dateTo}`
+        `/plot-feedback/irrigation?from=${dateFrom}&to=${dateTo}&withLastUpdateBeforeStartOfRange=true`
       ),
     ];
 
@@ -425,10 +425,10 @@ const MapAndAnalytics = ({ match, history }: Props) => {
 
     const promises = [
       axiosInstance.get(
-        `/plot-feedback/crop-status?from=${dateFrom}&to=${dateTo}`
+        `/plot-feedback/crop-status?from=${dateFrom}&to=${dateTo}&withLastUpdateBeforeStartOfRange=true`
       ),
       axiosInstance.get(
-        `/plot-feedback/irrigation?from=${dateFrom}&to=${dateTo}`
+        `/plot-feedback/irrigation?from=${dateFrom}&to=${dateTo}&withLastUpdateBeforeStartOfRange=true`
       ),
     ];
 
