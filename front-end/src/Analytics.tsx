@@ -210,11 +210,14 @@ const SelectedSumData = ({
 }) => (
   <div
     className={css`
-      display: flex;
-      flex-grow: 1;
       align-items: center;
       text-transform: uppercase;
       margin-left: 20px;
+      flex-wrap: wrap;
+      flex-grow: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     `}
   >
     <div
@@ -912,7 +915,6 @@ const Analytics: React.FC<Props> = ({
           display: flex;
           align-items: flex-start;
           justify-content: space-between;
-          height: 60px;
           padding: 20px 20px 10px 20px;
         `}
       >
