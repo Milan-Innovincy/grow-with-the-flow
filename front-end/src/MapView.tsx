@@ -44,19 +44,19 @@ const parametersPlot: any = {
   relativeTranspiration: {
     slug: "relativeTranspiration",
     label: "Droogtestress",
-    colors: ["#107520", "#fcad03", "#ff5658"]
+    colors: ["#008dff", "#b1dce4", "#ff5658"]
   },
 
   trafficability: {
     slug: "trafficability",
     label: "Berijdbaarheid",
-    colors: ["#ff5658", "#fcad03", "#107520"]
+    colors: ["#ff5658", "#BECED1", "#6a7152"]
   },
   
   availableSoilWater: {
     slug: "availableSoilWater",
     label: "Beschikbaar vochtgehalte",
-    colors: ["#ff5658", "#fcad03", "#008dff"]
+    colors: ["#ff5658", "#b1dce4", "#008dff"]
   },
 
 }
