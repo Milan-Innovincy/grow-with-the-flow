@@ -368,68 +368,68 @@ const paramColor = {
   temperature: "#383a3d"
 }
 
-const CurrentDataItem = ({
-  label,
-  value,
-  color,
-  icon,
-}: {
-  label: string;
-  value: number;
-  color: string;
-  icon: any;
-}) => (
-  <div
-    className={css`
-      display: flex;
-      align-items: center;
-      margin-right: 20px;
-    `}
-  >
-    <div
-      className={css`
-        position: relative;
-        border: 1px solid ${color};
-        color: ${color};
-        border-radius: 50%;
-        width: 50px;
-        height: 50px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 10px;
-      `}
-    >
-      <div
-        className={css`
-          position: relative;
-          z-index: 1;
-        `}
-      >
-        {value}
-      </div>
-      <div
-        className={css`
-          position: absolute;
-          top: 0;
-          left: 0;
-          background-color: #fff;
-          border-radius: 50%;
-          padding: 0 2px 2px 0px;
-        `}
-      >
-        {icon}
-      </div>
-    </div>
-    <div
-      className={css`
-        color: ${color};
-      `}
-    >
-      {label}
-    </div>
-  </div>
-);
+// const CurrentDataItem = ({
+//   label,
+//   value,
+//   color,
+//   icon,
+// }: {
+//   label: string;
+//   value: number;
+//   color: string;
+//   icon: any;
+// }) => (
+//   <div
+//     className={css`
+//       display: flex;
+//       align-items: center;
+//       margin-right: 20px;
+//     `}
+//   >
+//     <div
+//       className={css`
+//         position: relative;
+//         border: 1px solid ${color};
+//         color: ${color};
+//         border-radius: 50%;
+//         width: 50px;
+//         height: 50px;
+//         display: flex;
+//         align-items: center;
+//         justify-content: center;
+//         margin-right: 10px;
+//       `}
+//     >
+//       <div
+//         className={css`
+//           position: relative;
+//           z-index: 1;
+//         `}
+//       >
+//         {value}
+//       </div>
+//       <div
+//         className={css`
+//           position: absolute;
+//           top: 0;
+//           left: 0;
+//           background-color: #fff;
+//           border-radius: 50%;
+//           padding: 0 2px 2px 0px;
+//         `}
+//       >
+//         {icon}
+//       </div>
+//     </div>
+//     <div
+//       className={css`
+//         color: ${color};
+//       `}
+//     >
+//       {label}
+//     </div>
+//   </div>
+// );
 
 type Props = {
   navigate: (path: string) => void;
@@ -560,7 +560,7 @@ const Analytics: React.FC<Props> = ({
         }))
       );
     }
-  }, [selectedPlotId, selectedPixel, farmerData, farmerData.plotCropStatus]);
+  }, [selectedPlotId, selectedPixel, farmerData, farmerData.plotCropStatus, date, navigate]);
   interface Analytics {
     daily: AnalyticsData;
     weekly: AnalyticsData;
@@ -1152,7 +1152,7 @@ const Analytics: React.FC<Props> = ({
                 viewBox="0 0 30 30"
                 style={{width: "34px", height: "34px", paddingRight: "2px", paddingBottom: "4px", fill: "#1565c0"}}
               />}
-              label="Beregenen"
+              label="Beregeningsgift"
               text={`${Math.round(currentAnalyticsData[analyticsDisplayType].sprinkling || 0)}`}
               unit={"mm"}
               prefix={analyticsDisplayType === "weekly" ? "Totale" : undefined}

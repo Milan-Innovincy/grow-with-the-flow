@@ -55,7 +55,7 @@ const parametersPlot: any = {
 
   relativeTranspiration: {
     slug: "relativeTranspiration",
-    label: "Droogtestres",
+    label: "Droogtestress",
     colors: {
       min: "#107520",
       max: "#ff5658",
