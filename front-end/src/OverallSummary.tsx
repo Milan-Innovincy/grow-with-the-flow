@@ -11,7 +11,7 @@ import moment from "moment";
 import "moment/locale/nl";
 
 import DateView from "./DateView";
-import PlotListDialog from "./PlotListDialog";
+//import PlotList from "./components/PlotList/PlotList";
 
 type Props = {
   farmerData: any;
@@ -90,8 +90,8 @@ const OverallSummary = ({ farmerData, date, navigate, isFetchingData }: Props) =
           />
         </MuiPickersUtilsProvider>
       </div>
-      <div>
-        <PlotListDialog
+      {/* <div>
+        <PlotList
           farmerData={farmerData}
           date={DateTime.fromJSDate(date).toISODate()}
           navigate={navigate}
@@ -99,7 +99,7 @@ const OverallSummary = ({ farmerData, date, navigate, isFetchingData }: Props) =
           selectedPixel={undefined}
           isFetchingData={isFetchingData}
         />
-      </div>
+      </div> */}
     </div>
   );
 };

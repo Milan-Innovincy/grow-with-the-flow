@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { MuiThemeProvider, createMuiTheme } from "@material-ui/core/styles";
+import { MuiThemeProvider, createTheme, ThemeProvider } from "@material-ui/core/styles";
 import { css } from "@emotion/css";
 import { BrowserRouter, Switch, Route, Redirect } from "react-router-dom";
 
@@ -12,7 +12,7 @@ import TextPopup from "./components/TextPopup";
 import EventEmitter from "./lib/EventEmitter";
 import Keycloak from "keycloak-js";
 
-const theme = createMuiTheme({
+const theme = createTheme({
   palette: {
     primary: {
       main: "#2F3D50",
@@ -28,7 +28,6 @@ const theme = createMuiTheme({
 interface IState {
   authenticated: boolean;
   keycloak: Keycloak.KeycloakInstance;
-  showModal: boolean;
 }
 
 class App extends Component<{}, IState> {
@@ -38,7 +37,6 @@ class App extends Component<{}, IState> {
     this.state = {
       authenticated: false,
       keycloak: Keycloak("/keycloak.json"),
-      showModal: false,
     };
   }
 
@@ -73,16 +71,10 @@ class App extends Component<{}, IState> {
         value={{
           authenticated: this.state.authenticated,
           keycloak: this.state.keycloak,
-          showModal: this.state.showModal,
-          toggleShowModal: () => {
-            this.setState({
-              showModal: !this.state.showModal,
-            });
-          },
         }}
       >
         <BrowserRouter>
-          <MuiThemeProvider theme={theme}>
+          <ThemeProvider theme={theme}>
             <div
               className={css`
                 position: absolute;
@@ -115,7 +107,7 @@ class App extends Component<{}, IState> {
               <TextPopup />
               <Snackbar />
             </div>
-          </MuiThemeProvider>
+          </ThemeProvider>
         </BrowserRouter>
       </ApplicationContext.Provider>
     );

@@ -58,7 +58,7 @@ import { ReactComponent as PotatoIcon } from "./icons/potato.svg";
 import { ReactComponent as WheatIcon } from "./icons/wheat.svg";
 import { ReactComponent as RainfallIcon } from "./icons/rainfall.svg";
 import { ReactComponent as IrrigationIcon } from "./icons/irrigation.svg";
-import PlotListDialog from "./PlotListDialog";
+//import PlotList from "./components/PlotList/PlotList";
 import { FarmerData } from "./MapAndAnalytics";
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
@@ -1203,14 +1203,14 @@ const Analytics: React.FC<Props> = ({
             />
           </div>
         )}
-        <PlotListDialog
+        {/* <PlotList
           farmerData={farmerData}
           date={DateTime.fromJSDate(date).toISODate()}
           navigate={navigate}
           selectedPlotId={selectedPlotId}
           selectedPixel={selectedPixel}
           isFetchingData={isFetchingData}
-        />
+        /> */}
       </div>
       <div
         className={css`

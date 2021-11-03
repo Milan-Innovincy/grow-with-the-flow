@@ -58,7 +58,7 @@ export default function TopBar() {
             Contact
           </Button>
           <ApplicationContext.Consumer>
-            {({ keycloak, toggleShowModal }) => (
+            {({ keycloak }) => (
               <>
                 {keycloak && (
                   <>
@@ -85,14 +85,6 @@ export default function TopBar() {
                       open={Boolean(anchorEl)}
                       onClose={handleClose}
                     >
-                      <MenuItem
-                        onClick={() => {
-                          toggleShowModal();
-                          handleClose();
-                        }}
-                      >
-                        Mijn percelen
-                      </MenuItem>
                       <MenuItem onClick={() => keycloak.logout()}>
                         Uitloggen
                       </MenuItem>
