@@ -24,6 +24,7 @@ import {
   Button,
   makeStyles,
   Tooltip,
+  useTheme,
 } from "@material-ui/core";
 import {
   ToggleButton,
@@ -482,6 +483,7 @@ const Analytics: React.FC<Props> = ({
   const [soilType, setSoilType] = useState<string>("");
   const [area, setArea] = useState<number>(0);
   const [analyticsDisplayType, setAnalyticsDisplayType] = useState<"daily" | "weekly">("daily")
+  const theme = useTheme();
 
   useEffect(() => {
     const { pixelsData, plotsAnalytics, plotFeedback, plotCropStatus } = farmerData;
@@ -905,7 +907,7 @@ const Analytics: React.FC<Props> = ({
           position: absolute !important;
           right: 24px;
           top: -24px;
-          background-color: #fff !important;
+          background-color: ${theme.palette.secondary.main} !important;
           color: #2f3d50 !important;
           box-shadow: 0px 3px 5px -1px rgb(0 0 0 / 20%), 0px 5px 8px 0px rgb(0 0 0 / 14%), 0px 1px 14px 0px rgb(0 0 0 / 12%);
         `}
@@ -1214,7 +1216,7 @@ const Analytics: React.FC<Props> = ({
       </div>
       <div
         className={css`
-          background-color: #fcfcfc;
+          background-color: ${theme.palette.secondary.main};
           padding-top: 10px;
         `}
       >
@@ -1355,7 +1357,7 @@ const Analytics: React.FC<Props> = ({
           </div>
         </div>
           {/* Chart */}
-        <ResponsiveContainer height={200}>
+        <ResponsiveContainer height={230}>
           <ComposedChart
             data={analyticsData}
             margin={{ top: 20, bottom: 0, left: 0, right: 0 }}

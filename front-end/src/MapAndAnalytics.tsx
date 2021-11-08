@@ -117,6 +117,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
   );
   const contextValue = useContext(ApplicationContext);
   const [isFetchingFarmerData, setIsFetchingFarmerData] = useState(false);
+  const [isTableTruncated, setIsTableTruncated] = useState(true);
 
   const { date, selectionType, selectionId } = match.params;
   const latestAvailableDate = DateTime.fromJSDate(new Date())
@@ -490,18 +491,21 @@ const MapAndAnalytics = ({ match, history }: Props) => {
             height: 100%;
           `}
         >
-          <Grid item xs={6}>
-            <MapView
-              navigate={navigate}
-              farmerData={farmerData}
-              getPixelsData={initPixelsData}
-              farmerGeoData={farmerGeoData}
-              date={date}
-              selectedPlotId={selectedPlotId}
-              selectedPixel={selectedPixel}
-            />
-          </Grid>
-          <Grid item xs={6}>
+          {isTableTruncated && (
+            <Grid item xs={7}>
+              <MapView
+                navigate={navigate}
+                farmerData={farmerData}
+                getPixelsData={initPixelsData}
+                farmerGeoData={farmerGeoData}
+                date={date}
+                selectedPlotId={selectedPlotId}
+                selectedPixel={selectedPixel}
+              />
+            </Grid>
+          )}
+
+          <Grid item xs={isTableTruncated ? 5 : 12}>
             <div
               className={css`
                 height: 100%;
@@ -514,6 +518,8 @@ const MapAndAnalytics = ({ match, history }: Props) => {
                 selectedPlotId={undefined}
                 selectedPixel={undefined}
                 isFetchingData={isFetchingFarmerData}
+                truncated={isTableTruncated}
+                setTruncated={setIsTableTruncated}
               />
             </div>
           </Grid>
