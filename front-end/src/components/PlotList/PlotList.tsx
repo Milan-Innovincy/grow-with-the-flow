@@ -1,49 +1,36 @@
 import React, {
   Dispatch,
-  RefObject,
   SetStateAction,
   useContext,
   useEffect,
   useState,
 } from "react";
 import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
   Table,
   TableHead,
   TableRow,
   TableCell,
   TableBody,
-  Typography,
   TableSortLabel,
   IconButton,
   Tooltip,
-  CircularProgress,
-  TableContainer,
   Paper,
-  useTheme,
   ButtonBase,
 } from "@material-ui/core";
 import { AutoSizer } from "react-virtualized/dist/commonjs/AutoSizer";
-
+import KeyboardArrowLeft from "@material-ui/icons/KeyboardArrowLeft";
 import { css } from "@emotion/css";
-import { ApplicationContext } from "../../ApplicationContext";
-import { FarmerData } from "../../MapAndAnalytics";
-import DateView from "../../DateView";
 import SmsIcon from "@material-ui/icons/Sms";
 import AddCommentIcon from "@material-ui/icons/AddComment";
 import KeyboardArrowRight from "@material-ui/icons/KeyboardArrowRight";
 import OpacityIcon from "@material-ui/icons/Opacity";
 import EcoIcon from "@material-ui/icons/Eco";
 import EditIcon from "@material-ui/icons/Edit";
-import KeyboardArrowLeft from "@material-ui/icons/KeyboardArrowLeft";
-import { DateTime } from "luxon";
+
 import UpdateNameDialog from "../../UpdatePlotNameDialog";
 import UpdateDescriptionDialog from "../../UpdatePlotDescriptionDialog";
-import Snackbar from "../../Snackbar";
-
+import { ApplicationContext } from "../../ApplicationContext";
+import { FarmerData } from "../../MapAndAnalytics";
 import { getCropType, developmentStateToLabel } from "../../Analytics";
 
 type Props = {
