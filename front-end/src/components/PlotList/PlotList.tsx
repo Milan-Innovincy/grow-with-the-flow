@@ -1,5 +1,6 @@
 import React, {
   Dispatch,
+  RefObject,
   SetStateAction,
   useContext,
   useEffect,
@@ -85,6 +86,7 @@ const PlotList = ({
   const [tableData, setTableData] = useState<any[]>([]);
   const [order, setOrder] = useState<"asc" | "desc" | undefined>(undefined);
   const [orderBy, setOrderBy] = useState<ColumnNames | undefined>(undefined);
+  const tableRows: HTMLTableRowElement[] = [];
 
   const sortColumn = (column: ColumnNames) => {
     if (orderBy !== column) {
@@ -98,45 +100,45 @@ const PlotList = ({
     }
   };
 
-  const handleDateViewClick = () => {
-    document
-      .querySelector(
-        ".MuiFormControl-root.MuiTextField-root.MuiFormControl-marginNormal button"
-      )
-      .click();
-  };
+  // const handleDateViewClick = () => {
+  //   document
+  //     .querySelector(
+  //       ".MuiFormControl-root.MuiTextField-root.MuiFormControl-marginNormal button"
+  //     )
+  //     .click();
+  // };
 
-  const handleDatePrevClicked = () => {
-    let newDate = DateTime.fromISO(date).minus({ days: 1 }).toISODate();
+  // const handleDatePrevClicked = () => {
+  //   let newDate = DateTime.fromISO(date).minus({ days: 1 }).toISODate();
 
-    if (selectedPlotId) {
-      navigate(`/map/${newDate}/plot/${selectedPlotId}`);
-    }
+  //   if (selectedPlotId) {
+  //     navigate(`/map/${newDate}/plot/${selectedPlotId}`);
+  //   }
 
-    if (selectedPixel) {
-      navigate(`/map/${newDate}/pixel/${selectedPixel.join("-")}`);
-    }
+  //   if (selectedPixel) {
+  //     navigate(`/map/${newDate}/pixel/${selectedPixel.join("-")}`);
+  //   }
 
-    if (!selectedPlotId && !selectedPixel) {
-      navigate(`/map/${newDate}`);
-    }
-  };
+  //   if (!selectedPlotId && !selectedPixel) {
+  //     navigate(`/map/${newDate}`);
+  //   }
+  // };
 
-  const handleDateNextClicked = () => {
-    let newDate = DateTime.fromISO(date).plus({ days: 1 }).toISODate();
+  // const handleDateNextClicked = () => {
+  //   let newDate = DateTime.fromISO(date).plus({ days: 1 }).toISODate();
 
-    if (selectedPlotId) {
-      navigate(`/map/${newDate}/plot/${selectedPlotId}`);
-    }
+  //   if (selectedPlotId) {
+  //     navigate(`/map/${newDate}/plot/${selectedPlotId}`);
+  //   }
 
-    if (selectedPixel) {
-      navigate(`/map/${newDate}/pixel/${selectedPixel.join("-")}`);
-    }
+  //   if (selectedPixel) {
+  //     navigate(`/map/${newDate}/pixel/${selectedPixel.join("-")}`);
+  //   }
 
-    if (!selectedPlotId && !selectedPixel) {
-      navigate(`/map/${newDate}`);
-    }
-  };
+  //   if (!selectedPlotId && !selectedPixel) {
+  //     navigate(`/map/${newDate}`);
+  //   }
+  // };
 
   useEffect(() => {
     const data = farmerData.plotsGeoJSON.features.map((feature) => {
@@ -272,6 +274,17 @@ const PlotList = ({
     }
   }, [farmerData.plotsGeoJSON.features, orderBy, order]);
 
+  useEffect(() => {
+    if (selectedPlotId) {
+      const selectedTablePlot = tableRows.find(
+        (row) => row.id === selectedPlotId
+      );
+      if (selectedTablePlot) {
+        selectedTablePlot.scrollIntoView({ behavior: "smooth", block:"center"});
+      }
+    }
+  }, [selectedPlotId, tableRows]);
+
   let updateNameDialog: UpdateNameDialog;
   let updateDescriptionDialog: UpdateDescriptionDialog;
 
@@ -309,7 +322,6 @@ const PlotList = ({
       >
         <AutoSizer>
           {({ height, width }) => {
-            const pageSize = Math.floor((height - 192) / 48);
             return (
               <div
                 className={css`
@@ -458,6 +470,12 @@ const PlotList = ({
                     {tableData.map((data) => (
                       <TableRow
                         key={data.properties && data.properties!.plotId}
+                        id={data.properties!.plotId}
+                        ref={(ref) => {
+                          if (ref) {
+                            tableRows.push(ref);
+                          }
+                        }}
                         onClick={() => {
                           navigate(
                             `/map/${date}/plot/${data.properties.plotId}`
@@ -519,20 +537,20 @@ const PlotList = ({
                                   data.analytics.relativeTranspiration * 100
                                 ) >= 50 &&
                                 `
-                        position: relative;
-                        ::before {
-                          content: '';
-                          position: absolute;
-                          top: 50%;
-                          left: 50%;
-                          height: 40px;
-                          width: 40px;
-                          transform: translate(-50%, -50%);
-                          border: 2px solid #ff817b;
-                          max-height: 100%;
-                          border-radius: 100%;
-                        }
-                      `}
+                                  position: relative;
+                                  ::before {
+                                    content: '';
+                                    position: absolute;
+                                    top: 50%;
+                                    left: 50%;
+                                    height: 40px;
+                                    width: 40px;
+                                    transform: translate(-50%, -50%);
+                                    border: 2px solid #ff817b;
+                                    max-height: 100%;
+                                    border-radius: 100%;
+                                  }
+                                `}
                               `}
                             >
                               {data.properties &&

@@ -515,8 +515,8 @@ const MapAndAnalytics = ({ match, history }: Props) => {
                 farmerData={farmerData}
                 date={date}
                 navigate={navigate}
-                selectedPlotId={undefined}
-                selectedPixel={undefined}
+                selectedPlotId={selectedPlotId}
+                selectedPixel={selectedPixel}
                 isFetchingData={isFetchingFarmerData}
                 truncated={isTableTruncated}
                 setTruncated={setIsTableTruncated}
