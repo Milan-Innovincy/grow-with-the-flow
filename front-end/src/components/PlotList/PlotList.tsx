@@ -32,6 +32,7 @@ import UpdateDescriptionDialog from "../../UpdatePlotDescriptionDialog";
 import { ApplicationContext } from "../../ApplicationContext";
 import { FarmerData } from "../../MapAndAnalytics";
 import { getCropType, developmentStateToLabel } from "../../Analytics";
+import { useTheme } from "@material-ui/core";
 
 type Props = {
   farmerData: FarmerData;
@@ -74,6 +75,7 @@ const PlotList = ({
   const [order, setOrder] = useState<"asc" | "desc" | undefined>(undefined);
   const [orderBy, setOrderBy] = useState<ColumnNames | undefined>(undefined);
   const tableRows: HTMLTableRowElement[] = [];
+  const theme = useTheme()
 
   const sortColumn = (column: ColumnNames) => {
     if (orderBy !== column) {
@@ -268,9 +270,12 @@ const PlotList = ({
       );
       if (selectedTablePlot) {
         selectedTablePlot.scrollIntoView({ behavior: "smooth", block:"center"});
+        selectedTablePlot.className = selectedTablePlot.className + " ping"
+        setTimeout(() => { selectedTablePlot.className = selectedTablePlot.className.replace(" ping", "") }, 1500);
       }
     }
-  }, [selectedPlotId, tableRows]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedPlotId]);
 
   let updateNameDialog: UpdateNameDialog;
   let updateDescriptionDialog: UpdateDescriptionDialog;
@@ -339,6 +344,30 @@ const PlotList = ({
 
                     tbody tr:hover {
                       background-color: #f3f5f5;
+                    }
+
+                    .ping {
+                      animation-name: ping;
+                      animation-timing-function: ease-out;
+                      animation-duration: 1.5s;
+                      animation-iteration-count: 1;
+                    }
+
+                    @-webkit-keyframes ping {
+                      from { background-color: ${theme.palette.primary.main}; }
+                      to { background-color: inherit; }
+                    }
+                    @-moz-keyframes ping {
+                      from { background-color: ${theme.palette.primary.main}; }
+                      to { background-color: inherit; }
+                    }
+                    @-o-keyframes ping {
+                      from { background-color: ${theme.palette.primary.main}; }
+                      to { background-color: inherit; }
+                    }
+                    @keyframes ping {
+                      from { background-color: ${theme.palette.primary.main}; }
+                      to { background-color: inherit; }
                     }
                   `}
                 >
