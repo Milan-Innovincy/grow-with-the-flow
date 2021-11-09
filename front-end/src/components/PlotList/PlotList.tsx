@@ -496,6 +496,9 @@ const PlotList = ({
                           navigate(
                             `/map/${date}/plot/${data.properties.plotId}`
                           );
+                          if (!truncated && setTruncated) {
+                            setTruncated(!truncated)
+                          }
                         }}
                         className={css`
                           cursor: pointer;
