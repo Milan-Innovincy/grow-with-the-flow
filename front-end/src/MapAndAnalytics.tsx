@@ -241,9 +241,22 @@ const MapAndAnalytics = ({ match, history }: Props) => {
         const pixelsData =
           selectionType === "pixel" ? await fetchPixelsData() : undefined;
 
-        const plotsAnalytics = await axiosInstance
+        let plotsAnalytics = undefined;
+
+        if (date) {
+          var dateInPast = new Date(date)
+          var dateInFuture = new Date(date)
+          dateInPast.setDate(dateInPast.getDate() - 21);
+          dateInFuture.setDate(dateInFuture.getDate() + 8);
+          const formattedPastDate = DateTime.fromJSDate(dateInPast).toFormat(
+            "yyyy-MM-dd"
+          );
+          const formattedFutureDate = DateTime.fromJSDate(dateInFuture).toFormat(
+            "yyyy-MM-dd"
+          );
+          plotsAnalytics = await axiosInstance
           .get(
-            `/plot-analytics?on=${date}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater,relativeTranspiration,developmentStage,trafficability,relativeHumidity,averageTemperature`
+            `/plot-analytics?from=${formattedPastDate}&to=${formattedFutureDate}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater,relativeTranspiration,developmentStage,trafficability,relativeHumidity,averageTemperature`
           )
           .then(({ data }) => {
             if (_.isEmpty(data)) {
@@ -254,7 +267,10 @@ const MapAndAnalytics = ({ match, history }: Props) => {
             console.error(error.message);
             handleError();
           });
-
+        } else {
+          handleError();
+        }
+        
         if (plotsGeoJSON && plotsAnalytics) {
           plotsGeoJSON.features = plotsGeoJSON.features.filter(
             (feature: any) => feature.properties.plotId
