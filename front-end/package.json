@@ -36,7 +36,7 @@
     "@material-ui/lab": "^4.0.0-alpha.57",
     "@material-ui/pickers": "^3.2.10",
     "@turf/turf": "5.1.6",
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "chroma-js": "2.0.2",
     "date-fns": "^2.17.0",
     "eventemitter3": "^4.0.7",
