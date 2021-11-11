@@ -12,7 +12,7 @@ import { css } from "@emotion/css";
 import logo from "./images/logo.png";
 import { ApplicationContext } from "./ApplicationContext";
 import EventEmitter from "./lib/EventEmitter";
-import ReportText from "./components/ReportText";
+import ContactText from "./components/ContactText";
 
 export default function TopBar() {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -26,7 +26,7 @@ export default function TopBar() {
   };
 
   const handleReportClick = () => {
-    EventEmitter.emit("open-text-popup", <ReportText />);
+    EventEmitter.emit("open-text-popup", <ContactText />);
   };
 
   return (

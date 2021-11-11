@@ -31,7 +31,7 @@ import UpdateNameDialog from "../../UpdatePlotNameDialog";
 import UpdateDescriptionDialog from "../../UpdatePlotDescriptionDialog";
 import { ApplicationContext } from "../../ApplicationContext";
 import { FarmerData } from "../../MapAndAnalytics";
-import { getCropType, developmentStateToLabel } from "../../Analytics";
+import { getCropType, developmentStateToLabel } from "../Analytics/Analytics";
 import { useTheme } from "@material-ui/core";
 
 type Props = {

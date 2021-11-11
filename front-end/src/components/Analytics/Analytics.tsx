@@ -25,11 +25,10 @@ import {
   makeStyles,
   Tooltip,
   useTheme,
+  IconButton,
+  InputAdornment,
 } from "@material-ui/core";
-import {
-  ToggleButton,
-  ToggleButtonGroup,
-} from "@material-ui/lab"
+import { ToggleButton, ToggleButtonGroup } from "@material-ui/lab";
 import {
   MuiPickersUtilsProvider,
   KeyboardDatePicker,
@@ -43,28 +42,30 @@ import {
 } from "mdi-material-ui";
 import { DateTime, Duration } from "luxon";
 import { padStart } from "lodash";
-import EventEmitter from "./lib/EventEmitter";
+import EventEmitter from "../../lib/EventEmitter";
 import MomentUtils from "@date-io/moment";
 import moment from "moment";
 import "moment/locale/nl";
 
-import axiosInstance from "./lib/axios";
+import axiosInstance from "../../lib/axios";
 
-import UpdateSprinklingDialog from "./UpdateSprinklingDialog";
-import DateView from "./DateView";
-import { ReactComponent as AlfalfaIcon } from "./icons/alfalfa.svg";
-import { ReactComponent as CornIcon } from "./icons/corn.svg";
-import { ReactComponent as GenericIcon } from "./icons/generic.svg";
-import { ReactComponent as PotatoIcon } from "./icons/potato.svg";
-import { ReactComponent as WheatIcon } from "./icons/wheat.svg";
-import { ReactComponent as RainfallIcon } from "./icons/rainfall.svg";
-import { ReactComponent as IrrigationIcon } from "./icons/irrigation.svg";
-//import PlotList from "./components/PlotList/PlotList";
-import { FarmerData } from "./MapAndAnalytics";
-import ArrowBackIcon from '@material-ui/icons/ArrowBack';
-import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
-import TodayIcon from '@material-ui/icons/Today';
-import DateRangeIcon from '@material-ui/icons/DateRange';
+import { deleteLimitLevel, getLimitLevel, setLimitLevel, setCropStatus as setCropStatusApi } from "./analyticsApi";
+import UpdateSprinklingDialog from "../../UpdateSprinklingDialog";
+import DateView from "../../DateView";
+import { ReactComponent as AlfalfaIcon } from "../../icons/alfalfa.svg";
+import { ReactComponent as CornIcon } from "../../icons/corn.svg";
+import { ReactComponent as GenericIcon } from "../../icons/generic.svg";
+import { ReactComponent as PotatoIcon } from "../../icons/potato.svg";
+import { ReactComponent as WheatIcon } from "../../icons/wheat.svg";
+import { ReactComponent as RainfallIcon } from "../../icons/rainfall.svg";
+import { ReactComponent as IrrigationIcon } from "../../icons/irrigation.svg";
+import DeleteIcon from "@material-ui/icons/Delete";
+import SaveIcon from "@material-ui/icons/Save";
+import { FarmerData } from "../../MapAndAnalytics";
+import ArrowBackIcon from "@material-ui/icons/ArrowBack";
+import ArrowForwardIcon from "@material-ui/icons/ArrowForward";
+import TodayIcon from "@material-ui/icons/Today";
+import DateRangeIcon from "@material-ui/icons/DateRange";
 import PickerToolbar from "@material-ui/pickers/_shared/PickerToolbar";
 import ToolbarButton from "@material-ui/pickers/_shared/ToolbarButton";
 
@@ -184,7 +185,7 @@ export const developmentStateToLabel = (
       return developmentState < cropStatusValue.value;
     }
   );
-  if(nextStageIndex === -1 && developmentState > 0){
+  if (nextStageIndex === -1 && developmentState > 0) {
     return cropStatusOptions[cropType][cropStatusOptions[cropType].length - 1];
   }
   return cropStatusOptions[cropType][nextStageIndex - 1];
@@ -225,8 +226,8 @@ const SelectedSumData = ({
       className={css`
         border: 1px solid #d2eded;
         border-radius: 50%;
-        width: ${isCircleValue? "56px" : "40px"};
-        height: ${isCircleValue? "56px" : "40px"};
+        width: ${isCircleValue ? "56px" : "40px"};
+        height: ${isCircleValue ? "56px" : "40px"};
         display: flex;
         align-items: center;
         justify-content: center;
@@ -234,26 +235,38 @@ const SelectedSumData = ({
         position: relative;
       `}
     >
-      {isCircleValue ? 
-        <div className={css`
-          position: absolute;
-          top: 0;
-          left: 0;
-          transform: translate(-50%, -30%) scale(0.8);
-          height: 30px;
-          width: 30px;
-          border-radius: 100%;
-          background: white;
-        `}>{circleContent}</div>
-      : circleContent}
-      {isCircleValue && //oDisplay value in circle here
-        <div>
-        <strong>{text}</strong>
-          {unit && <small className={css`
-            text-transform: none;
-          `}>{unit}</small>}
+      {isCircleValue ? (
+        <div
+          className={css`
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform: translate(-50%, -30%) scale(0.8);
+            height: 30px;
+            width: 30px;
+            border-radius: 100%;
+            background: white;
+          `}
+        >
+          {circleContent}
         </div>
-      }
+      ) : (
+        circleContent
+      )}
+      {isCircleValue && ( //oDisplay value in circle here
+        <div>
+          <strong>{text}</strong>
+          {unit && (
+            <small
+              className={css`
+                text-transform: none;
+              `}
+            >
+              {unit}
+            </small>
+          )}
+        </div>
+      )}
     </div>
     <div
       className={css`
@@ -263,16 +276,16 @@ const SelectedSumData = ({
         justify-content: center;
       `}
     >
-      {prefix &&
+      {prefix && (
         <small
           className={css`
             color: #bcbcbc;
             text-transform: none;
           `}
         >
-        {prefix}
-      </small>
-      }
+          {prefix}
+        </small>
+      )}
       <small
         className={css`
           color: #bcbcbc;
@@ -280,25 +293,31 @@ const SelectedSumData = ({
       >
         {label}
       </small>
-      
-      {!isCircleValue && //only display value when not in circle
-      <div>
-        <strong>{text}</strong>
-        {unit && <small className={css`
-          text-transform: none;
-        `}>{unit}</small>}
-      </div>
-      }
-      {suffix &&
+
+      {!isCircleValue && ( //only display value when not in circle
+        <div>
+          <strong>{text}</strong>
+          {unit && (
+            <small
+              className={css`
+                text-transform: none;
+              `}
+            >
+              {unit}
+            </small>
+          )}
+        </div>
+      )}
+      {suffix && (
         <small
           className={css`
             color: #bcbcbc;
             text-transform: none;
           `}
         >
-        {suffix}
-      </small>
-      }
+          {suffix}
+        </small>
+      )}
     </div>
   </div>
 );
@@ -371,8 +390,8 @@ const paramColor = {
   relativeHumidity: "#5a0494",
   moisture: "#f6511d",
   desiredMoisture: "#c12d00",
-  temperature: "#383a3d"
-}
+  temperature: "#383a3d",
+};
 
 // const CurrentDataItem = ({
 //   label,
@@ -466,6 +485,7 @@ type AnalyticsData = {
   developmentStage: number;
   temperature: number;
   relativeHumidity: number;
+  limitLevel: number;
 };
 
 const Analytics: React.FC<Props> = ({
@@ -474,7 +494,7 @@ const Analytics: React.FC<Props> = ({
   date,
   selectedPlotId,
   selectedPixel,
-  isFetchingData
+  isFetchingData,
 }) => {
   const [cropStatus, setCropStatus] = useState<CropStatusValue>();
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData[]>([]);
@@ -482,11 +502,38 @@ const Analytics: React.FC<Props> = ({
   const [cropType, setCropType] = useState<string>("");
   const [soilType, setSoilType] = useState<string>("");
   const [area, setArea] = useState<number>(0);
-  const [analyticsDisplayType, setAnalyticsDisplayType] = useState<"daily" | "weekly">("daily")
+  const [limitLevelInput, setLimitLevelInput] = useState<number | undefined>(
+    undefined
+  );
+  const [fetchedLimitLevel, setFetchedLimitLevel] = useState<
+    number | undefined
+  >(undefined);
+  const [analyticsDisplayType, setAnalyticsDisplayType] = useState<
+    "daily" | "weekly"
+  >("daily");
   const theme = useTheme();
 
+  const fetchLimitLevel = async (plotId: string) => {
+    try {
+      const limitLevel = await getLimitLevel(plotId);
+      setFetchedLimitLevel(limitLevel);
+      setLimitLevelInput(limitLevel);
+    }
+    catch {
+      setFetchedLimitLevel(undefined);
+      setLimitLevelInput(undefined);
+    }
+  }
+  
   useEffect(() => {
-    const { pixelsData, plotsAnalytics, plotFeedback, plotCropStatus } = farmerData;
+    if (selectedPlotId) {
+      fetchLimitLevel(selectedPlotId)
+    }
+  }, [selectedPlotId]);
+
+  useEffect(() => {
+    const { pixelsData, plotsAnalytics, plotFeedback, plotCropStatus } =
+      farmerData;
 
     if (selectedPlotId) {
       setLabel(`Plot: ${selectedPlotId}`);
@@ -522,12 +569,13 @@ const Analytics: React.FC<Props> = ({
               rainfall: i.measuredPrecipitation,
               sprinkling,
               moisture: i.availableSoilWater,
-              desiredMoisture: i.relativeTranspiration * 100.00,
+              desiredMoisture: i.relativeTranspiration * 100.0,
               evapotranspiration: i.evapotranspiration,
               deficit: i.deficit,
               developmentStage: i.developmentStage,
               temperature: i.averageTemperature,
               relativeHumidity: i.relativeHumidity.toFixed(0),
+              limitLevel: fetchedLimitLevel || 0,
             };
           })
         );
@@ -564,17 +612,27 @@ const Analytics: React.FC<Props> = ({
           developmentStage: i.developmentStage,
           temperature: i.averageTemperature[x][y],
           relativeHumidity: i.relativeHumidity[x][y].toFixed(0),
+          limitLevel: fetchedLimitLevel || 0,
         }))
       );
     }
-  }, [selectedPlotId, selectedPixel, farmerData, farmerData.plotCropStatus, date, navigate]);
+  }, [
+    selectedPlotId,
+    selectedPixel,
+    farmerData,
+    farmerData.plotCropStatus,
+    date,
+    navigate,
+    fetchedLimitLevel,
+  ]);
   interface Analytics {
     daily: AnalyticsData;
     weekly: AnalyticsData;
   }
-  const currentAnalyticsData: Analytics = analyticsData.length > 0 ? {} : undefined;
+  const currentAnalyticsData: Analytics =
+    analyticsData.length > 0 ? {} : undefined;
 
-  if(analyticsData.length > 0){
+  if (analyticsData.length > 0) {
     currentAnalyticsData.daily = analyticsData.find(
       (i) => i.date === DateTime.fromJSDate(date).toFormat("dd/MM/yyyy")
     )!;
@@ -583,27 +641,31 @@ const Analytics: React.FC<Props> = ({
       let outObj: any = {};
       analyticsData.forEach((day: any) => {
         Object.keys(day).forEach((key) => {
-          if(day[key] !== undefined && day[key] !== null){
-            if(outObj.hasOwnProperty(key)){
-              outObj[key].push(Number(day[key]))
+          if (day[key] !== undefined && day[key] !== null) {
+            if (outObj.hasOwnProperty(key)) {
+              outObj[key].push(Number(day[key]));
             } else {
-              outObj[key] = [Number(day[key])]
+              outObj[key] = [Number(day[key])];
             }
           }
-        })
-      })
+        });
+      });
       //clean up data
       Object.keys(outObj).forEach((key) => {
         //Average
-        if(key === "moisture" || key === "temperature" || key === "relativeHumidity"){
-          outObj[key] = _.mean(outObj[key])
+        if (
+          key === "moisture" ||
+          key === "temperature" ||
+          key === "relativeHumidity"
+        ) {
+          outObj[key] = _.mean(outObj[key]);
         }
         //Sum
         else {
-          outObj[key] = _.sum(outObj[key])
+          outObj[key] = _.sum(outObj[key]);
         }
-      })
-      return outObj
+      });
+      return outObj;
     })();
   }
 
@@ -648,66 +710,80 @@ const Analytics: React.FC<Props> = ({
   };
 
   const handleDatePrevClicked = () => {
-    let newDate = DateTime.fromJSDate(date).minus({days: 1}).toISODate();
+    let newDate = DateTime.fromJSDate(date).minus({ days: 1 }).toISODate();
 
     if (selectedPlotId) {
-      navigate(
-        `/map/${newDate}/plot/${selectedPlotId}`
-      );
+      navigate(`/map/${newDate}/plot/${selectedPlotId}`);
     }
 
     if (selectedPixel) {
-      navigate(
-        `/map/${newDate}/pixel/${selectedPixel.join("-")}`
-      );
+      navigate(`/map/${newDate}/pixel/${selectedPixel.join("-")}`);
     }
 
-    if (!selectedPlotId && !selectedPixel){
-      navigate(
-        `/map/${newDate}`
-      );
+    if (!selectedPlotId && !selectedPixel) {
+      navigate(`/map/${newDate}`);
     }
-  }
+  };
 
   const handleDateNextClicked = () => {
-    let newDate = DateTime.fromJSDate(date).plus({days: 1}).toISODate();
+    let newDate = DateTime.fromJSDate(date).plus({ days: 1 }).toISODate();
 
     if (selectedPlotId) {
-      navigate(
-        `/map/${newDate}/plot/${selectedPlotId}`
-      );
+      navigate(`/map/${newDate}/plot/${selectedPlotId}`);
     }
 
     if (selectedPixel) {
-      navigate(
-        `/map/${newDate}/pixel/${selectedPixel.join("-")}`
-      );
+      navigate(`/map/${newDate}/pixel/${selectedPixel.join("-")}`);
     }
 
-    if (!selectedPlotId && !selectedPixel){
-      navigate(
-        `/map/${newDate}`
-      );
+    if (!selectedPlotId && !selectedPixel) {
+      navigate(`/map/${newDate}`);
     }
-  }
+  };
 
-  const changeCropStatus = (event: any) => {
+  const submitLimitLevel = async () => {
+    if (
+      selectedPlotId &&
+      !(fetchedLimitLevel === undefined && limitLevelInput === undefined)
+    ) {
+      if (
+        (fetchedLimitLevel === undefined ||
+          fetchedLimitLevel !== limitLevelInput) &&
+        limitLevelInput !== undefined
+      ) {
+        try {
+          const newLimitLevel = await setLimitLevel(selectedPlotId, limitLevelInput);
+          setFetchedLimitLevel(newLimitLevel);
+          setLimitLevelInput(newLimitLevel);
+        } catch {
+          setLimitLevelInput(fetchedLimitLevel);
+        }
+      } else {
+        try {
+          await deleteLimitLevel(selectedPlotId);
+          setFetchedLimitLevel(undefined);
+          setLimitLevelInput(undefined);
+        } catch {
+          setLimitLevelInput(fetchedLimitLevel)
+        }
+      }
+    }
+  };
+
+  const changeCropStatus = async (event: any) => {
     setCropStatus(event.target.value);
-    const formattedDate = DateTime.fromJSDate(new Date(date)).toFormat(
-      "yyyy-MM-dd"
-    );
-
-    axiosInstance
-      .put(
-        `/plot-feedback/crop-status?plotId=${selectedPlotId}&date=${formattedDate}&crop-status=${event.target.value.toString()}`
-      )
-      .then(() => {
+    if (selectedPlotId) {
+      const formattedDate = DateTime.fromJSDate(new Date(date)).toFormat(
+        "yyyy-MM-dd"
+      );
+      
+      try {
+        await setCropStatusApi(selectedPlotId, formattedDate, event.target.value.toString());
         EventEmitter.emit("sprinkling-updated-success");
-      })
-      .catch((error: Error) => {
+      } catch {
         EventEmitter.emit("sprinkling-updated-failure");
-        console.error(error);
-      });
+      }
+    }
   };
 
   const handleDateChange = (newDate: any) => {
@@ -727,11 +803,9 @@ const Analytics: React.FC<Props> = ({
       );
     }
 
-    if (!selectedPlotId && !selectedPixel){
+    if (!selectedPlotId && !selectedPixel) {
       navigate(
-        `/map/${DateTime.fromMillis(
-          moment(newDate).valueOf()
-        ).toISODate()}`
+        `/map/${DateTime.fromMillis(moment(newDate).valueOf()).toISODate()}`
       );
     }
   };
@@ -784,7 +858,11 @@ const Analytics: React.FC<Props> = ({
       : false;
 
   const displayHumidity =
-    leftAxe === "relativeHumidity" ? true : rightAxe === "relativeHumidity" ? true : false;
+    leftAxe === "relativeHumidity"
+      ? true
+      : rightAxe === "relativeHumidity"
+      ? true
+      : false;
 
   const changeLeftAxe = (event: any) => {
     setLeftAxe(event.target.value);
@@ -837,34 +915,31 @@ const Analytics: React.FC<Props> = ({
       color: paramColor.temperature,
       borderColor: undefined,
     },
-  ]
+  ];
 
- const useStyles = makeStyles({
+  const useStyles = makeStyles({
     toolbar: {
       display: "flex",
       flexDirection: "column",
-      alignItems: "flex-start"
-    }
+      alignItems: "flex-start",
+    },
   });
-  
+
   const CustomToolbar = function (props: any) {
-  
-    const { date,
-      isLandscape,
-      openView,
-      setOpenView,
-      title} = props;
-  
+    const { date, isLandscape, openView, setOpenView, title } = props;
+
     const handleChangeViewClick = (view: any) => (e: any) => {
-  
       setOpenView(view);
-  
-    }
-  
+    };
+
     const classes = useStyles();
-  
+
     return (
-      <PickerToolbar className={classes.toolbar} title={title} isLandscape={isLandscape}>
+      <PickerToolbar
+        className={classes.toolbar}
+        title={title}
+        isLandscape={isLandscape}
+      >
         <ToolbarButton
           onClick={handleChangeViewClick("year")}
           variant="h6"
@@ -879,11 +954,10 @@ const Analytics: React.FC<Props> = ({
         />
       </PickerToolbar>
     );
-  
-  }
-  
+  };
+
   const handleAnalyticsDisplayTypeChange = (event: any, type: any) => {
-    if(type){
+    if (type) {
       setAnalyticsDisplayType(type);
     }
   };
@@ -909,7 +983,8 @@ const Analytics: React.FC<Props> = ({
           top: -24px;
           background-color: ${theme.palette.secondary.main} !important;
           color: #2f3d50 !important;
-          box-shadow: 0px 3px 5px -1px rgb(0 0 0 / 20%), 0px 5px 8px 0px rgb(0 0 0 / 14%), 0px 1px 14px 0px rgb(0 0 0 / 12%);
+          box-shadow: 0px 3px 5px -1px rgb(0 0 0 / 20%),
+            0px 5px 8px 0px rgb(0 0 0 / 14%), 0px 1px 14px 0px rgb(0 0 0 / 12%);
         `}
       >
         <Close />
@@ -929,20 +1004,24 @@ const Analytics: React.FC<Props> = ({
             color: #2f3d50;
           `}
         >
-          <div className={css`
-           padding-right: 20px;
-          `}>
-            <div className={css`
-              display: flex;
-            `}>
-              <Button 
+          <div
+            className={css`
+              padding-right: 20px;
+            `}
+          >
+            <div
+              className={css`
+                display: flex;
+              `}
+            >
+              <Button
                 className={css`
                   padding: 6px 0 !important;
                   min-width: 34px !important;
                 `}
                 onClick={handleDatePrevClicked}
               >
-                <ArrowBackIcon/>
+                <ArrowBackIcon />
               </Button>
               <div
                 onClick={handleDateViewClick}
@@ -955,15 +1034,18 @@ const Analytics: React.FC<Props> = ({
               >
                 <DateView date={new Date(date)} />
               </div>
-              <Button 
+              <Button
                 className={css`
                   padding: 6px 0 !important;
                   min-width: 34px !important;
                 `}
-                onClick={handleDateNextClicked} 
-                disabled={DateTime.fromJSDate(date).toISODate() === DateTime.fromJSDate(new Date()).toISODate()}
+                onClick={handleDateNextClicked}
+                disabled={
+                  DateTime.fromJSDate(date).toISODate() ===
+                  DateTime.fromJSDate(new Date()).toISODate()
+                }
               >
-                <ArrowForwardIcon/>
+                <ArrowForwardIcon />
               </Button>
             </div>
 
@@ -1011,16 +1093,24 @@ const Analytics: React.FC<Props> = ({
           exclusive
           onChange={handleAnalyticsDisplayTypeChange}
           orientation="vertical"
-          style={{transform: "translateY(-10px)", marginRight: "10px"}}
+          style={{ transform: "translateY(-10px)", marginRight: "10px" }}
         >
-          <ToggleButton value="daily" aria-label="daily" style={{padding: "5px", borderRadius: "18px 18px 0 0"}}>
+          <ToggleButton
+            value="daily"
+            aria-label="daily"
+            style={{ padding: "5px", borderRadius: "18px 18px 0 0" }}
+          >
             <Tooltip title={"Enkele dag"}>
-                <TodayIcon/>
+              <TodayIcon />
             </Tooltip>
           </ToggleButton>
-          <ToggleButton value="weekly" aria-label="weekly" style={{padding: "5px", borderRadius: "0 0 18px 18px"}}>
+          <ToggleButton
+            value="weekly"
+            aria-label="weekly"
+            style={{ padding: "5px", borderRadius: "0 0 18px 18px" }}
+          >
             <Tooltip title={"Tien dagen"}>
-                <DateRangeIcon/>
+              <DateRangeIcon />
             </Tooltip>
           </ToggleButton>
         </ToggleButtonGroup>
@@ -1121,69 +1211,136 @@ const Analytics: React.FC<Props> = ({
               }
             /> */}
             <SelectedSumData
-              circleContent={<RainfallIcon
-                viewBox="0 0 630 630"
-                style={{width: "34px", height: "34px", paddingLeft: "6px", paddingTop: "6px", fill: "#65b5f5"}}
-              />}
+              circleContent={
+                <RainfallIcon
+                  viewBox="0 0 630 630"
+                  style={{
+                    width: "34px",
+                    height: "34px",
+                    paddingLeft: "6px",
+                    paddingTop: "6px",
+                    fill: "#65b5f5",
+                  }}
+                />
+              }
               label="Regenval"
-              text={`${Math.round(currentAnalyticsData[analyticsDisplayType].rainfall || 0)}`}
+              text={`${Math.round(
+                currentAnalyticsData[analyticsDisplayType].rainfall || 0
+              )}`}
               unit={"mm"}
               prefix={analyticsDisplayType === "weekly" ? "Totale" : undefined}
               isCircleValue
             />
             <SelectedSumData
-              circleContent={<CarDefrostRear
-                viewBox="0 0 40 40"
-                style={{width: "34px", height: "34px", paddingLeft: "14px", paddingTop: "12px", fill: "#f1b8de", transform: "rotate(180deg)  translate(2px, 4px)"}}
-              />}
+              circleContent={
+                <CarDefrostRear
+                  viewBox="0 0 40 40"
+                  style={{
+                    width: "34px",
+                    height: "34px",
+                    paddingLeft: "14px",
+                    paddingTop: "12px",
+                    fill: "#f1b8de",
+                    transform: "rotate(180deg)  translate(2px, 4px)",
+                  }}
+                />
+              }
               label="Verdamping"
-              text={`${Math.round(currentAnalyticsData[analyticsDisplayType].evapotranspiration || 0)}`}
+              text={`${Math.round(
+                currentAnalyticsData[analyticsDisplayType].evapotranspiration ||
+                  0
+              )}`}
               unit={"mm"}
               prefix={analyticsDisplayType === "weekly" ? "Totale" : undefined}
               isCircleValue
             />
             <SelectedSumData
-              circleContent={<Vanish
-                viewBox="0 0 30 30"
-                style={{width: "34px", height: "34px", paddingLeft: "6px", paddingTop: "6px", fill: "#ffa139"}}
-              />}
+              circleContent={
+                <Vanish
+                  viewBox="0 0 30 30"
+                  style={{
+                    width: "34px",
+                    height: "34px",
+                    paddingLeft: "6px",
+                    paddingTop: "6px",
+                    fill: "#ffa139",
+                  }}
+                />
+              }
               label="Bodemvocht"
-              text={`${Math.round(currentAnalyticsData[analyticsDisplayType].moisture || 0)}`}
+              text={`${Math.round(
+                currentAnalyticsData[analyticsDisplayType].moisture || 0
+              )}`}
               unit={"mm"}
-              prefix={analyticsDisplayType === "weekly" ? "Gemiddelde" : undefined}
+              prefix={
+                analyticsDisplayType === "weekly" ? "Gemiddelde" : undefined
+              }
               isCircleValue
             />
             <SelectedSumData
-              circleContent={<IrrigationIcon
-                viewBox="0 0 30 30"
-                style={{width: "34px", height: "34px", paddingRight: "2px", paddingBottom: "4px", fill: "#1565c0"}}
-              />}
+              circleContent={
+                <IrrigationIcon
+                  viewBox="0 0 30 30"
+                  style={{
+                    width: "34px",
+                    height: "34px",
+                    paddingRight: "2px",
+                    paddingBottom: "4px",
+                    fill: "#1565c0",
+                  }}
+                />
+              }
               label="Beregeningsgift"
-              text={`${Math.round(currentAnalyticsData[analyticsDisplayType].sprinkling || 0)}`}
+              text={`${Math.round(
+                currentAnalyticsData[analyticsDisplayType].sprinkling || 0
+              )}`}
               unit={"mm"}
               prefix={analyticsDisplayType === "weekly" ? "Totale" : undefined}
               isCircleValue
             />
             <SelectedSumData
-              circleContent={<Thermometer
-                viewBox="0 0 30 30"
-                style={{width: "34px", height: "34px", paddingLeft: "8px", paddingTop: "4px", fill: "#ff6a6a"}}
-              />}
+              circleContent={
+                <Thermometer
+                  viewBox="0 0 30 30"
+                  style={{
+                    width: "34px",
+                    height: "34px",
+                    paddingLeft: "8px",
+                    paddingTop: "4px",
+                    fill: "#ff6a6a",
+                  }}
+                />
+              }
               label="Temperatuur"
-              text={`${Math.round(currentAnalyticsData[analyticsDisplayType].temperature || 0)}`}
+              text={`${Math.round(
+                currentAnalyticsData[analyticsDisplayType].temperature || 0
+              )}`}
               unit={"°C"}
-              prefix={analyticsDisplayType === "weekly" ? "Gemiddelde" : undefined}
+              prefix={
+                analyticsDisplayType === "weekly" ? "Gemiddelde" : undefined
+              }
               isCircleValue
             />
             <SelectedSumData
-              circleContent={<WaterPercent
-                viewBox="0 0 26 26"
-                style={{width: "34px", height: "34px", paddingLeft: "4px", fill: "#bb84e0"}}
-              />}
+              circleContent={
+                <WaterPercent
+                  viewBox="0 0 26 26"
+                  style={{
+                    width: "34px",
+                    height: "34px",
+                    paddingLeft: "4px",
+                    fill: "#bb84e0",
+                  }}
+                />
+              }
               label="Luchtvochtigheid"
-              text={`${Math.round(currentAnalyticsData[analyticsDisplayType].relativeHumidity || 0)}`}
+              text={`${Math.round(
+                currentAnalyticsData[analyticsDisplayType].relativeHumidity || 0
+              )}`}
               unit={"%"}
-              prefix={analyticsDisplayType === "weekly" ? "Gemiddelde" : undefined}
+              prefix={
+                analyticsDisplayType === "weekly" ? "Gemiddelde" : undefined
+              }
               isCircleValue
             />
             <SelectedSumData
@@ -1192,12 +1349,24 @@ const Analytics: React.FC<Props> = ({
               text={cropType}
             />
             <SelectedSumData
-              circleContent={<><strong>{Math.round(area)}</strong><small style={{textTransform: "none", marginLeft: "2px"}}>{"ha"}</small></>}
+              circleContent={
+                <>
+                  <strong>{Math.round(area)}</strong>
+                  <small style={{ textTransform: "none", marginLeft: "2px" }}>
+                    {"ha"}
+                  </small>
+                </>
+              }
               label={label}
               text={(() => {
-                let thisPlot = farmerData.plotsGeoJSON.features.filter((x) => x.properties.plotId === selectedPlotId)
-                if(thisPlot.length > 0){
-                  return `${thisPlot[0].properties.name || thisPlot[0].properties.farmerName}`
+                let thisPlot = farmerData.plotsGeoJSON.features.filter(
+                  (x) => x.properties.plotId === selectedPlotId
+                );
+                if (thisPlot.length > 0) {
+                  return `${
+                    thisPlot[0].properties.name ||
+                    thisPlot[0].properties.farmerName
+                  }`;
                 }
                 return "";
               })()}
@@ -1232,7 +1401,12 @@ const Analytics: React.FC<Props> = ({
               flex-grow: 1;
             `}
           >
-            <FormControl>
+            <FormControl
+              className={css`
+                margin-left: 0 !important;
+                margin-right: 1rem !important;
+              `}
+            >
               <InputLabel htmlFor="component-simple">Y-as Links</InputLabel>
               <Select
                 className={css`
@@ -1241,14 +1415,18 @@ const Analytics: React.FC<Props> = ({
                 value={leftAxe}
                 onChange={changeLeftAxe}
               >
-                {axesOptions.filter((i) => rightAxe !== i.value).map((item) => 
-                  <MenuItem key={item.value} value={item.value}><LegendItem 
-                    label={item.label} 
-                    shape={item.shape}
-                    color={item.color} 
-                    borderColor={item.borderColor}
-                  /></MenuItem>
-                )}
+                {axesOptions
+                  .filter((i) => rightAxe !== i.value)
+                  .map((item) => (
+                    <MenuItem key={item.value} value={item.value}>
+                      <LegendItem
+                        label={item.label}
+                        shape={item.shape}
+                        color={item.color}
+                        borderColor={item.borderColor}
+                      />
+                    </MenuItem>
+                  ))}
               </Select>
             </FormControl>
                         
@@ -1267,14 +1445,18 @@ const Analytics: React.FC<Props> = ({
                 value={rightAxe}
                 onChange={changeRightAxe}
               >
-                {axesOptions.filter((i) => leftAxe !== i.value).map((item) => 
-                  <MenuItem key={item.value} value={item.value}><LegendItem 
-                    label={item.label} 
-                    shape={item.shape}
-                    color={item.color} 
-                    borderColor={item.borderColor}
-                  /></MenuItem>
-                )}
+                {axesOptions
+                  .filter((i) => leftAxe !== i.value)
+                  .map((item) => (
+                    <MenuItem key={item.value} value={item.value}>
+                      <LegendItem
+                        label={item.label}
+                        shape={item.shape}
+                        color={item.color}
+                        borderColor={item.borderColor}
+                      />
+                    </MenuItem>
+                  ))}
               </Select>
             </FormControl>
           </div>
@@ -1283,9 +1465,74 @@ const Analytics: React.FC<Props> = ({
               display: flex;
             `}
           >
+            <div
+              className={css`
+                margin-right: 10px !important;
+                display: flex;
+                gap: 5px;
+              `}
+            >
+              <FormControl disabled={!selectedPlotId}>
+                <InputLabel id="crop-status-label">Grenswaarde</InputLabel>
+                <Input
+                  className={css`
+                    input[type="number"]::-webkit-inner-spin-button,
+                    input[type="number"]::-webkit-outer-spin-button {
+                      -webkit-appearance: none;
+                      margin: 0;
+                    }
+                  `}
+                  id="component-simple"
+                  value={
+                    limitLevelInput !== undefined
+                      ? limitLevelInput.toString()
+                      : ""
+                  }
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      setLimitLevelInput(parseFloat(e.target.value));
+                    } else {
+                      setLimitLevelInput(undefined);
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if(e.keyCode === 13) {
+                      submitLimitLevel()
+                    }
+                  }}
+                  type="number"
+                  style={{ width: "150px" }}
+                  endAdornment={
+                    <InputAdornment position="end">
+                      <IconButton
+                        disabled={
+                          fetchedLimitLevel === undefined &&
+                          limitLevelInput === undefined
+                        }
+                        onClick={() => {
+                          submitLimitLevel();
+                        }}
+                        edge="end"
+                        type="submit"
+                      >
+                        {(fetchedLimitLevel === undefined &&
+                          limitLevelInput === undefined) ||
+                        (fetchedLimitLevel !== limitLevelInput &&
+                          limitLevelInput !== undefined) ? (
+                          <SaveIcon />
+                        ) : (
+                          <DeleteIcon />
+                        )}
+                      </IconButton>
+                    </InputAdornment>
+                  }
+                />
+              </FormControl>
+            </div>
             <FormControl
               className={css`
                 margin-right: 10px !important;
+                margin-left: 30px !important;
               `}
               disabled={!selectedPlotId}
             >
@@ -1338,20 +1585,20 @@ const Analytics: React.FC<Props> = ({
                   )
                     ? `${
                         developmentStateToLabel(
-                          currentAnalyticsData[analyticsDisplayType].developmentStage,
+                          currentAnalyticsData[analyticsDisplayType]
+                            .developmentStage,
                           cropType
                         ).label
-                      } ${currentAnalyticsData[analyticsDisplayType].developmentStage.toLocaleString(
-                        undefined,
-                        {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        }
-                      )}`
+                      } ${currentAnalyticsData[
+                        analyticsDisplayType
+                      ].developmentStage.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}`
                     : ""
                 }
                 readOnly
-                style={{ width: "250px"}}
+                style={{ width: "250px" }}
               />
             </FormControl>
           </div>
@@ -1371,7 +1618,13 @@ const Analytics: React.FC<Props> = ({
                 <stop offset="5%" stopColor="#dc9cf0" stopOpacity={0.8} />
                 <stop offset="95%" stopColor="#4946e8" stopOpacity={0} />
               </linearGradient>
-              <linearGradient id="desiredMoistureColor" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient
+                id="desiredMoistureColor"
+                x1="0"
+                y1="0"
+                x2="0"
+                y2="1"
+              >
                 <stop offset="5%" stopColor="#e80707" stopOpacity={0.8} />
                 <stop offset="95%" stopColor="#ffb2b2" stopOpacity={0} />
               </linearGradient>
@@ -1407,21 +1660,27 @@ const Analytics: React.FC<Props> = ({
               tickLine={false}
               tick={{ fill: paramColor[leftAxe], fontSize: 10 }}
               width={30}
-              domain={[0, (()=>{
-                if(leftAxe === 'relativeHumidity' || leftAxe === 'desiredMoisture'){
-                  return 100;
-                }
-                if(leftAxe === 'rainfall'){
-                  let maxValue = 0;
-                  analyticsData.forEach(data => {
-                    if(data.rainfall && data.rainfall > maxValue){
-                      maxValue = data.rainfall
-                    }
-                  })
-                  return maxValue < 6 ? 6 : 'auto';
-                }
-                return 'auto'
-              })()]}
+              domain={[
+                0,
+                (() => {
+                  if (
+                    leftAxe === "relativeHumidity" ||
+                    leftAxe === "desiredMoisture"
+                  ) {
+                    return 100;
+                  }
+                  if (leftAxe === "rainfall") {
+                    let maxValue = 0;
+                    analyticsData.forEach((data) => {
+                      if (data.rainfall && data.rainfall > maxValue) {
+                        maxValue = data.rainfall;
+                      }
+                    });
+                    return maxValue < 6 ? 6 : "auto";
+                  }
+                  return "auto";
+                })(),
+              ]}
             />
             <YAxis
               yAxisId="right"
@@ -1430,21 +1689,27 @@ const Analytics: React.FC<Props> = ({
               tickLine={false}
               tick={{ fill: paramColor[rightAxe], fontSize: 10 }}
               width={30}
-              domain={[0, (()=>{
-                if(rightAxe === 'relativeHumidity' || rightAxe === 'desiredMoisture'){
-                  return 100;
-                }
-                if(rightAxe === 'rainfall'){
-                  let maxValue = 0;
-                  analyticsData.forEach(data => {
-                    if(data.rainfall && data.rainfall > maxValue){
-                      maxValue = data.rainfall
-                    }
-                  })
-                  return maxValue < 6 ? 6 : 'auto';
-                }
-                return 'auto'
-              })()]}
+              domain={[
+                0,
+                (() => {
+                  if (
+                    rightAxe === "relativeHumidity" ||
+                    rightAxe === "desiredMoisture"
+                  ) {
+                    return 100;
+                  }
+                  if (rightAxe === "rainfall") {
+                    let maxValue = 0;
+                    analyticsData.forEach((data) => {
+                      if (data.rainfall && data.rainfall > maxValue) {
+                        maxValue = data.rainfall;
+                      }
+                    });
+                    return maxValue < 6 ? 6 : "auto";
+                  }
+                  return "auto";
+                })(),
+              ]}
             />
             {displayMoisture ? (
               <Area
@@ -1453,6 +1718,17 @@ const Analytics: React.FC<Props> = ({
                 yAxisId={leftAxe === "moisture" ? "left" : "right"}
                 stroke="#f6511d"
                 fill="url(#moistureColor)"
+              />
+            ) : null}
+            {displayMoisture && fetchedLimitLevel ? (
+              <Line
+                dataKey="limitLevel"
+                xAxisId={leftAxe === "moisture" ? 0 : 2}
+                yAxisId={leftAxe === "moisture" ? "left" : "right"}
+                stroke="#DC143C"
+                strokeWidth={3}
+                connectNulls
+                dot={false}
               />
             ) : null}
             {displayDesiredMoisture ? (
@@ -1534,7 +1810,9 @@ const Analytics: React.FC<Props> = ({
                   index,
                 }: LabelProps & { index: number }) => (
                   <g
-                    className={css`cursor: pointer;`}
+                    className={css`
+                      cursor: pointer;
+                    `}
                     onClick={async () => {
                       await updateSprinklingDialog.open(
                         value as number,
@@ -1544,20 +1822,20 @@ const Analytics: React.FC<Props> = ({
                   >
                     <circle
                       cx={x! + width! / 2}
-                      cy={value ? y! : '140px'}
+                      cy={value ? y! : "140px"}
                       r={width! / 2 + 8}
                       fill="url(#radial)"
                     />
                     <circle
                       cx={x! + width! / 2}
-                      cy={value ? y! : '140px'}
+                      cy={value ? y! : "140px"}
                       r={width! / 2 + 3}
                       fill="#ffffff"
                       stroke="#64b5f6"
                     />
                     <circle
                       cx={x! + width! / 2}
-                      cy={value ? y! : '140px'}
+                      cy={value ? y! : "140px"}
                       r={width! / 2}
                       fill="#ffffff"
                       stroke="#1565c0"
@@ -1565,7 +1843,7 @@ const Analytics: React.FC<Props> = ({
                     />
                     <text
                       x={x! + width! / 2}
-                      y={value ? y! : '140px'}
+                      y={value ? y! : "140px"}
                       textAnchor="middle"
                       dominantBaseline="middle"
                       fill="#1565c0"

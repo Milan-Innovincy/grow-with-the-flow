@@ -7,7 +7,7 @@ import { DateTime, Duration } from "luxon";
 import EventEmitter from "./lib/EventEmitter";
 
 import MapView from "./MapView";
-import Analytics from "./Analytics";
+import Analytics from "./components/Analytics/Analytics";
 import OverallSummary from "./OverallSummary";
 import LoadingError from "./components/LoadingError";
 import { ApplicationContext } from "./ApplicationContext";
