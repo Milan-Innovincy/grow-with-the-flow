@@ -12,6 +12,7 @@ import { PNG } from "pngjs";
 import chroma from "chroma-js";
 import CoordinateCalculator from "./CoordinateCalculator";
 import { FarmerData } from "./MapAndAnalytics";
+import { blue } from "@material-ui/core/colors";
 
 const { GeoJSONFillable, Patterns } = require("react-leaflet-geojson-patterns");
 
@@ -363,10 +364,6 @@ const MapView = ({
         onzoomend={(e: any) => setZoom(e.target.getZoom())}
         className={css`
           height: 100%;
-          .leaflet-interactive,
-          .leaflet-interactive:hover {
-            fill-opacity: 0.4 !important;
-          }
           .leaflet-control-zoom {
             border-radius: 17px;
             left: 14px;
@@ -399,10 +396,6 @@ const MapView = ({
         onzoomend={(e: any) => setZoom(e.target.getZoom())}
         className={css`
           height: 100%;
-          .leaflet-interactive,
-          .leaflet-interactive:hover {
-            fill-opacity: 0.4 !important;
-          }
           .leaflet-control-zoom {
             border-radius: 17px;
             left: 14px;
@@ -479,14 +472,16 @@ const MapView = ({
                   let color = f(todayValue[selectedPlotParameter] || 0).rgba();
                   if(todayValue) {
                     chloropleth = {
-                      fillColor: `rgba(${color[0]},${color[1]},${color[2]},0.6)`,
-                      color: feature.properties.plotId === selectedPlotId ? `rgba(${color[0]},${color[1]},${color[2]},1)` :`rgba(${color[0]},${color[1]},${color[2]},0.6)`,
-                      weight: feature.properties.plotId === selectedPlotId ? 2 : 1,
+                    
+                      fillColor: `rgba(${color[0]},${color[1]},${color[2]},0.9)`,
+                      color: `rgba(${color[0] - 40},${color[1] + 5},${color[2]},1)`,
+                      weight: feature.properties.plotId === selectedPlotId ? 3 : 1,
                     }
                   }
                 }
               }
               return {
+                fillOpacity: 1,
                 fillPattern: undefined,
                 ...chloropleth,
               }
