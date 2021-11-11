@@ -4,7 +4,7 @@ import { Map, Polygon, TileLayer, ImageOverlay, GeoJSON } from "react-leaflet";
 import { range } from "lodash";
 import { featureCollection, lineString, center } from "@turf/turf";
 import { css } from "@emotion/css";
-import { Fab, Select, MenuItem, Box, Tooltip } from "@material-ui/core";
+import { Fab, Select, MenuItem, Box, Tooltip, useTheme } from "@material-ui/core";
 import { Grid, GridOff } from "mdi-material-ui";
 import { InvertColors, InvertColorsOff} from "@material-ui/icons"
 import { sortBy } from "lodash";
@@ -12,6 +12,7 @@ import { PNG } from "pngjs";
 import chroma from "chroma-js";
 import CoordinateCalculator from "./CoordinateCalculator";
 import { FarmerData } from "./MapAndAnalytics";
+import { blue } from "@material-ui/core/colors";
 
 const { GeoJSONFillable, Patterns } = require("react-leaflet-geojson-patterns");
 
@@ -150,6 +151,7 @@ const MapView = ({
   selectedPlotId,
   selectedPixel,
 }: Props) => {
+  const theme = useTheme();
   const [selectedParameter, setSelectedParameter] = useState(
     "measuredPrecipitation"
   );
@@ -160,7 +162,7 @@ const MapView = ({
     getLegendColors("measuredPrecipitation")
   );
   const [pixelSelection, setPixelSelection] = useState(selectedPixel && true);
-  const [chloroplethSelection, setChloroplethSelection] = useState(false);
+  const [chloroplethSelection, setChloroplethSelection] = useState(true);
   const [zoom, setZoom] = useState(14);
   const [initialLoad, setInitialLoad] = useState(true);
   const [base64, setBase64] = useState("");
@@ -362,10 +364,6 @@ const MapView = ({
         onzoomend={(e: any) => setZoom(e.target.getZoom())}
         className={css`
           height: 100%;
-          .leaflet-interactive,
-          .leaflet-interactive:hover {
-            fill-opacity: 0.4 !important;
-          }
           .leaflet-control-zoom {
             border-radius: 17px;
             left: 14px;
@@ -388,17 +386,16 @@ const MapView = ({
   }
 
   return (
-    <>
+    <div className={css`
+      position:relative;
+      height: 100%;
+    `}>
       <Map
         center={mapCenter as any}
         zoom={zoom}
         onzoomend={(e: any) => setZoom(e.target.getZoom())}
         className={css`
           height: 100%;
-          .leaflet-interactive,
-          .leaflet-interactive:hover {
-            fill-opacity: 0.4 !important;
-          }
           .leaflet-control-zoom {
             border-radius: 17px;
             left: 14px;
@@ -473,17 +470,18 @@ const MapView = ({
                 let todayValue: any = farmerData.plotsAnalytics[feature.properties.plotId].find((x) => x.date === date);
                 if(todayValue && todayValue.hasOwnProperty(selectedPlotParameter)){
                   let color = f(todayValue[selectedPlotParameter] || 0).rgba();
-                  console.log(color)
                   if(todayValue) {
                     chloropleth = {
-                      fillColor: `rgba(${color[0]},${color[1]},${color[2]},0.6)`,
-                      color: feature.properties.plotId === selectedPlotId ? `rgba(${color[0]},${color[1]},${color[2]},1)` :`rgba(${color[0]},${color[1]},${color[2]},0.6)`,
-                      weight: feature.properties.plotId === selectedPlotId ? 2 : 1,
+                    
+                      fillColor: `rgba(${color[0]},${color[1]},${color[2]},0.9)`,
+                      color: `rgba(${color[0] - 40},${color[1] + 5},${color[2]},1)`,
+                      weight: feature.properties.plotId === selectedPlotId ? 3 : 1,
                     }
                   }
                 }
               }
               return {
+                fillOpacity: 1,
                 fillPattern: undefined,
                 ...chloropleth,
               }
@@ -514,6 +512,7 @@ const MapView = ({
           z-index: 1000;
           top: 10px;
           right: 24px;
+          gap: 15px;
         `}
       >
         {pixelSelection ?
@@ -550,9 +549,8 @@ const MapView = ({
                 display: flex;
                 align-items: center;
                 height: 48px;
-                margin-right: 15px;
                 padding: 0px 15px;
-                background-color: #d5d5d5;
+                background-color: ${theme.palette.secondary.main};
                 border-radius: 4px;
               `}
             >
@@ -560,6 +558,7 @@ const MapView = ({
                 value={selectedPlotParameter}
                 onChange={handleSelectedPlotParameterChange}
                 autoWidth={true}
+                color="secondary"
               >
                 {Object.keys(parametersPlot).map((parameterName: string) => (
                   <MenuItem key={parameterName} value={parameterName}>
@@ -571,18 +570,19 @@ const MapView = ({
           }
           <Tooltip title={chloroplethSelection ? "Hide chloropleth" : "Show chloropleth"}>
             <Fab
+              color="secondary"
               onClick={() => setChloroplethSelection(!chloroplethSelection)}
               size="medium"
               disableFocusRipple={true}
-              style={{marginRight: "15px"}}
             >
               {chloroplethSelection ? <InvertColorsOff /> : <InvertColors />}
             </Fab>
           </Tooltip>
         </>
         }
-        <Tooltip title={pixelSelection ? "Hide grid" : "Show grid"}>
+        {/* <Tooltip title={pixelSelection ? "Hide grid" : "Show grid"}>
           <Fab
+            color="secondary"
             onClick={() => {
               if(farmerData.pixelsData === undefined){
                 getPixelsData()
@@ -594,7 +594,7 @@ const MapView = ({
           >
             {pixelSelection ? <GridOff /> : <Grid />}
           </Fab>
-        </Tooltip>
+        </Tooltip> */}
       </div>
 
       {(pixelSelection || chloroplethSelection) &&
@@ -677,7 +677,7 @@ const MapView = ({
           </small>
         </Box>
       }
-    </>
+    </div>
   );
 };
 

@@ -2,17 +2,18 @@ import React, { useState, useEffect, useContext } from "react";
 import { RouteComponentProps, Redirect } from "react-router-dom";
 import axios from "axios";
 import { css } from "@emotion/css";
-import { Paper, CircularProgress } from "@material-ui/core";
+import { Paper, CircularProgress, Grid } from "@material-ui/core";
 import { DateTime, Duration } from "luxon";
 import EventEmitter from "./lib/EventEmitter";
 
 import MapView from "./MapView";
-import Analytics from "./Analytics";
+import Analytics from "./components/Analytics/Analytics";
 import OverallSummary from "./OverallSummary";
 import LoadingError from "./components/LoadingError";
 import { ApplicationContext } from "./ApplicationContext";
 import _ from "lodash";
 import axiosInstance from "./lib/axios";
+import PlotList from "./components/PlotList/PlotList";
 
 type Props = RouteComponentProps<{
   date?: string;
@@ -108,10 +109,15 @@ export type FarmerGeoData = {
 };
 
 const MapAndAnalytics = ({ match, history }: Props) => {
-  const [farmerData, setFarmerData] = useState<FarmerData | undefined>(undefined);
-  const [farmerGeoData, setFarmerGeoData] = useState<FarmerGeoData | undefined>(undefined);
+  const [farmerData, setFarmerData] = useState<FarmerData | undefined>(
+    undefined
+  );
+  const [farmerGeoData, setFarmerGeoData] = useState<FarmerGeoData | undefined>(
+    undefined
+  );
   const contextValue = useContext(ApplicationContext);
   const [isFetchingFarmerData, setIsFetchingFarmerData] = useState(false);
+  const [isTableTruncated, setIsTableTruncated] = useState(true);
 
   const { date, selectionType, selectionId } = match.params;
   const latestAvailableDate = DateTime.fromJSDate(new Date())
@@ -123,10 +129,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
       "sprinkling-updated-success",
       updateFarmerDataOnSprinklingUpdate
     );
-    EventEmitter.on(
-      "plot-details-updated-success",
-      updatePlotDetails
-    );
+    EventEmitter.on("plot-details-updated-success", updatePlotDetails);
     return () => {
       EventEmitter.removeListener(
         "sprinkling-updated-success",
@@ -136,7 +139,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
         "plot-details-updated-success",
         updatePlotDetails
       );
-    }
+    };
   }, [farmerData]);
 
   const updateFarmerDataOnSprinklingUpdate = async () => {
@@ -153,20 +156,21 @@ const MapAndAnalytics = ({ match, history }: Props) => {
   };
 
   const fetchPixelsData = async () => {
-    const prefix = "https://storage.googleapis.com/grow-with-the-flow.appspot.com";
+    const prefix =
+      "https://storage.googleapis.com/grow-with-the-flow.appspot.com";
 
     const landUse = await axios
-          .get(`${prefix}/gwtf-land-use.json`)
-          .then(({ data }) => {
-            if (data === {}) {
-              handleError();
-            }
-            return data;
-          })
-          .catch((error: Error) => {
-            console.error(error.message);
-            handleError();
-          });
+      .get(`${prefix}/gwtf-land-use.json`)
+      .then(({ data }) => {
+        if (data === {}) {
+          handleError();
+        }
+        return data;
+      })
+      .catch((error: Error) => {
+        console.error(error.message);
+        handleError();
+      });
     const soilMap = await axios
       .get(`${prefix}/gwtf-soil-map.json`)
       .then(({ data }) => {
@@ -184,33 +188,28 @@ const MapAndAnalytics = ({ match, history }: Props) => {
       .then(({ data }) => {
         if (_.isEmpty(data)) {
           handleError();
-        } else
-        return data;
+        } else return data;
       })
       .catch((error: Error) => {
         console.error(error.message);
         handleError();
       });
 
-      if (
-        landUse &&
-        soilMap &&
-        pixelsData
-      ) {
-        pixelsData.landUse = landUse;
-        pixelsData.soilMap = soilMap;
-      }
+    if (landUse && soilMap && pixelsData) {
+      pixelsData.landUse = landUse;
+      pixelsData.soilMap = soilMap;
+    }
 
-      return pixelsData;
-  }
+    return pixelsData;
+  };
 
   const initPixelsData = async () => {
-    setIsFetchingFarmerData(true)
-    let pixelsData = await fetchPixelsData()
-    setFarmerData({...farmerData!, pixelsData});
+    setIsFetchingFarmerData(true);
+    let pixelsData = await fetchPixelsData();
+    setFarmerData({ ...farmerData!, pixelsData });
     EventEmitter.emit("farmer-data-updated");
-    setIsFetchingFarmerData(false)
-  }
+    setIsFetchingFarmerData(false);
+  };
 
   useEffect(() => {
     setIsFetchingFarmerData(true);
@@ -219,7 +218,6 @@ const MapAndAnalytics = ({ match, history }: Props) => {
         contextValue.keycloak && contextValue.keycloak.token;
 
       if (isAuthenticated) {
-        
         const plotsGeoJSON = await axiosInstance
           .get(`/plots`)
           .then(({ data }) => {
@@ -240,27 +238,40 @@ const MapAndAnalytics = ({ match, history }: Props) => {
           setFarmerGeoData(farmerGeoData);
         }
 
-        const pixelsData = selectionType === 'pixel' ? await fetchPixelsData() : undefined;
+        const pixelsData =
+          selectionType === "pixel" ? await fetchPixelsData() : undefined;
 
-        const plotsAnalytics = await axiosInstance
+        let plotsAnalytics = undefined;
+
+        if (date) {
+          var dateInPast = new Date(date)
+          var dateInFuture = new Date(date)
+          dateInPast.setDate(dateInPast.getDate() - 21);
+          dateInFuture.setDate(dateInFuture.getDate() + 8);
+          const formattedPastDate = DateTime.fromJSDate(dateInPast).toFormat(
+            "yyyy-MM-dd"
+          );
+          const formattedFutureDate = DateTime.fromJSDate(dateInFuture).toFormat(
+            "yyyy-MM-dd"
+          );
+          plotsAnalytics = await axiosInstance
           .get(
-            `/plot-analytics?on=${date}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater,relativeTranspiration,developmentStage,trafficability,relativeHumidity,averageTemperature`
+            `/plot-analytics?from=${formattedPastDate}&to=${formattedFutureDate}&attributes=deficit,measuredPrecipitation,evapotranspiration,availableSoilWater,relativeTranspiration,developmentStage,trafficability,relativeHumidity,averageTemperature`
           )
           .then(({ data }) => {
             if (_.isEmpty(data)) {
               handleError();
-            } else
-            return data;
+            } else return data;
           })
           .catch((error: Error) => {
             console.error(error.message);
             handleError();
           });
-
-        if (
-          plotsGeoJSON &&
-          plotsAnalytics
-        ) {
+        } else {
+          handleError();
+        }
+        
+        if (plotsGeoJSON && plotsAnalytics) {
           plotsGeoJSON.features = plotsGeoJSON.features.filter(
             (feature: any) => feature.properties.plotId
           );
@@ -276,7 +287,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
           EventEmitter.on("sprinkling-update", handleSprinklingUpdate);
           EventEmitter.on("plot-name-update", handleNameUpdate);
           EventEmitter.on("plot-description-update", handleDescriptionUpdate);
-          
+
           getPlotFeedback(farmerData);
         }
       }
@@ -284,15 +295,12 @@ const MapAndAnalytics = ({ match, history }: Props) => {
   }, [contextValue.authenticated, contextValue.keycloak, date]);
 
   const handleNameUpdate = (payload: any) => {
-    const {selectedPlotId, value} = payload;
-  
+    const { selectedPlotId, value } = payload;
+
     axiosInstance
-      .put(
-        `/plots/id/${selectedPlotId}`,
-        {
-          name: value
-        }
-      )
+      .put(`/plots/id/${selectedPlotId}`, {
+        name: value,
+      })
       .then(({ data }) => {
         EventEmitter.emit("plot-name-updated-success");
         //Update data to reflect change
@@ -302,18 +310,15 @@ const MapAndAnalytics = ({ match, history }: Props) => {
         EventEmitter.emit("plot-name-updated-failure");
         console.error(error);
       });
-  }
+  };
 
   const handleDescriptionUpdate = (payload: any) => {
-    const {selectedPlotId, value} = payload;
-  
+    const { selectedPlotId, value } = payload;
+
     axiosInstance
-      .put(
-        `/plots/id/${selectedPlotId}`,
-        {
-          description: value
-        }
-      )
+      .put(`/plots/id/${selectedPlotId}`, {
+        description: value,
+      })
       .then(({ data }) => {
         EventEmitter.emit("plot-description-updated-success");
         //Update data to reflect change
@@ -323,7 +328,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
         EventEmitter.emit("plot-description-updated-failure");
         console.error(error);
       });
-  }
+  };
 
   const handleSprinklingUpdate = (payload: any) => {
     const { date, selectedPlotId, value } = payload;
@@ -405,10 +410,10 @@ const MapAndAnalytics = ({ match, history }: Props) => {
 
       setFarmerData({
         ...farmerData!,
-        plotsGeoJSON
+        plotsGeoJSON,
       });
     }
-  }
+  };
 
   const updatePlotFeedback = async () => {
     const { plotsAnalytics } = farmerData!;
@@ -488,31 +493,56 @@ const MapAndAnalytics = ({ match, history }: Props) => {
   return (
     <div
       className={css`
-        height: 100%;
         display: flex;
         flex-direction: column;
         position: relative;
+        height: 100%;
       `}
     >
-      <div
-        className={css`
-          position: relative;
-          flex: 1;
-        `}
-      >
-        {farmerData && (
-          <MapView
-            navigate={navigate}
-            farmerData={farmerData}
-            getPixelsData={initPixelsData}
-            farmerGeoData={farmerGeoData}
-            date={date}
-            selectedPlotId={selectedPlotId}
-            selectedPixel={selectedPixel}
-          />
-        )}
-      </div>
-      {farmerData && 
+      {farmerData && (
+        <Grid
+          container
+          direction="row"
+          className={css`
+            height: 100%;
+          `}
+        >
+          {isTableTruncated && (
+            <Grid item xs={7}>
+              <MapView
+                navigate={navigate}
+                farmerData={farmerData}
+                getPixelsData={initPixelsData}
+                farmerGeoData={farmerGeoData}
+                date={date}
+                selectedPlotId={selectedPlotId}
+                selectedPixel={selectedPixel}
+              />
+            </Grid>
+          )}
+
+          <Grid item xs={isTableTruncated ? 5 : 12}>
+            <div
+              className={css`
+                height: 100%;
+              `}
+            >
+              <PlotList
+                farmerData={farmerData}
+                date={date}
+                navigate={navigate}
+                selectedPlotId={selectedPlotId}
+                selectedPixel={selectedPixel}
+                isFetchingData={isFetchingFarmerData}
+                truncated={isTableTruncated}
+                setTruncated={setIsTableTruncated}
+              />
+            </div>
+          </Grid>
+        </Grid>
+      )}
+
+      {farmerData && (
         <Paper
           elevation={5}
           className={css`
@@ -539,8 +569,8 @@ const MapAndAnalytics = ({ match, history }: Props) => {
             />
           )}
         </Paper>
-      }
-      {isFetchingFarmerData &&
+      )}
+      {isFetchingFarmerData && (
         <div
           className={css`
             position: absolute;
@@ -558,7 +588,7 @@ const MapAndAnalytics = ({ match, history }: Props) => {
         >
           <CircularProgress />
         </div>
-      }
+      )}
     </div>
   );
 };

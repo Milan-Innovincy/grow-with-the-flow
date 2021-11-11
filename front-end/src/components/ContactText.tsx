@@ -1,6 +1,6 @@
 import React from "react";
 
-export default class CookieStatement extends React.Component<{}, {}> {
+export default class ContactText extends React.Component<{}, {}> {
   render() {
     return (
       <div>
