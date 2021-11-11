@@ -49,7 +49,12 @@ import "moment/locale/nl";
 
 import axiosInstance from "../../lib/axios";
 
-import { deleteLimitLevel, getLimitLevel, setLimitLevel, setCropStatus as setCropStatusApi } from "./analyticsApi";
+import {
+  deleteLimitLevel,
+  getLimitLevel,
+  setLimitLevel,
+  setCropStatus as setCropStatusApi,
+} from "./analyticsApi";
 import UpdateSprinklingDialog from "../../UpdateSprinklingDialog";
 import DateView from "../../DateView";
 import { ReactComponent as AlfalfaIcon } from "../../icons/alfalfa.svg";
@@ -518,16 +523,15 @@ const Analytics: React.FC<Props> = ({
       const limitLevel = await getLimitLevel(plotId);
       setFetchedLimitLevel(limitLevel);
       setLimitLevelInput(limitLevel);
-    }
-    catch {
+    } catch {
       setFetchedLimitLevel(undefined);
       setLimitLevelInput(undefined);
     }
-  }
-  
+  };
+
   useEffect(() => {
     if (selectedPlotId) {
-      fetchLimitLevel(selectedPlotId)
+      fetchLimitLevel(selectedPlotId);
     }
   }, [selectedPlotId]);
 
@@ -741,7 +745,7 @@ const Analytics: React.FC<Props> = ({
     }
   };
 
-  const submitLimitLevel = async () => {
+  const submitLimitLevel = async (onlyUpdate: boolean) => {
     if (
       selectedPlotId &&
       !(fetchedLimitLevel === undefined && limitLevelInput === undefined)
@@ -752,19 +756,23 @@ const Analytics: React.FC<Props> = ({
         limitLevelInput !== undefined
       ) {
         try {
-          const newLimitLevel = await setLimitLevel(selectedPlotId, limitLevelInput);
+          const newLimitLevel = await setLimitLevel(
+            selectedPlotId,
+            limitLevelInput
+          );
           setFetchedLimitLevel(newLimitLevel);
           setLimitLevelInput(newLimitLevel);
         } catch {
           setLimitLevelInput(fetchedLimitLevel);
         }
-      } else {
+      }
+      if (fetchedLimitLevel === limitLevelInput && !onlyUpdate) {
         try {
           await deleteLimitLevel(selectedPlotId);
           setFetchedLimitLevel(undefined);
           setLimitLevelInput(undefined);
         } catch {
-          setLimitLevelInput(fetchedLimitLevel)
+          setLimitLevelInput(fetchedLimitLevel);
         }
       }
     }
@@ -776,9 +784,13 @@ const Analytics: React.FC<Props> = ({
       const formattedDate = DateTime.fromJSDate(new Date(date)).toFormat(
         "yyyy-MM-dd"
       );
-      
+
       try {
-        await setCropStatusApi(selectedPlotId, formattedDate, event.target.value.toString());
+        await setCropStatusApi(
+          selectedPlotId,
+          formattedDate,
+          event.target.value.toString()
+        );
         EventEmitter.emit("sprinkling-updated-success");
       } catch {
         EventEmitter.emit("sprinkling-updated-failure");
@@ -1472,62 +1484,64 @@ const Analytics: React.FC<Props> = ({
                 gap: 5px;
               `}
             >
-              <FormControl disabled={!selectedPlotId}>
-                <InputLabel id="crop-status-label">Grenswaarde</InputLabel>
-                <Input
-                  className={css`
-                    input[type="number"]::-webkit-inner-spin-button,
-                    input[type="number"]::-webkit-outer-spin-button {
-                      -webkit-appearance: none;
-                      margin: 0;
+              <Tooltip title="Stel hier de kritieke waarde van bodemvocht in mm in">
+                <FormControl disabled={!selectedPlotId}>
+                  <InputLabel id="crop-status-label">Grenswaarde</InputLabel>
+                  <Input
+                    className={css`
+                      input[type="number"]::-webkit-inner-spin-button,
+                      input[type="number"]::-webkit-outer-spin-button {
+                        -webkit-appearance: none;
+                        margin: 0;
+                      }
+                    `}
+                    id="component-simple"
+                    value={
+                      limitLevelInput !== undefined
+                        ? limitLevelInput.toString()
+                        : ""
                     }
-                  `}
-                  id="component-simple"
-                  value={
-                    limitLevelInput !== undefined
-                      ? limitLevelInput.toString()
-                      : ""
-                  }
-                  onChange={(e) => {
-                    if (e.target.value) {
-                      setLimitLevelInput(parseFloat(e.target.value));
-                    } else {
-                      setLimitLevelInput(undefined);
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        setLimitLevelInput(parseFloat(e.target.value));
+                      } else {
+                        setLimitLevelInput(undefined);
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.keyCode === 13) {
+                        submitLimitLevel(true);
+                      }
+                    }}
+                    type="number"
+                    style={{ width: "150px" }}
+                    endAdornment={
+                      <InputAdornment position="end">
+                        <IconButton
+                          disabled={
+                            fetchedLimitLevel === undefined &&
+                            limitLevelInput === undefined
+                          }
+                          onClick={() => {
+                            submitLimitLevel(false);
+                          }}
+                          edge="end"
+                          type="submit"
+                        >
+                          {(fetchedLimitLevel === undefined &&
+                            limitLevelInput === undefined) ||
+                          (fetchedLimitLevel !== limitLevelInput &&
+                            limitLevelInput !== undefined) ? (
+                            <SaveIcon />
+                          ) : (
+                            <DeleteIcon />
+                          )}
+                        </IconButton>
+                      </InputAdornment>
                     }
-                  }}
-                  onKeyDown={(e) => {
-                    if(e.keyCode === 13) {
-                      submitLimitLevel()
-                    }
-                  }}
-                  type="number"
-                  style={{ width: "150px" }}
-                  endAdornment={
-                    <InputAdornment position="end">
-                      <IconButton
-                        disabled={
-                          fetchedLimitLevel === undefined &&
-                          limitLevelInput === undefined
-                        }
-                        onClick={() => {
-                          submitLimitLevel();
-                        }}
-                        edge="end"
-                        type="submit"
-                      >
-                        {(fetchedLimitLevel === undefined &&
-                          limitLevelInput === undefined) ||
-                        (fetchedLimitLevel !== limitLevelInput &&
-                          limitLevelInput !== undefined) ? (
-                          <SaveIcon />
-                        ) : (
-                          <DeleteIcon />
-                        )}
-                      </IconButton>
-                    </InputAdornment>
-                  }
-                />
-              </FormControl>
+                  />
+                </FormControl>
+              </Tooltip>
             </div>
             <FormControl
               className={css`
