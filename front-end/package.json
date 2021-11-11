@@ -43,7 +43,7 @@
     "immer": "2.0.0",
     "keycloak-js": "11.0.3",
     "leaflet": "1.4.0",
-    "lodash": "4.17.19",
+    "lodash": "4.17.21",
     "luxon": "^1.25.0",
     "mdi-material-ui": "5.9.0",
     "moment": "^2.0.0",
