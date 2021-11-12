@@ -514,7 +514,7 @@ const Analytics: React.FC<Props> = ({
     number | undefined
   >(undefined);
   const [analyticsDisplayType, setAnalyticsDisplayType] = useState<
-    "daily" | "weekly"
+    "daily" | "total"
   >("daily");
   const theme = useTheme();
 
@@ -631,7 +631,7 @@ const Analytics: React.FC<Props> = ({
   ]);
   interface Analytics {
     daily: AnalyticsData;
-    weekly: AnalyticsData;
+    total: AnalyticsData;
   }
   const currentAnalyticsData: Analytics =
     analyticsData.length > 0 ? {} : undefined;
@@ -641,7 +641,7 @@ const Analytics: React.FC<Props> = ({
       (i) => i.date === DateTime.fromJSDate(date).toFormat("dd/MM/yyyy")
     )!;
 
-    currentAnalyticsData.weekly = (() => {
+    currentAnalyticsData.total = (() => {
       let outObj: any = {};
       analyticsData.forEach((day: any) => {
         Object.keys(day).forEach((key) => {
@@ -660,7 +660,8 @@ const Analytics: React.FC<Props> = ({
         if (
           key === "moisture" ||
           key === "temperature" ||
-          key === "relativeHumidity"
+          key === "relativeHumidity" ||
+          key === "developmentStage"
         ) {
           outObj[key] = _.mean(outObj[key]);
         }
@@ -1117,11 +1118,11 @@ const Analytics: React.FC<Props> = ({
             </Tooltip>
           </ToggleButton>
           <ToggleButton
-            value="weekly"
-            aria-label="weekly"
+            value="total"
+            aria-label="total"
             style={{ padding: "5px", borderRadius: "0 0 18px 18px" }}
           >
-            <Tooltip title={"Tien dagen"}>
+            <Tooltip title={"Dertig dagen"}>
               <DateRangeIcon />
             </Tooltip>
           </ToggleButton>
@@ -1240,7 +1241,7 @@ const Analytics: React.FC<Props> = ({
                 currentAnalyticsData[analyticsDisplayType].rainfall || 0
               )}`}
               unit={"mm"}
-              prefix={analyticsDisplayType === "weekly" ? "Totale" : undefined}
+              prefix={analyticsDisplayType === "total" ? "Totale" : undefined}
               isCircleValue
             />
             <SelectedSumData
@@ -1263,7 +1264,7 @@ const Analytics: React.FC<Props> = ({
                   0
               )}`}
               unit={"mm"}
-              prefix={analyticsDisplayType === "weekly" ? "Totale" : undefined}
+              prefix={analyticsDisplayType === "total" ? "Totale" : undefined}
               isCircleValue
             />
             <SelectedSumData
@@ -1285,7 +1286,7 @@ const Analytics: React.FC<Props> = ({
               )}`}
               unit={"mm"}
               prefix={
-                analyticsDisplayType === "weekly" ? "Gemiddelde" : undefined
+                analyticsDisplayType === "total" ? "Gemiddelde" : undefined
               }
               isCircleValue
             />
@@ -1307,7 +1308,7 @@ const Analytics: React.FC<Props> = ({
                 currentAnalyticsData[analyticsDisplayType].sprinkling || 0
               )}`}
               unit={"mm"}
-              prefix={analyticsDisplayType === "weekly" ? "Totale" : undefined}
+              prefix={analyticsDisplayType === "total" ? "Totale" : undefined}
               isCircleValue
             />
             <SelectedSumData
@@ -1329,7 +1330,7 @@ const Analytics: React.FC<Props> = ({
               )}`}
               unit={"°C"}
               prefix={
-                analyticsDisplayType === "weekly" ? "Gemiddelde" : undefined
+                analyticsDisplayType === "total" ? "Gemiddelde" : undefined
               }
               isCircleValue
             />
@@ -1351,7 +1352,7 @@ const Analytics: React.FC<Props> = ({
               )}`}
               unit={"%"}
               prefix={
-                analyticsDisplayType === "weekly" ? "Gemiddelde" : undefined
+                analyticsDisplayType === "total" ? "Gemiddelde" : undefined
               }
               isCircleValue
             />
