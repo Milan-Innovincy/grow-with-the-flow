@@ -568,6 +568,8 @@ const Analytics: React.FC<Props> = ({
               : null;
             const sprinkling = quantityForDate ? quantityForDate.quantityMM : 0;
 
+            const relativeHumidity = i.relativeHumidity || 0.0;
+
             return {
               date: DateTime.fromISO(i.date).toFormat("dd/MM/yyyy"),
               rainfall: i.measuredPrecipitation,
@@ -578,7 +580,7 @@ const Analytics: React.FC<Props> = ({
               deficit: i.deficit,
               developmentStage: i.developmentStage,
               temperature: i.averageTemperature,
-              relativeHumidity: i.relativeHumidity.toFixed(0) || 0,
+              relativeHumidity: relativeHumidity.toFixed(0),
               limitLevel: fetchedLimitLevel || 0,
             };
           })
