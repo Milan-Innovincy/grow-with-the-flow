@@ -578,7 +578,7 @@ const Analytics: React.FC<Props> = ({
               deficit: i.deficit,
               developmentStage: i.developmentStage,
               temperature: i.averageTemperature,
-              relativeHumidity: i.relativeHumidity.toFixed(0),
+              relativeHumidity: i.relativeHumidity.toFixed(0) || 0,
               limitLevel: fetchedLimitLevel || 0,
             };
           })
@@ -615,7 +615,7 @@ const Analytics: React.FC<Props> = ({
           deficit: i.deficit[x][y],
           developmentStage: i.developmentStage,
           temperature: i.averageTemperature[x][y],
-          relativeHumidity: i.relativeHumidity[x][y].toFixed(0),
+          relativeHumidity: i.relativeHumidity[x][y].toFixed(0) || 0,
           limitLevel: fetchedLimitLevel || 0,
         }))
       );
