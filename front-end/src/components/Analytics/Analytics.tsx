@@ -76,7 +76,7 @@ import ToolbarButton from "@material-ui/pickers/_shared/ToolbarButton";
 
 import _ from "lodash";
 
-const cropTypes = ["mais", "aardappelen", "gras"];
+const cropTypes = ["mais", "aardappelen", "gras","Zomergerst" ];
 const cropStatusOptions: CropStatus = {
   mais: [
     { label: "Geen Activiteit", value: 0 },
@@ -98,11 +98,22 @@ const cropStatusOptions: CropStatus = {
     { label: "Geen activiteit", value: 0 },
     { label: "Bemaaien", value: 2 },
   ],
+  zomergerst:  [
+  {label: "Opkomst", value:0.01},
+  {label: "Begin van uitstoeling", value:0.2},
+  {label: "Begin stengel strekking", value:0.4},
+  {label: "Aar volledig zichtbaar", value:0.85},
+  {label: "Volledige bloei", value:1.0},
+  {label: "Oogst", value:2},
+  ]
 };
 
 export const getCropType = (cropType: string) => {
   if (cropType.startsWith("Grasland")) {
     return "gras";
+  }
+  if (cropType.startsWith("Zomergerst")) {
+    return "zomergerst";
   }
   if (
     cropType.startsWith("Mais") ||
@@ -127,6 +138,8 @@ const getCropTypeIcon = (cropType: string) => {
     case "Luzerne.":
       return <AlfalfaIcon width={28} fill="#00acc1" />;
     case "Winter Tarwe":
+      return <WheatIcon width={28} fill="#00acc1" />;
+      case "zomergerst":
       return <WheatIcon width={28} fill="#00acc1" />;
     default:
       return <GenericIcon width={28} fill="#00acc1" />;
@@ -528,7 +541,7 @@ const Analytics: React.FC<Props> = ({
       setLimitLevelInput(undefined);
     }
   };
-
+  
   useEffect(() => {
     if (selectedPlotId) {
       fetchLimitLevel(selectedPlotId);
@@ -1678,13 +1691,13 @@ const Analytics: React.FC<Props> = ({
               tick={{ fill: paramColor[leftAxe], fontSize: 10 }}
               width={30}
               domain={[
-                0,
+                'dataMin',
                 (() => {
                   if (
                     leftAxe === "relativeHumidity" ||
                     leftAxe === "desiredMoisture"
                   ) {
-                    return 100;
+                    return 'dataMax';
                   }
                   if (leftAxe === "rainfall") {
                     let maxValue = 0;
@@ -1707,13 +1720,13 @@ const Analytics: React.FC<Props> = ({
               tick={{ fill: paramColor[rightAxe], fontSize: 10 }}
               width={30}
               domain={[
-                0,
+                'dataMin',
                 (() => {
                   if (
                     rightAxe === "relativeHumidity" ||
                     rightAxe === "desiredMoisture"
                   ) {
-                    return 100;
+                    return 'dataMax';
                   }
                   if (rightAxe === "rainfall") {
                     let maxValue = 0;
