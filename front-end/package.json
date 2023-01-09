@@ -44,7 +44,7 @@
     "keycloak-js": "11.0.3",
     "leaflet": "1.4.0",
     "lodash": "4.17.19",
-    "luxon": "^1.25.0",
+    "luxon": "^1.28.1",
     "mdi-material-ui": "5.9.0",
     "moment": "^2.0.0",
     "node-sass": "4",
